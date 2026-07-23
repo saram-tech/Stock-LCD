@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stock LCD">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase/2.39.0/supabase.min.js"></script>
 <style>
   :root{
     --bg:#0f1115; --card:#1a1d24; --border:#2a2e38;
@@ -85,6 +86,10 @@
 <body>
 
 <h1>📦 Stock LCD</h1>
+<div id="syncStatus" style="font-size:12px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+  <span id="syncDot" style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
+  <span id="syncText">Connexion...</span>
+</div>
 
 <div class="summary">
   <div class="big" id="totalQty">0</div>
@@ -112,11 +117,58 @@
 </dialog>
 
 <script>
-const KEY = 'stock_lcd_items';
+const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const KEY = 'stock_lcd_items'; // cache local (fallback hors ligne)
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
+let pendingOps = JSON.parse(localStorage.getItem('stock_lcd_pending') || '[]'); // opérations en attente de sync
 const dlg = document.getElementById('dlg');
 
-function save(){ localStorage.setItem(KEY, JSON.stringify(items)); render(); }
+function setStatus(state, text){
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)'};
+  dot.style.background = colors[state] || 'var(--muted)';
+  txt.textContent = text;
+}
+
+function cacheLocal(){
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+
+function queuePending(op){
+  pendingOps.push(op);
+  localStorage.setItem('stock_lcd_pending', JSON.stringify(pendingOps));
+}
+
+async function loadFromSupabase(){
+  if(!navigator.onLine){ setStatus('offline','Hors ligne — données locales'); render(); return; }
+  setStatus('syncing','Synchronisation...');
+  const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
+  if(error){ setStatus('offline','Hors ligne — données locales'); render(); return; }
+  items = data;
+  cacheLocal();
+  setStatus('online','Synchronisé');
+  render();
+  await flushPending();
+}
+
+async function flushPending(){
+  if(!navigator.onLine || pendingOps.length === 0) return;
+  const ops = [...pendingOps];
+  pendingOps = [];
+  localStorage.setItem('stock_lcd_pending', '[]');
+  for(const op of ops){
+    try{
+      if(op.type === 'insert') await sb.from('items').insert(op.payload);
+      if(op.type === 'update') await sb.from('items').update(op.payload).eq('id', op.id);
+      if(op.type === 'delete') await sb.from('items').delete().eq('id', op.id);
+    }catch(e){ console.log('sync error', e); }
+  }
+  loadFromSupabase();
+}
 
 function render(){
   const q = document.getElementById('search').value.toLowerCase();
@@ -129,8 +181,7 @@ function render(){
   const total = items.reduce((s,it) => s + it.qty, 0);
   document.getElementById('totalQty').textContent = total;
 
-  filtered.forEach((it, idx) => {
-    const realIdx = items.indexOf(it);
+  filtered.forEach((it) => {
     const cls = it.qty === 0 ? 'out' : (it.qty <= 2 ? 'low' : 'ok');
     const div = document.createElement('div');
     div.className = 'item';
@@ -141,24 +192,42 @@ function render(){
       </div>
       <div class="qty ${cls}">${it.qty}</div>
       <div class="controls">
-        <button class="btn minus" onclick="changeQty(${realIdx},-1)">−</button>
-        <button class="btn plus" onclick="changeQty(${realIdx},1)">+</button>
-        <button class="btn del" onclick="delItem(${realIdx})">✕</button>
+        <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
+        <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
+        <button class="btn del" onclick="delItem('${it.id}')">✕</button>
       </div>
     `;
     list.appendChild(div);
   });
 }
 
-function changeQty(idx, delta){
-  items[idx].qty = Math.max(0, items[idx].qty + delta);
-  save();
+async function changeQty(id, delta){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  it.qty = Math.max(0, it.qty + delta);
+  cacheLocal();
+  render();
+  if(navigator.onLine){
+    setStatus('syncing','Synchronisation...');
+    const { error } = await sb.from('items').update({qty: it.qty}).eq('id', id);
+    setStatus(error ? 'offline' : 'online', error ? 'Hors ligne — données locales' : 'Synchronisé');
+  } else {
+    queuePending({type:'update', id, payload:{qty: it.qty}});
+    setStatus('offline','Hors ligne — sera synchronisé');
+  }
 }
 
-function delItem(idx){
-  if(confirm(`Supprimer "${items[idx].name}" ?`)){
-    items.splice(idx,1);
-    save();
+async function delItem(id){
+  const it = items.find(x => x.id === id);
+  if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
+  items = items.filter(x => x.id !== id);
+  cacheLocal();
+  render();
+  if(navigator.onLine){
+    await sb.from('items').delete().eq('id', id);
+  } else {
+    queuePending({type:'delete', id});
+    setStatus('offline','Hors ligne — sera synchronisé');
   }
 }
 
@@ -169,18 +238,42 @@ function openAdd(){
   dlg.showModal();
 }
 
-function saveItem(){
+async function saveItem(){
   const name = document.getElementById('fName').value.trim();
   const ref = document.getElementById('fRef').value.trim();
   const qty = parseInt(document.getElementById('fQty').value) || 0;
   if(!name) return alert('Entrez un nom de modèle');
-  items.push({name, ref, qty});
   dlg.close();
-  save();
+
+  if(navigator.onLine){
+    setStatus('syncing','Synchronisation...');
+    const { data, error } = await sb.from('items').insert({name, ref, qty}).select();
+    if(!error && data){
+      items.push(data[0]);
+      cacheLocal();
+      setStatus('online','Synchronisé');
+    } else {
+      setStatus('offline','Hors ligne — données locales');
+    }
+    render();
+  } else {
+    const tempId = 'temp-' + Date.now();
+    const newItem = {id: tempId, name, ref, qty, created_at: new Date().toISOString()};
+    items.push(newItem);
+    cacheLocal();
+    queuePending({type:'insert', payload:{name, ref, qty}});
+    setStatus('offline','Hors ligne — sera synchronisé');
+    render();
+  }
 }
 
 document.getElementById('search').addEventListener('input', render);
+
+window.addEventListener('online', () => { setStatus('syncing','Reconnexion...'); flushPending(); loadFromSupabase(); });
+window.addEventListener('offline', () => setStatus('offline','Hors ligne — données locales'));
+
 render();
+loadFromSupabase();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
