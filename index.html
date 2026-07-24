@@ -59,7 +59,16 @@
   }
   .btn.minus{background:#3a1f22; color:var(--red);}
   .btn.plus{background:#1a3a24; color:var(--green);}
+  .btn.edit{background:#1f2a3a; color:var(--blue); font-size:14px;}
   .btn.del{background:transparent; color:var(--muted); font-size:14px; width:auto; padding:0 6px;}
+  .toolbar{display:flex; gap:8px; margin-bottom:12px;}
+  .toolbar .search{margin-bottom:0; flex:1;}
+  .sortBtn{
+    padding:0 14px; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:14px; cursor:pointer;
+    white-space:nowrap; display:flex; align-items:center; gap:4px;
+  }
+  .sortBtn.active{border-color:var(--blue); color:var(--blue);}
   .fab{
     position:fixed; bottom:20px; left:16px; right:16px; max-width:528px; margin:0 auto;
     background:var(--blue); color:#fff; border:none; border-radius:12px;
@@ -96,7 +105,10 @@
   <div class="label">écrans disponibles</div>
 </div>
 
-<input class="search" id="search" placeholder="Rechercher un modèle...">
+<div class="toolbar">
+  <input class="search" id="search" placeholder="Rechercher un modèle...">
+  <button class="sortBtn" id="sortBtn" onclick="toggleSort()">A→Z</button>
+</div>
 
 <div id="list"></div>
 <div class="empty" id="emptyMsg" style="display:none;">Aucun écran enregistré. Ajoutez-en un.</div>
@@ -104,6 +116,7 @@
 <button class="fab" onclick="openAdd()">+ Ajouter un modèle</button>
 
 <dialog id="dlg">
+  <label id="dlgTitle" style="display:block; font-weight:600; font-size:16px; margin-bottom:12px; color:var(--text);">Ajouter un modèle</label>
   <label>Nom / modèle</label>
   <input id="fName" placeholder="ex: LCD Redmi Note 10">
   <label>Référence (optionnel)</label>
@@ -162,6 +175,20 @@ function changeQty(id, delta){
     if(pending.inserts[id]) pending.inserts[id].qty = it.qty;
   } else {
     pending.updates[id] = {...(pending.updates[id]||{}), qty: it.qty};
+  }
+  cachePending();
+  trySync();
+}
+
+function updateItemLocal(id, name, ref, qty){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  it.name = name; it.ref = ref; it.qty = qty;
+  cacheLocal(); render();
+  if(String(id).startsWith('temp-')){
+    if(pending.inserts[id]) pending.inserts[id] = {name, ref, qty};
+  } else {
+    pending.updates[id] = {...(pending.updates[id]||{}), name, ref, qty};
   }
   cachePending();
   trySync();
@@ -245,11 +272,24 @@ async function loadFromSupabase(){
   }
 }
 
+let sortDir = null; // null = ordre d'ajout, 'asc' = A→Z, 'desc' = Z→A
+
+function toggleSort(){
+  sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  const btn = document.getElementById('sortBtn');
+  btn.textContent = sortDir === 'asc' ? 'A→Z' : 'Z→A';
+  btn.classList.add('active');
+  render();
+}
+
 function render(){
   const q = document.getElementById('search').value.toLowerCase();
   const list = document.getElementById('list');
   list.innerHTML = '';
-  const filtered = items.filter(it => it.name.toLowerCase().includes(q) || (it.ref||'').toLowerCase().includes(q));
+  let filtered = items.filter(it => it.name.toLowerCase().includes(q) || (it.ref||'').toLowerCase().includes(q));
+
+  if(sortDir === 'asc') filtered.sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
+  if(sortDir === 'desc') filtered.sort((a,b) => b.name.localeCompare(a.name, 'fr', {sensitivity:'base'}));
 
   document.getElementById('emptyMsg').style.display = items.length === 0 ? 'block' : 'none';
 
@@ -269,6 +309,7 @@ function render(){
       <div class="controls">
         <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
         <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
+        <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
         <button class="btn del" onclick="delItem('${it.id}')">✕</button>
       </div>
     `;
@@ -276,10 +317,25 @@ function render(){
   });
 }
 
+let editingId = null;
+
 function openAdd(){
+  editingId = null;
+  document.getElementById('dlgTitle').textContent = 'Ajouter un modèle';
   document.getElementById('fName').value = '';
   document.getElementById('fRef').value = '';
   document.getElementById('fQty').value = 0;
+  dlg.showModal();
+}
+
+function openEdit(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  editingId = id;
+  document.getElementById('dlgTitle').textContent = 'Modifier le modèle';
+  document.getElementById('fName').value = it.name;
+  document.getElementById('fRef').value = it.ref || '';
+  document.getElementById('fQty').value = it.qty;
   dlg.showModal();
 }
 
@@ -289,7 +345,12 @@ function saveItem(){
   const qty = parseInt(document.getElementById('fQty').value) || 0;
   if(!name) return alert('Entrez un nom de modèle');
   dlg.close();
-  addItemLocal(name, ref, qty);
+  if(editingId){
+    updateItemLocal(editingId, name, ref, qty);
+  } else {
+    addItemLocal(name, ref, qty);
+  }
+  editingId = null;
 }
 
 document.getElementById('search').addEventListener('input', render);
