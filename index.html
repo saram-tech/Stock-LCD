@@ -121,9 +121,12 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const KEY = 'stock_lcd_items'; // cache local (fallback hors ligne)
+const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
+const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
-let pendingOps = JSON.parse(localStorage.getItem('stock_lcd_pending') || '[]'); // opérations en attente de sync
+// pending = { inserts:{tempId:{name,ref,qty}}, updates:{id:{qty}}, deletes:[ids] }
+let pending = JSON.parse(localStorage.getItem(PKEY) || 'null') || {inserts:{}, updates:{}, deletes:[]};
+let syncing = false;
 const dlg = document.getElementById('dlg');
 
 function setStatus(state, text){
@@ -134,40 +137,112 @@ function setStatus(state, text){
   txt.textContent = text;
 }
 
-function cacheLocal(){
-  localStorage.setItem(KEY, JSON.stringify(items));
+function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
+function cachePending(){ localStorage.setItem(PKEY, JSON.stringify(pending)); }
+function hasPending(){
+  return Object.keys(pending.inserts).length > 0 || Object.keys(pending.updates).length > 0 || pending.deletes.length > 0;
 }
 
-function queuePending(op){
-  pendingOps.push(op);
-  localStorage.setItem('stock_lcd_pending', JSON.stringify(pendingOps));
+// --- Mutations locales : toujours appliquées et mises en file avant toute tentative réseau ---
+
+function addItemLocal(name, ref, qty){
+  const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
+  items.push({id: tempId, name, ref, qty, created_at: new Date().toISOString()});
+  pending.inserts[tempId] = {name, ref, qty};
+  cacheLocal(); cachePending(); render();
+  trySync();
+}
+
+function changeQty(id, delta){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  it.qty = Math.max(0, it.qty + delta);
+  cacheLocal(); render();
+  if(String(id).startsWith('temp-')){
+    if(pending.inserts[id]) pending.inserts[id].qty = it.qty;
+  } else {
+    pending.updates[id] = {...(pending.updates[id]||{}), qty: it.qty};
+  }
+  cachePending();
+  trySync();
+}
+
+function delItem(id){
+  const it = items.find(x => x.id === id);
+  if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
+  items = items.filter(x => x.id !== id);
+  cacheLocal(); render();
+  if(String(id).startsWith('temp-')){
+    delete pending.inserts[id];
+  } else {
+    delete pending.updates[id];
+    if(!pending.deletes.includes(id)) pending.deletes.push(id);
+  }
+  cachePending();
+  trySync();
+}
+
+// --- Synchronisation : ne retire une opération de la file qu'après confirmation du serveur ---
+
+async function trySync(){
+  if(!navigator.onLine){ setStatus('offline','Hors ligne — sera synchronisé'); return; }
+  if(syncing) return;
+  syncing = true;
+  setStatus('syncing','Synchronisation...');
+  try{
+    for(const tempId of Object.keys(pending.inserts)){
+      const payload = pending.inserts[tempId];
+      const { data, error } = await sb.from('items').insert(payload).select();
+      if(error) throw error;
+      const it = items.find(x => x.id === tempId);
+      if(it){ it.id = data[0].id; it.created_at = data[0].created_at; }
+      delete pending.inserts[tempId];
+      cacheLocal(); cachePending();
+    }
+    for(const id of Object.keys(pending.updates)){
+      const payload = pending.updates[id];
+      const { error } = await sb.from('items').update(payload).eq('id', id);
+      if(error) throw error;
+      delete pending.updates[id];
+      cachePending();
+    }
+    for(const id of [...pending.deletes]){
+      const { error } = await sb.from('items').delete().eq('id', id);
+      if(error) throw error;
+      pending.deletes = pending.deletes.filter(x => x !== id);
+      cachePending();
+    }
+    // Tout est synchronisé : on peut recharger en confiance depuis le serveur
+    await refreshFromServer();
+    setStatus('online','Synchronisé');
+  }catch(e){
+    console.log('sync error', e);
+    setStatus('offline','Hors ligne — sera synchronisé');
+  }finally{
+    syncing = false;
+  }
+}
+
+async function refreshFromServer(){
+  if(hasPending()) return; // ne jamais écraser des changements locaux pas encore confirmés
+  const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
+  if(error) throw error;
+  items = data;
+  cacheLocal();
+  render();
 }
 
 async function loadFromSupabase(){
-  if(!navigator.onLine){ setStatus('offline','Hors ligne — données locales'); render(); return; }
+  render(); // affiche d'abord le cache local immédiatement
+  if(!navigator.onLine){ setStatus('offline','Hors ligne — données locales'); return; }
+  if(hasPending()){ await trySync(); return; } // flush avant tout écrasement
   setStatus('syncing','Synchronisation...');
-  const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
-  if(error){ setStatus('offline','Hors ligne — données locales'); render(); return; }
-  items = data;
-  cacheLocal();
-  setStatus('online','Synchronisé');
-  render();
-  await flushPending();
-}
-
-async function flushPending(){
-  if(!navigator.onLine || pendingOps.length === 0) return;
-  const ops = [...pendingOps];
-  pendingOps = [];
-  localStorage.setItem('stock_lcd_pending', '[]');
-  for(const op of ops){
-    try{
-      if(op.type === 'insert') await sb.from('items').insert(op.payload);
-      if(op.type === 'update') await sb.from('items').update(op.payload).eq('id', op.id);
-      if(op.type === 'delete') await sb.from('items').delete().eq('id', op.id);
-    }catch(e){ console.log('sync error', e); }
+  try{
+    await refreshFromServer();
+    setStatus('online','Synchronisé');
+  }catch(e){
+    setStatus('offline','Hors ligne — données locales');
   }
-  loadFromSupabase();
 }
 
 function render(){
@@ -201,36 +276,6 @@ function render(){
   });
 }
 
-async function changeQty(id, delta){
-  const it = items.find(x => x.id === id);
-  if(!it) return;
-  it.qty = Math.max(0, it.qty + delta);
-  cacheLocal();
-  render();
-  if(navigator.onLine){
-    setStatus('syncing','Synchronisation...');
-    const { error } = await sb.from('items').update({qty: it.qty}).eq('id', id);
-    setStatus(error ? 'offline' : 'online', error ? 'Hors ligne — données locales' : 'Synchronisé');
-  } else {
-    queuePending({type:'update', id, payload:{qty: it.qty}});
-    setStatus('offline','Hors ligne — sera synchronisé');
-  }
-}
-
-async function delItem(id){
-  const it = items.find(x => x.id === id);
-  if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
-  items = items.filter(x => x.id !== id);
-  cacheLocal();
-  render();
-  if(navigator.onLine){
-    await sb.from('items').delete().eq('id', id);
-  } else {
-    queuePending({type:'delete', id});
-    setStatus('offline','Hors ligne — sera synchronisé');
-  }
-}
-
 function openAdd(){
   document.getElementById('fName').value = '';
   document.getElementById('fRef').value = '';
@@ -238,39 +283,22 @@ function openAdd(){
   dlg.showModal();
 }
 
-async function saveItem(){
+function saveItem(){
   const name = document.getElementById('fName').value.trim();
   const ref = document.getElementById('fRef').value.trim();
   const qty = parseInt(document.getElementById('fQty').value) || 0;
   if(!name) return alert('Entrez un nom de modèle');
   dlg.close();
-
-  if(navigator.onLine){
-    setStatus('syncing','Synchronisation...');
-    const { data, error } = await sb.from('items').insert({name, ref, qty}).select();
-    if(!error && data){
-      items.push(data[0]);
-      cacheLocal();
-      setStatus('online','Synchronisé');
-    } else {
-      setStatus('offline','Hors ligne — données locales');
-    }
-    render();
-  } else {
-    const tempId = 'temp-' + Date.now();
-    const newItem = {id: tempId, name, ref, qty, created_at: new Date().toISOString()};
-    items.push(newItem);
-    cacheLocal();
-    queuePending({type:'insert', payload:{name, ref, qty}});
-    setStatus('offline','Hors ligne — sera synchronisé');
-    render();
-  }
+  addItemLocal(name, ref, qty);
 }
 
 document.getElementById('search').addEventListener('input', render);
 
-window.addEventListener('online', () => { setStatus('syncing','Reconnexion...'); flushPending(); loadFromSupabase(); });
+window.addEventListener('online', () => { setStatus('syncing','Reconnexion...'); trySync(); });
 window.addEventListener('offline', () => setStatus('offline','Hors ligne — données locales'));
+
+// Nouvelle tentative périodique si des changements restent en attente (réseau mobile instable)
+setInterval(() => { if(hasPending() && navigator.onLine) trySync(); }, 15000);
 
 render();
 loadFromSupabase();
