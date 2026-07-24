@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stock LCD">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --bg:#0f1115; --card:#1a1d24; --border:#2a2e38;
@@ -58,7 +59,16 @@
   }
   .btn.minus{background:#3a1f22; color:var(--red);}
   .btn.plus{background:#1a3a24; color:var(--green);}
+  .btn.edit{background:#1f2a3a; color:var(--blue); font-size:14px;}
   .btn.del{background:transparent; color:var(--muted); font-size:14px; width:auto; padding:0 6px;}
+  .toolbar{display:flex; gap:8px; margin-bottom:12px;}
+  .toolbar .search{margin-bottom:0; flex:1;}
+  .sortBtn{
+    padding:0 14px; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:14px; cursor:pointer;
+    white-space:nowrap; display:flex; align-items:center; gap:4px;
+  }
+  .sortBtn.active{border-color:var(--blue); color:var(--blue);}
   .fab{
     position:fixed; bottom:20px; left:16px; right:16px; max-width:528px; margin:0 auto;
     background:var(--blue); color:#fff; border:none; border-radius:12px;
@@ -85,13 +95,20 @@
 <body>
 
 <h1>📦 Stock LCD</h1>
+<div id="syncStatus" style="font-size:12px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+  <span id="syncDot" style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
+  <span id="syncText">Connexion...</span>
+</div>
 
 <div class="summary">
   <div class="big" id="totalQty">0</div>
   <div class="label">écrans disponibles</div>
 </div>
 
-<input class="search" id="search" placeholder="Rechercher un modèle...">
+<div class="toolbar">
+  <input class="search" id="search" placeholder="Rechercher un modèle...">
+  <button class="sortBtn" id="sortBtn" onclick="toggleSort()">A→Z</button>
+</div>
 
 <div id="list"></div>
 <div class="empty" id="emptyMsg" style="display:none;">Aucun écran enregistré. Ajoutez-en un.</div>
@@ -99,6 +116,7 @@
 <button class="fab" onclick="openAdd()">+ Ajouter un modèle</button>
 
 <dialog id="dlg">
+  <label id="dlgTitle" style="display:block; font-weight:600; font-size:16px; margin-bottom:12px; color:var(--text);">Ajouter un modèle</label>
   <label>Nom / modèle</label>
   <input id="fName" placeholder="ex: LCD Redmi Note 10">
   <label>Référence (optionnel)</label>
@@ -112,25 +130,173 @@
 </dialog>
 
 <script>
-const KEY = 'stock_lcd_items';
+const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
+const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
+// pending = { inserts:{tempId:{name,ref,qty}}, updates:{id:{qty}}, deletes:[ids] }
+let pending = JSON.parse(localStorage.getItem(PKEY) || 'null') || {inserts:{}, updates:{}, deletes:[]};
+let syncing = false;
 const dlg = document.getElementById('dlg');
 
-function save(){ localStorage.setItem(KEY, JSON.stringify(items)); render(); }
+function setStatus(state, text){
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)'};
+  dot.style.background = colors[state] || 'var(--muted)';
+  txt.textContent = text;
+}
+
+function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
+function cachePending(){ localStorage.setItem(PKEY, JSON.stringify(pending)); }
+function hasPending(){
+  return Object.keys(pending.inserts).length > 0 || Object.keys(pending.updates).length > 0 || pending.deletes.length > 0;
+}
+
+// --- Mutations locales : toujours appliquées et mises en file avant toute tentative réseau ---
+
+function addItemLocal(name, ref, qty){
+  const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
+  items.push({id: tempId, name, ref, qty, created_at: new Date().toISOString()});
+  pending.inserts[tempId] = {name, ref, qty};
+  cacheLocal(); cachePending(); render();
+  trySync();
+}
+
+function changeQty(id, delta){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  it.qty = Math.max(0, it.qty + delta);
+  cacheLocal(); render();
+  if(String(id).startsWith('temp-')){
+    if(pending.inserts[id]) pending.inserts[id].qty = it.qty;
+  } else {
+    pending.updates[id] = {...(pending.updates[id]||{}), qty: it.qty};
+  }
+  cachePending();
+  trySync();
+}
+
+function updateItemLocal(id, name, ref, qty){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  it.name = name; it.ref = ref; it.qty = qty;
+  cacheLocal(); render();
+  if(String(id).startsWith('temp-')){
+    if(pending.inserts[id]) pending.inserts[id] = {name, ref, qty};
+  } else {
+    pending.updates[id] = {...(pending.updates[id]||{}), name, ref, qty};
+  }
+  cachePending();
+  trySync();
+}
+
+function delItem(id){
+  const it = items.find(x => x.id === id);
+  if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
+  items = items.filter(x => x.id !== id);
+  cacheLocal(); render();
+  if(String(id).startsWith('temp-')){
+    delete pending.inserts[id];
+  } else {
+    delete pending.updates[id];
+    if(!pending.deletes.includes(id)) pending.deletes.push(id);
+  }
+  cachePending();
+  trySync();
+}
+
+// --- Synchronisation : ne retire une opération de la file qu'après confirmation du serveur ---
+
+async function trySync(){
+  if(!navigator.onLine){ setStatus('offline','Hors ligne — sera synchronisé'); return; }
+  if(syncing) return;
+  syncing = true;
+  setStatus('syncing','Synchronisation...');
+  try{
+    for(const tempId of Object.keys(pending.inserts)){
+      const payload = pending.inserts[tempId];
+      const { data, error } = await sb.from('items').insert(payload).select();
+      if(error) throw error;
+      const it = items.find(x => x.id === tempId);
+      if(it){ it.id = data[0].id; it.created_at = data[0].created_at; }
+      delete pending.inserts[tempId];
+      cacheLocal(); cachePending();
+    }
+    for(const id of Object.keys(pending.updates)){
+      const payload = pending.updates[id];
+      const { error } = await sb.from('items').update(payload).eq('id', id);
+      if(error) throw error;
+      delete pending.updates[id];
+      cachePending();
+    }
+    for(const id of [...pending.deletes]){
+      const { error } = await sb.from('items').delete().eq('id', id);
+      if(error) throw error;
+      pending.deletes = pending.deletes.filter(x => x !== id);
+      cachePending();
+    }
+    // Tout est synchronisé : on peut recharger en confiance depuis le serveur
+    await refreshFromServer();
+    setStatus('online','Synchronisé');
+  }catch(e){
+    console.log('sync error', e);
+    setStatus('offline','Hors ligne — sera synchronisé');
+  }finally{
+    syncing = false;
+  }
+}
+
+async function refreshFromServer(){
+  if(hasPending()) return; // ne jamais écraser des changements locaux pas encore confirmés
+  const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
+  if(error) throw error;
+  items = data;
+  cacheLocal();
+  render();
+}
+
+async function loadFromSupabase(){
+  render(); // affiche d'abord le cache local immédiatement
+  if(!navigator.onLine){ setStatus('offline','Hors ligne — données locales'); return; }
+  if(hasPending()){ await trySync(); return; } // flush avant tout écrasement
+  setStatus('syncing','Synchronisation...');
+  try{
+    await refreshFromServer();
+    setStatus('online','Synchronisé');
+  }catch(e){
+    setStatus('offline','Hors ligne — données locales');
+  }
+}
+
+let sortDir = null; // null = ordre d'ajout, 'asc' = A→Z, 'desc' = Z→A
+
+function toggleSort(){
+  sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  const btn = document.getElementById('sortBtn');
+  btn.textContent = sortDir === 'asc' ? 'A→Z' : 'Z→A';
+  btn.classList.add('active');
+  render();
+}
 
 function render(){
   const q = document.getElementById('search').value.toLowerCase();
   const list = document.getElementById('list');
   list.innerHTML = '';
-  const filtered = items.filter(it => it.name.toLowerCase().includes(q) || (it.ref||'').toLowerCase().includes(q));
+  let filtered = items.filter(it => it.name.toLowerCase().includes(q) || (it.ref||'').toLowerCase().includes(q));
+
+  if(sortDir === 'asc') filtered.sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
+  if(sortDir === 'desc') filtered.sort((a,b) => b.name.localeCompare(a.name, 'fr', {sensitivity:'base'}));
 
   document.getElementById('emptyMsg').style.display = items.length === 0 ? 'block' : 'none';
 
   const total = items.reduce((s,it) => s + it.qty, 0);
   document.getElementById('totalQty').textContent = total;
 
-  filtered.forEach((it, idx) => {
-    const realIdx = items.indexOf(it);
+  filtered.forEach((it) => {
     const cls = it.qty === 0 ? 'out' : (it.qty <= 2 ? 'low' : 'ok');
     const div = document.createElement('div');
     div.className = 'item';
@@ -141,31 +307,35 @@ function render(){
       </div>
       <div class="qty ${cls}">${it.qty}</div>
       <div class="controls">
-        <button class="btn minus" onclick="changeQty(${realIdx},-1)">−</button>
-        <button class="btn plus" onclick="changeQty(${realIdx},1)">+</button>
-        <button class="btn del" onclick="delItem(${realIdx})">✕</button>
+        <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
+        <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
+        <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
+        <button class="btn del" onclick="delItem('${it.id}')">✕</button>
       </div>
     `;
     list.appendChild(div);
   });
 }
 
-function changeQty(idx, delta){
-  items[idx].qty = Math.max(0, items[idx].qty + delta);
-  save();
-}
-
-function delItem(idx){
-  if(confirm(`Supprimer "${items[idx].name}" ?`)){
-    items.splice(idx,1);
-    save();
-  }
-}
+let editingId = null;
 
 function openAdd(){
+  editingId = null;
+  document.getElementById('dlgTitle').textContent = 'Ajouter un modèle';
   document.getElementById('fName').value = '';
   document.getElementById('fRef').value = '';
   document.getElementById('fQty').value = 0;
+  dlg.showModal();
+}
+
+function openEdit(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  editingId = id;
+  document.getElementById('dlgTitle').textContent = 'Modifier le modèle';
+  document.getElementById('fName').value = it.name;
+  document.getElementById('fRef').value = it.ref || '';
+  document.getElementById('fQty').value = it.qty;
   dlg.showModal();
 }
 
@@ -174,13 +344,25 @@ function saveItem(){
   const ref = document.getElementById('fRef').value.trim();
   const qty = parseInt(document.getElementById('fQty').value) || 0;
   if(!name) return alert('Entrez un nom de modèle');
-  items.push({name, ref, qty});
   dlg.close();
-  save();
+  if(editingId){
+    updateItemLocal(editingId, name, ref, qty);
+  } else {
+    addItemLocal(name, ref, qty);
+  }
+  editingId = null;
 }
 
 document.getElementById('search').addEventListener('input', render);
+
+window.addEventListener('online', () => { setStatus('syncing','Reconnexion...'); trySync(); });
+window.addEventListener('offline', () => setStatus('offline','Hors ligne — données locales'));
+
+// Nouvelle tentative périodique si des changements restent en attente (réseau mobile instable)
+setInterval(() => { if(hasPending() && navigator.onLine) trySync(); }, 15000);
+
 render();
+loadFromSupabase();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
