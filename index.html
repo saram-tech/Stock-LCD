@@ -140,7 +140,17 @@ let items = JSON.parse(localStorage.getItem(KEY) || '[]');
 // pending = { inserts:{tempId:{name,ref,qty}}, updates:{id:{qty}}, deletes:[ids] }
 let pending = JSON.parse(localStorage.getItem(PKEY) || 'null') || {inserts:{}, updates:{}, deletes:[]};
 let syncing = false;
+let syncTimer = null;
 const dlg = document.getElementById('dlg');
+
+// Anti-rebond : regroupe les taps rapprochés (+/-) en un seul envoi réseau,
+// au lieu d'envoyer une requête à chaque frappe. C'est ce qui causait le
+// "va-et-vient" visible : chaque tap déclenchait sa propre synchronisation,
+// et une réponse arrivée en retard écrasait temporairement une valeur plus récente.
+function scheduleSync(delay = 600){
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(trySync, delay);
+}
 
 function setStatus(state, text){
   const dot = document.getElementById('syncDot');
@@ -163,7 +173,7 @@ function addItemLocal(name, ref, qty){
   items.push({id: tempId, name, ref, qty, created_at: new Date().toISOString()});
   pending.inserts[tempId] = {name, ref, qty};
   cacheLocal(); cachePending(); render();
-  trySync();
+  scheduleSync();
 }
 
 function changeQty(id, delta){
@@ -177,7 +187,7 @@ function changeQty(id, delta){
     pending.updates[id] = {...(pending.updates[id]||{}), qty: it.qty};
   }
   cachePending();
-  trySync();
+  scheduleSync();
 }
 
 function updateItemLocal(id, name, ref, qty){
@@ -191,7 +201,7 @@ function updateItemLocal(id, name, ref, qty){
     pending.updates[id] = {...(pending.updates[id]||{}), name, ref, qty};
   }
   cachePending();
-  trySync();
+  scheduleSync();
 }
 
 function delItem(id){
@@ -206,7 +216,7 @@ function delItem(id){
     if(!pending.deletes.includes(id)) pending.deletes.push(id);
   }
   cachePending();
-  trySync();
+  scheduleSync();
 }
 
 // --- Synchronisation : ne retire une opération de la file qu'après confirmation du serveur ---
@@ -215,33 +225,58 @@ async function trySync(){
   if(!navigator.onLine){ setStatus('offline','Hors ligne — sera synchronisé'); return; }
   if(syncing) return;
   syncing = true;
-  setStatus('syncing','Synchronisation...');
   try{
-    for(const tempId of Object.keys(pending.inserts)){
-      const payload = pending.inserts[tempId];
-      const { data, error } = await sb.from('items').insert(payload).select();
-      if(error) throw error;
-      const it = items.find(x => x.id === tempId);
-      if(it){ it.id = data[0].id; it.created_at = data[0].created_at; }
-      delete pending.inserts[tempId];
-      cacheLocal(); cachePending();
+    let pass = 0;
+    do{
+      pass++;
+      setStatus('syncing','Synchronisation...');
+
+      for(const tempId of Object.keys(pending.inserts)){
+        const payload = pending.inserts[tempId];
+        const { data, error } = await sb.from('items').insert(payload).select();
+        if(error) throw error;
+        const it = items.find(x => x.id === tempId);
+        if(it){ it.id = data[0].id; it.created_at = data[0].created_at; }
+        // Ne retire de la file QUE si rien n'a changé pendant l'envoi (sinon la saisie la plus récente serait perdue)
+        if(JSON.stringify(pending.inserts[tempId]) === JSON.stringify(payload)){
+          delete pending.inserts[tempId];
+        } else {
+          const latest = pending.inserts[tempId];
+          delete pending.inserts[tempId];
+          pending.updates[data[0].id] = {...(pending.updates[data[0].id]||{}), ...latest};
+        }
+        cacheLocal(); cachePending();
+      }
+
+      for(const id of Object.keys(pending.updates)){
+        const payload = pending.updates[id];
+        const { error } = await sb.from('items').update(payload).eq('id', id);
+        if(error) throw error;
+        // Idem : on ne supprime que si la valeur envoyée est toujours la dernière saisie
+        if(JSON.stringify(pending.updates[id]) === JSON.stringify(payload)){
+          delete pending.updates[id];
+        }
+        cachePending();
+      }
+
+      for(const id of [...pending.deletes]){
+        const { error } = await sb.from('items').delete().eq('id', id);
+        if(error) throw error;
+        pending.deletes = pending.deletes.filter(x => x !== id);
+        delete pending.updates[id];
+        cachePending();
+      }
+      // Si de nouvelles saisies sont arrivées pendant cette passe, on relance immédiatement
+      // (limité à quelques passes pour ne jamais boucler indéfiniment sur une saisie très active)
+    } while(hasPending() && pass < 5);
+
+    if(!hasPending()){
+      await refreshFromServer();
+      setStatus('online','Synchronisé');
+    } else {
+      setStatus('syncing','Synchronisation...');
+      scheduleSync(500); // reste des changements très récents : on retentera juste après
     }
-    for(const id of Object.keys(pending.updates)){
-      const payload = pending.updates[id];
-      const { error } = await sb.from('items').update(payload).eq('id', id);
-      if(error) throw error;
-      delete pending.updates[id];
-      cachePending();
-    }
-    for(const id of [...pending.deletes]){
-      const { error } = await sb.from('items').delete().eq('id', id);
-      if(error) throw error;
-      pending.deletes = pending.deletes.filter(x => x !== id);
-      cachePending();
-    }
-    // Tout est synchronisé : on peut recharger en confiance depuis le serveur
-    await refreshFromServer();
-    setStatus('online','Synchronisé');
   }catch(e){
     console.log('sync error', e);
     setStatus('offline','Hors ligne — sera synchronisé');
@@ -307,10 +342,10 @@ function render(){
       </div>
       <div class="qty ${cls}">${it.qty}</div>
       <div class="controls">
+        <button class="btn del" onclick="delItem('${it.id}')">✕</button>
+        <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
         <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
         <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
-        <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
-        <button class="btn del" onclick="delItem('${it.id}')">✕</button>
       </div>
     `;
     list.appendChild(div);
