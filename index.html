@@ -216,6 +216,7 @@
     <button onclick="openBackup()">💾 Sauvegarder les données (backup)</button>
     <button onclick="openRestore()">📥 Restaurer depuis une sauvegarde</button>
     <button class="danger" onclick="resetLocalData()">🗑 Réinitialiser les données locales</button>
+    <button onclick="openAbout()">ℹ️ À propos de l'application</button>
   </div>
   <div class="settingsInfo" id="settingsInfo"></div>
   <div class="row">
@@ -243,10 +244,26 @@
   </div>
 </dialog>
 
+<dialog id="aboutDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">À propos</label>
+  <div class="settingsInfo" style="font-size:14px; line-height:2;">
+    📦 <strong>Stock LCD</strong><br>
+    Version : <span id="aboutVersion"></span><br>
+    Dernière mise à jour : <span id="aboutUpdated"></span><br>
+    Développé pour Boulliwel Service
+  </div>
+  <div class="row">
+    <button class="cancel" onclick="aboutDlg.close()" style="flex:none; width:100%;">Fermer</button>
+  </div>
+</dialog>
+
 <script>
 const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const APP_VERSION = '2.2';
+const APP_UPDATED = '28/07/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -618,10 +635,14 @@ window.addEventListener('offline', () => setStatus('offline','Hors ligne — don
 
 setInterval(() => { if(hasPending() && navigator.onLine) trySync(); }, 15000);
 
-// --- Commande fournisseur (format tableau WhatsApp, largeur adaptée mobile) ---
+// --- Commande fournisseur (format tableau WhatsApp, une seule ligne par article) ---
 
 const orderDlg = document.getElementById('orderDlg');
-const ORDER_NAME_COL = 24; // largeur colonne "Article" (numéro inclus), pensée pour ne pas casser la ligne sur WhatsApp mobile
+
+// Colonnes volontairement très compactes : testé pour ne jamais revenir à la ligne
+// sur un écran de téléphone dans WhatsApp, même en bloc monospace (```).
+const NAME_COL = 11;
+const QTY_COL = 3;
 
 function center(str, width){
   str = String(str);
@@ -631,17 +652,24 @@ function center(str, width){
   return ' '.repeat(left) + str + ' '.repeat(right);
 }
 
-function orderLine(num, name, qty){
-  const label = `${num}. ${name}`;
-  let namePart;
-  if(label.length < ORDER_NAME_COL){
-    namePart = label + '.'.repeat(ORDER_NAME_COL - label.length);
-  } else {
-    namePart = label.slice(0, ORDER_NAME_COL - 1) + '.';
-  }
-  const qtyPart = String(qty).padStart(3, ' ');
-  const pricePart = '.'.repeat(5);
-  return `${namePart} ${qtyPart}  ${pricePart}`;
+// Si un article a plusieurs variantes séparées par des points (ex: "A04E. A03S. A02S"),
+// on ne garde que la première pour raccourcir la ligne, comme demandé.
+function shortName(name){
+  const first = String(name).split('.')[0].trim();
+  return first || name;
+}
+
+function fitName(name){
+  let n = shortName(name);
+  if(n.length > NAME_COL) n = n.slice(0, NAME_COL - 1) + '.';
+  return n.padEnd(NAME_COL, ' ');
+}
+
+function orderLine(num, name, qtyToOrder){
+  const numPart = String(num).padStart(2, ' ') + '.';
+  const namePart = fitName(name);
+  const qtyPart = String(qtyToOrder).padEnd(QTY_COL, ' ');
+  return `${numPart}${namePart}${qtyPart}...`;
 }
 
 function buildOrderText(){
@@ -651,15 +679,20 @@ function buildOrderText(){
     .filter(it => it.qty <= (it.threshold ?? defaultThreshold))
     .sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
 
+  const lineWidth = 3 + NAME_COL + QTY_COL + 3;
+
   let table = '```\n';
-  table += center(`COMMANDE ${now}`, ORDER_NAME_COL + 10) + '\n\n';
-  table += 'Article'.padEnd(ORDER_NAME_COL) + ' Qté  Prix\n';
+  table += center(`COMMANDE ${now}`, lineWidth) + '\n';
+  table += ' # '+ 'Article'.padEnd(NAME_COL) + 'Qté'.padEnd(QTY_COL) + 'Prix\n';
 
   if(toOrder.length === 0){
-    table += '\n(Aucun article au seuil d\'alerte)\n';
+    table += '(Aucun article au seuil d\'alerte)\n';
   } else {
     toOrder.forEach((it, i) => {
-      table += orderLine(i+1, it.name, it.qty) + '\n';
+      // Si le stock est à 0 (rouge), on commande le seuil configuré (commande minimale),
+      // pas "0" qui n'a pas de sens à commander.
+      const qtyToOrder = it.qty === 0 ? (it.threshold ?? defaultThreshold) : it.qty;
+      table += orderLine(i+1, it.name, qtyToOrder) + '\n';
     });
   }
   table += '```';
@@ -736,6 +769,14 @@ async function forceSync(){
   setStatus('syncing','Synchronisation forcée...');
   await trySync();
   openSettings();
+}
+
+const aboutDlg = document.getElementById('aboutDlg');
+function openAbout(){
+  document.getElementById('aboutVersion').textContent = APP_VERSION;
+  document.getElementById('aboutUpdated').textContent = APP_UPDATED;
+  settingsDlg.close();
+  aboutDlg.showModal();
 }
 
 // --- Sauvegarde / restauration ---
