@@ -679,11 +679,8 @@ function buildOrderText(){
     .filter(it => it.qty <= (it.threshold ?? defaultThreshold))
     .sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
 
-  const lineWidth = 3 + NAME_COL + QTY_COL + 3;
-
   let table = '```\n';
-  table += center(`COMMANDE ${now}`, lineWidth) + '\n';
-  table += ' # '+ 'Article'.padEnd(NAME_COL) + 'Qté'.padEnd(QTY_COL) + 'Prix\n';
+  table += ' # '+ 'Article'.padEnd(NAME_COL) + 'Qté'.padEnd(QTY_COL) + ' Prix\n';
 
   if(toOrder.length === 0){
     table += '(Aucun article au seuil d\'alerte)\n';
@@ -697,13 +694,7 @@ function buildOrderText(){
   }
   table += '```';
 
-  let txt = `📦 *Commande Stock* — ${now}\n\n${table}`;
-
-  const totalArticlesACommander = toOrder.length;
-  if(totalArticlesACommander > 0){
-    txt += `\n\n🔴 ${totalArticlesACommander} article(s) au seuil d'alerte ou épuisé(s).`;
-  }
-  txt += `\n\nMerci de remplir la colonne Prix. 🙏`;
+  const txt = `📦 *Commande Stock* — ${now}\n\n${table}`;
 
   document.getElementById('orderText').value = txt;
 }
