@@ -40,6 +40,16 @@
     border:1px solid var(--border); background:var(--card); color:var(--text);
     font-size:15px; margin-bottom:12px;
   }
+  .globalTotals{
+    display:flex; flex-wrap:wrap; gap:6px 14px;
+    font-size:11px; color:var(--muted); margin:0 0 12px 0; padding:0 2px;
+  }
+  .globalTotals b{color:var(--text); font-weight:600;}
+  .stickyHeader{
+    position:sticky; top:0; z-index:15;
+    background:var(--bg);
+    margin:0 -16px; padding:10px 16px 4px 16px;
+  }
   .tabsBar{display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px;}
   .tabBtn{
     padding:8px 16px; border-radius:20px; border:1px solid var(--border);
@@ -149,12 +159,15 @@
   <button class="actionBtn settings" onclick="openSettings()">⚙</button>
 </div>
 
-<div class="tabsBar" id="tabsBar"></div>
-
-<div class="toolbar">
-  <input class="search" id="search" placeholder="Rechercher un article...">
-  <button class="sortBtn active" id="sortBtn" onclick="toggleSort()">A→Z</button>
+<div class="stickyHeader">
+  <div class="tabsBar" id="tabsBar"></div>
+  <div class="toolbar">
+    <input class="search" id="search" placeholder="Rechercher un article...">
+    <button class="sortBtn active" id="sortBtn" onclick="toggleSort()">A→Z</button>
+  </div>
 </div>
+
+<div class="globalTotals" id="globalTotals"></div>
 
 <div id="list"></div>
 <div class="empty" id="emptyMsg" style="display:none;">Aucun article dans cette catégorie. Ajoutez-en un.</div>
@@ -216,7 +229,6 @@
     <button onclick="forceSync()">🔄 Forcer la synchronisation</button>
     <button onclick="openBackup()">💾 Sauvegarder les données (backup)</button>
     <button onclick="openRestore()">📥 Restaurer depuis une sauvegarde</button>
-    <button class="danger" onclick="resetLocalData()">🗑 Réinitialiser les données locales</button>
     <button onclick="openAbout()">ℹ️ À propos de l'application</button>
   </div>
   <div class="settingsInfo" id="settingsInfo"></div>
@@ -263,8 +275,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '2.3';
-const APP_UPDATED = '31/07/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '2.5';
+const APP_UPDATED = '17/08/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -323,12 +335,24 @@ function scheduleSync(delay = 600){
   syncTimer = setTimeout(trySync, delay);
 }
 
+let currentConnState = 'offline'; // reflète le dernier état RÉEL constaté (résultat de requête), pas navigator.onLine seul
 function setStatus(state, text){
+  currentConnState = state;
   const dot = document.getElementById('syncDot');
   const txt = document.getElementById('syncText');
   const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)'};
   dot.style.background = colors[state] || 'var(--muted)';
   txt.textContent = text;
+}
+
+// navigator.onLine n'est pas fiable partout (WebView Android, portails captifs...).
+// La seule vérité fiable est le résultat réel d'une requête réseau : on ne marque
+// "hors ligne" que si la requête a concrètement échoué pour une raison réseau.
+function isNetworkError(e){
+  if(!navigator.onLine) return true;
+  if(e instanceof TypeError) return true; // fetch échoue avec TypeError en cas de coupure réseau
+  const msg = (e && e.message) ? String(e.message).toLowerCase() : '';
+  return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch');
 }
 
 function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
@@ -342,10 +366,10 @@ function hasPending(){
 function getCategories(){
   const set = new Set([DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY]);
   items.forEach(it => set.add(it.category || DEFAULT_CATEGORY));
-  const others = [...set]
-    .filter(c => c !== DEFAULT_CATEGORY && c !== PERSONAL_CATEGORY_KEY)
+  const sorted = [...set]
+    .filter(c => c !== PERSONAL_CATEGORY_KEY)
     .sort((a,b) => categoryLabel(a).localeCompare(categoryLabel(b), 'fr'));
-  return [DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY, ...others];
+  return [...sorted, PERSONAL_CATEGORY_KEY];
 }
 
 function renderTabs(){
@@ -390,6 +414,14 @@ function onCategoryChange(){
 
 // --- Mutations locales : toujours appliquées et mises en file avant toute tentative réseau ---
 
+// --- Anti-doublons : un article est un doublon si Nom (normalisé) + Catégorie sont identiques ---
+// (la Référence seule ne suffit pas à distinguer deux fiches, cf. règle validée)
+function normName(s){ return (s || '').trim().toLowerCase(); }
+function findDuplicate(name, category, excludeId){
+  const n = normName(name);
+  return items.find(it => it.id !== excludeId && normName(it.name) === n && (it.category || DEFAULT_CATEGORY) === category);
+}
+
 function addItemLocal(name, ref, qty, category, threshold, price){
   const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
   const payload = {name, ref, qty, category, threshold, price};
@@ -428,9 +460,7 @@ function updateItemLocal(id, name, ref, qty, category, threshold, price){
   scheduleSync();
 }
 
-function delItem(id){
-  const it = items.find(x => x.id === id);
-  if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
+function removeItemLocal(id){
   items = items.filter(x => x.id !== id);
   cacheLocal(); renderTabs(); render();
   if(String(id).startsWith('temp-')){
@@ -443,10 +473,15 @@ function delItem(id){
   scheduleSync();
 }
 
+function delItem(id){
+  const it = items.find(x => x.id === id);
+  if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
+  removeItemLocal(id);
+}
+
 // --- Synchronisation : ne retire une opération de la file qu'après confirmation du serveur ---
 
 async function trySync(){
-  if(!navigator.onLine){ setStatus('offline','Hors ligne — sera synchronisé'); return; }
   if(syncing) return;
   syncing = true;
   try{
@@ -457,10 +492,28 @@ async function trySync(){
 
       for(const tempId of Object.keys(pending.inserts)){
         const payload = pending.inserts[tempId];
-        const { data, error } = await sb.from('items').insert(payload).select();
-        if(error) throw error;
+        let { data, error } = await sb.from('items').insert(payload).select();
+
+        if(error && error.code === '23505'){
+          // Doublon détecté au niveau serveur : un autre appareil a créé la même fiche
+          // (même Nom + Catégorie) pendant que celui-ci était hors-ligne.
+          // On fusionne au lieu de perdre la quantité saisie ici.
+          const { data: existing, error: findErr } = await sb.from('items')
+            .select('*').ilike('name', payload.name).eq('category', payload.category).limit(1);
+          if(findErr) throw findErr;
+          if(!existing || !existing[0]) throw error; // cas anormal, on remonte l'erreur d'origine
+          const merged = existing[0].qty + payload.qty;
+          const { data: updated, error: updErr } = await sb.from('items')
+            .update({ qty: merged }).eq('id', existing[0].id).select();
+          if(updErr) throw updErr;
+          data = updated;
+          error = null;
+        } else if(error){
+          throw error;
+        }
+
         const it = items.find(x => x.id === tempId);
-        if(it){ it.id = data[0].id; it.created_at = data[0].created_at; }
+        if(it){ it.id = data[0].id; it.created_at = data[0].created_at; it.qty = data[0].qty; }
         if(JSON.stringify(pending.inserts[tempId]) === JSON.stringify(payload)){
           delete pending.inserts[tempId];
         } else {
@@ -499,7 +552,12 @@ async function trySync(){
     }
   }catch(e){
     console.log('sync error', e);
-    setStatus('offline','Hors ligne — sera synchronisé');
+    if(isNetworkError(e)){
+      setStatus('offline','Hors ligne — sera synchronisé');
+    } else {
+      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
+      scheduleSync(3000);
+    }
   }finally{
     syncing = false;
   }
@@ -516,14 +574,18 @@ async function refreshFromServer(){
 
 async function loadFromSupabase(){
   renderTabs(); render();
-  if(!navigator.onLine){ setStatus('offline','Hors ligne — données locales'); return; }
   if(hasPending()){ await trySync(); return; }
   setStatus('syncing','Synchronisation...');
   try{
     await refreshFromServer();
     setStatus('online','Synchronisé');
   }catch(e){
-    setStatus('offline','Hors ligne — données locales');
+    if(isNetworkError(e)){
+      setStatus('offline','Hors ligne — données locales');
+    } else {
+      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
+      scheduleSync(3000);
+    }
   }
 }
 
@@ -567,6 +629,15 @@ function render(){
   const totalValue = categoryItems.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
   document.getElementById('totalValue').textContent = totalValue > 0 ? totalValue.toLocaleString('fr-FR') : '—';
   document.getElementById('totalValueLabel').textContent = `valeur ${activeLabel.toLowerCase()} (GNF)`;
+
+  // Total 1 : valeur globale hors Stock Perso STD — Total 2 : valeur globale, toutes catégories confondues
+  const grandTotal1 = items
+    .filter(it => !isPersonalCategory(it.category || DEFAULT_CATEGORY))
+    .reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
+  const grandTotal2 = items.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
+  document.getElementById('globalTotals').innerHTML =
+    `<span>Valeur totale du stock (hors ${getPersonalLabel().toLowerCase()}) : <b>${grandTotal1.toLocaleString('fr-FR')} GNF</b></span>` +
+    `<span>Valeur totale du stock (toutes catégories) : <b>${grandTotal2.toLocaleString('fr-FR')} GNF</b></span>`;
 
   filtered.forEach((it) => {
     const threshold = it.threshold ?? defaultThreshold;
@@ -639,6 +710,24 @@ function saveItem(){
   }
 
   if(!name) return alert('Entrez un nom d\'article');
+
+  const dup = findDuplicate(name, category, editingId);
+  if(dup){
+    const mergedQty = dup.qty + qty;
+    const merge = confirm(
+      `Un article "${name}" existe déjà dans cette catégorie (quantité actuelle : ${dup.qty}).\n\n` +
+      `Fusionner en portant la quantité à ${mergedQty} au lieu de créer un doublon ?`
+    );
+    if(!merge) return; // formulaire laissé ouvert pour correction
+    dlg.close();
+    changeQty(dup.id, qty);
+    if(editingId && editingId !== dup.id) removeItemLocal(editingId);
+    editingId = null;
+    activeCategory = category;
+    localStorage.setItem('stock_lcd_active_tab', category);
+    return;
+  }
+
   dlg.close();
 
   if(editingId){
@@ -660,7 +749,7 @@ document.getElementById('search').addEventListener('input', render);
 window.addEventListener('online', () => { setStatus('syncing','Reconnexion...'); trySync(); });
 window.addEventListener('offline', () => setStatus('offline','Hors ligne — données locales'));
 
-setInterval(() => { if(hasPending() && navigator.onLine) trySync(); }, 15000);
+setInterval(() => { if(hasPending()) trySync(); }, 15000);
 
 // --- Commande fournisseur (format tableau WhatsApp, une seule ligne par article) ---
 
@@ -772,7 +861,7 @@ function openSettings(){
   document.getElementById('settingsInfo').innerHTML =
     `Articles (toutes catégories) : ${items.length} · Total : ${total}<br>` +
     `En attente de synchronisation : ${pendingCount}<br>` +
-    `Connexion : ${navigator.onLine ? 'en ligne' : 'hors ligne'}`;
+    `Connexion : ${currentConnState === 'offline' ? 'hors ligne' : 'en ligne'}`;
   settingsDlg.showModal();
 }
 
@@ -847,17 +936,6 @@ function doRestore(){
     }
   });
   restoreDlg.close();
-}
-
-function resetLocalData(){
-  if(!confirm('Ceci efface toutes les données LOCALES de cet appareil (le stock sur Supabase ne sera pas touché). Continuer ?')) return;
-  if(!confirm('Confirme une seconde fois : es-tu sûr de vouloir réinitialiser les données locales ?')) return;
-  items = [];
-  pending = {inserts:{}, updates:{}, deletes:[]};
-  cacheLocal(); cachePending();
-  settingsDlg.close();
-  renderTabs(); render();
-  loadFromSupabase();
 }
 
 renderTabs();
