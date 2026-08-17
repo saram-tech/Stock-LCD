@@ -140,7 +140,7 @@
   </div>
   <div class="summary value">
     <div class="big" id="totalValue">0</div>
-    <div class="label">valeur du stock (GNF)</div>
+    <div class="label" id="totalValueLabel">valeur du stock (GNF)</div>
   </div>
 </div>
 
@@ -195,7 +195,7 @@
 
 <dialog id="orderDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:8px;">Commande fournisseur</label>
-  <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Articles au seuil d'alerte ou épuisés, tous types confondus. Tu peux modifier le texte avant d'envoyer.</p>
+  <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Articles au seuil d'alerte ou épuisés, tous types confondus (hors onglet stock perso). Tu peux modifier le texte avant d'envoyer.</p>
   <textarea id="orderText" class="backupArea" style="min-height:260px;"></textarea>
   <div class="row" style="margin-bottom:10px;">
     <button class="cancel" onclick="copyOrderText()">📋 Copier</button>
@@ -212,6 +212,7 @@
     <button onclick="openOrderDlg(); settingsDlg.close();">📋 Commande fournisseur (WhatsApp)</button>
     <button onclick="toggleSort(); settingsDlg.close();">🔤 Trier A→Z / Z→A</button>
     <button onclick="editDefaultThreshold()">🎚 Seuil d'alerte par défaut : <span id="defThresholdLabel"></span></button>
+    <button onclick="editPersonalLabel()">✏️ Nom de l'onglet stock perso : <span id="personalLabelDisplay"></span></button>
     <button onclick="forceSync()">🔄 Forcer la synchronisation</button>
     <button onclick="openBackup()">💾 Sauvegarder les données (backup)</button>
     <button onclick="openRestore()">📥 Restaurer depuis une sauvegarde</button>
@@ -262,12 +263,30 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '2.2';
-const APP_UPDATED = '28/07/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '2.3';
+const APP_UPDATED = '31/07/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
 const DEFAULT_CATEGORY = 'Écran';
+// Onglet spécial "stock perso" : identifiant interne FIXE, jamais affiché tel quel.
+// On stocke le nom affiché séparément, pour que renommer l'onglet ne casse jamais
+// le rattachement des articles ni l'exclusion des commandes / du total du stock.
+const PERSONAL_CATEGORY_KEY = '__stock_perso_std__';
+const PERSONAL_LABEL_KEY = 'stock_lcd_personal_label';
+function getPersonalLabel(){
+  return localStorage.getItem(PERSONAL_LABEL_KEY) || 'Stock perso STD';
+}
+function setPersonalLabel(label){
+  localStorage.setItem(PERSONAL_LABEL_KEY, label);
+}
+function isPersonalCategory(cat){
+  return cat === PERSONAL_CATEGORY_KEY;
+}
+// Convertit une clé de catégorie interne en libellé affiché à l'écran.
+function categoryLabel(cat){
+  return isPersonalCategory(cat) ? getPersonalLabel() : cat;
+}
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
 // pending = { inserts:{tempId:{...}}, updates:{id:{...}}, deletes:[ids] }
 let pending = JSON.parse(localStorage.getItem(PKEY) || 'null') || {inserts:{}, updates:{}, deletes:[]};
@@ -321,9 +340,12 @@ function hasPending(){
 // --- Catégories / onglets ---
 
 function getCategories(){
-  const set = new Set([DEFAULT_CATEGORY]);
+  const set = new Set([DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY]);
   items.forEach(it => set.add(it.category || DEFAULT_CATEGORY));
-  return [DEFAULT_CATEGORY, ...[...set].filter(c => c !== DEFAULT_CATEGORY).sort((a,b)=>a.localeCompare(b,'fr'))];
+  const others = [...set]
+    .filter(c => c !== DEFAULT_CATEGORY && c !== PERSONAL_CATEGORY_KEY)
+    .sort((a,b) => categoryLabel(a).localeCompare(categoryLabel(b), 'fr'));
+  return [DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY, ...others];
 }
 
 function renderTabs(){
@@ -334,7 +356,7 @@ function renderTabs(){
   cats.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'tabBtn' + (cat === activeCategory ? ' active' : '');
-    btn.textContent = cat;
+    btn.textContent = categoryLabel(cat);
     btn.onclick = () => {
       activeCategory = cat;
       localStorage.setItem('stock_lcd_active_tab', cat);
@@ -349,7 +371,7 @@ function populateCategorySelect(preselect){
   sel.innerHTML = '';
   getCategories().forEach(cat => {
     const opt = document.createElement('option');
-    opt.value = cat; opt.textContent = cat;
+    opt.value = cat; opt.textContent = categoryLabel(cat);
     sel.appendChild(opt);
   });
   const newOpt = document.createElement('option');
@@ -531,15 +553,20 @@ function render(){
   if(sortDir === 'desc') filtered.sort((a,b) => b.name.localeCompare(a.name, 'fr', {sensitivity:'base'}));
 
   document.getElementById('emptyMsg').style.display = filtered.length === 0 ? 'block' : 'none';
-  document.getElementById('appTitleTab').textContent = activeCategory;
-  document.getElementById('totalLabel').textContent = `${activeCategory.toLowerCase()} disponible(s)`;
+  const activeLabel = categoryLabel(activeCategory);
+  document.getElementById('appTitleTab').textContent = activeLabel;
+  document.getElementById('totalLabel').textContent = `${activeLabel.toLowerCase()} disponible(s)`;
 
+  // Le montant affiché est celui du type d'article (onglet) sélectionné, pas un total global.
+  // Ça isole automatiquement la valeur du stock perso : elle n'apparaît que sur son propre
+  // onglet et ne se mélange jamais à la valeur des autres catégories.
   const categoryItems = items.filter(it => (it.category || DEFAULT_CATEGORY) === activeCategory);
   const total = categoryItems.reduce((s,it) => s + it.qty, 0);
   document.getElementById('totalQty').textContent = total;
 
-  const totalValue = items.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
+  const totalValue = categoryItems.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
   document.getElementById('totalValue').textContent = totalValue > 0 ? totalValue.toLocaleString('fr-FR') : '—';
+  document.getElementById('totalValueLabel').textContent = `valeur ${activeLabel.toLowerCase()} (GNF)`;
 
   filtered.forEach((it) => {
     const threshold = it.threshold ?? defaultThreshold;
@@ -674,8 +701,10 @@ function orderLine(num, name, qtyToOrder){
 
 function buildOrderText(){
   const now = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\//g,'-');
-  // Déclenchement automatique : tout article à son seuil (ou épuisé) entre dans la commande, toutes catégories confondues
+  // Déclenchement automatique : tout article à son seuil (ou épuisé) entre dans la commande, toutes catégories confondues,
+  // SAUF l'onglet "stock perso" qui ne doit jamais générer de commande ni y figurer (même si son nom est renommé).
   const toOrder = items
+    .filter(it => !isPersonalCategory(it.category || DEFAULT_CATEGORY))
     .filter(it => it.qty <= (it.threshold ?? defaultThreshold))
     .sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
 
@@ -739,6 +768,7 @@ function openSettings(){
   const total = items.reduce((s,it) => s + it.qty, 0);
   const pendingCount = Object.keys(pending.inserts).length + Object.keys(pending.updates).length + pending.deletes.length;
   document.getElementById('defThresholdLabel').textContent = defaultThreshold;
+  document.getElementById('personalLabelDisplay').textContent = getPersonalLabel();
   document.getElementById('settingsInfo').innerHTML =
     `Articles (toutes catégories) : ${items.length} · Total : ${total}<br>` +
     `En attente de synchronisation : ${pendingCount}<br>` +
@@ -753,6 +783,17 @@ function editDefaultThreshold(){
   if(isNaN(n) || n < 0) return alert('Valeur invalide.');
   defaultThreshold = n;
   localStorage.setItem('stock_lcd_default_threshold', n);
+  openSettings();
+}
+
+function editPersonalLabel(){
+  const current = getPersonalLabel();
+  const v = prompt("Nouveau nom pour l'onglet stock perso :\n(renommer n'affecte que l'affichage : les articles restent isolés des commandes et du total du stock, même sous un autre nom)", current);
+  if(v === null) return;
+  const name = v.trim();
+  if(!name) return alert('Nom invalide.');
+  setPersonalLabel(name);
+  renderTabs(); render();
   openSettings();
 }
 
