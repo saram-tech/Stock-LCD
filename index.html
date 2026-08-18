@@ -35,6 +35,7 @@
   .summary .big{font-size:36px; font-weight:700; color:var(--green);}
   .summary.value .big{color:var(--gold); font-size:20px;}
   .summary .label{color:var(--muted); font-size:12px; margin-top:4px;}
+  .orderNum{color:var(--muted); font-size:11px; font-weight:400;}
   .search{
     width:100%; padding:12px 14px; border-radius:10px;
     border:1px solid var(--border); background:var(--card); color:var(--text);
@@ -103,6 +104,7 @@
     background:#111318; color:var(--text); font-size:14px; cursor:pointer;
   }
   .settingsList button.danger{color:var(--red); border-color:#3a1f22;}
+  .row button.danger{background:var(--red); color:#fff; border:none;}
   .settingsInfo{font-size:12px; color:var(--muted); margin:10px 0; line-height:1.6;}
   textarea.backupArea{
     width:100%; min-height:100px; margin-top:6px; margin-bottom:14px;
@@ -200,6 +202,9 @@
   <label>Prix d'achat unitaire (GNF, optionnel — rempli quand connu)</label>
   <input id="fPrice" type="number" min="0" step="any" placeholder="Sera rempli par le fournisseur">
 
+  <label>Numéro d'ordre (optionnel — pour un tri manuel)</label>
+  <input id="fOrder" type="number" min="0" placeholder="ex: 1, 2, 3...">
+
   <div class="row">
     <button class="cancel" onclick="dlg.close()">Annuler</button>
     <button class="save" onclick="saveItem()">Enregistrer</button>
@@ -219,6 +224,26 @@
   </div>
 </dialog>
 
+<dialog id="pinDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:10px;">Code PIN requis</label>
+  <p id="pinMsg" style="font-size:12px; color:var(--muted); margin-bottom:10px;"></p>
+  <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Code PIN" style="letter-spacing:6px; text-align:center; font-size:20px;">
+  <div class="row" style="margin-top:14px;">
+    <button class="cancel" id="pinCancelBtn">Annuler</button>
+    <button class="save" id="pinOkBtn">Valider</button>
+  </div>
+</dialog>
+
+<dialog id="lockDlg">
+  <label style="display:block; font-weight:700; font-size:18px; margin-bottom:6px; text-align:center;">🔒 Application verrouillée</label>
+  <p style="font-size:12px; color:var(--muted); margin-bottom:14px; text-align:center;">Entre ton code PIN pour continuer</p>
+  <input id="lockPinInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Code PIN" style="letter-spacing:6px; text-align:center; font-size:22px;">
+  <div class="row" style="margin-top:14px;">
+    <button class="save" id="lockOkBtn" style="width:100%;">Déverrouiller</button>
+  </div>
+  <button onclick="forgotPin()" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); font-size:12px; text-decoration:underline; cursor:pointer;">PIN oublié ?</button>
+</dialog>
+
 <dialog id="settingsDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">Paramètres</label>
   <div class="settingsList">
@@ -226,6 +251,9 @@
     <button onclick="toggleSort(); settingsDlg.close();">🔤 Trier A→Z / Z→A</button>
     <button onclick="editDefaultThreshold()">🎚 Seuil d'alerte par défaut : <span id="defThresholdLabel"></span></button>
     <button onclick="editPersonalLabel()">✏️ Nom de l'onglet stock perso : <span id="personalLabelDisplay"></span></button>
+    <button class="danger" onclick="openCatDelDlg()">🗑 Supprimer une catégorie</button>
+    <button onclick="editPin()">🔑 Définir / modifier le code PIN</button>
+    <button onclick="lockAppNow()">🔒 Verrouiller l'application maintenant</button>
     <button onclick="forceSync()">🔄 Forcer la synchronisation</button>
     <button onclick="openBackup()">💾 Sauvegarder les données (backup)</button>
     <button onclick="openRestore()">📥 Restaurer depuis une sauvegarde</button>
@@ -257,6 +285,16 @@
   </div>
 </dialog>
 
+<dialog id="catDelDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:6px;">Supprimer une catégorie</label>
+  <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">Action définitive : la catégorie et tous ses articles seront supprimés. "Écran" et l'onglet stock perso ne sont pas concernés.</p>
+  <select id="catDelSelect" style="width:100%; padding:10px; border-radius:8px; margin-bottom:14px;"></select>
+  <div class="row">
+    <button class="cancel" onclick="catDelDlg.close()">Annuler</button>
+    <button class="danger" onclick="confirmDeleteCategory()">🗑 Supprimer définitivement</button>
+  </div>
+</dialog>
+
 <dialog id="aboutDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">À propos</label>
   <div class="settingsInfo" style="font-size:14px; line-height:2;">
@@ -275,8 +313,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '2.5';
-const APP_UPDATED = '17/08/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '2.7';
+const APP_UPDATED = '18/08/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -422,10 +460,10 @@ function findDuplicate(name, category, excludeId){
   return items.find(it => it.id !== excludeId && normName(it.name) === n && (it.category || DEFAULT_CATEGORY) === category);
 }
 
-function addItemLocal(name, ref, qty, category, threshold, price){
+function addItemLocal(name, ref, qty, category, threshold, price, order){
   const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
-  const payload = {name, ref, qty, category, threshold, price};
-  items.push({id: tempId, ...payload, created_at: new Date().toISOString()});
+  const payload = {name, ref, qty, category, threshold, price, sort_order: order ?? null};
+  items.push({id: tempId, ...payload, order: order ?? null, created_at: new Date().toISOString()});
   pending.inserts[tempId] = payload;
   cacheLocal(); cachePending(); renderTabs(); render();
   scheduleSync();
@@ -445,12 +483,12 @@ function changeQty(id, delta){
   scheduleSync();
 }
 
-function updateItemLocal(id, name, ref, qty, category, threshold, price){
+function updateItemLocal(id, name, ref, qty, category, threshold, price, order){
   const it = items.find(x => x.id === id);
   if(!it) return;
-  Object.assign(it, {name, ref, qty, category, threshold, price});
+  Object.assign(it, {name, ref, qty, category, threshold, price, order: order ?? null});
   cacheLocal(); renderTabs(); render();
-  const payload = {name, ref, qty, category, threshold, price};
+  const payload = {name, ref, qty, category, threshold, price, sort_order: order ?? null};
   if(String(id).startsWith('temp-')){
     if(pending.inserts[id]) pending.inserts[id] = payload;
   } else {
@@ -473,9 +511,13 @@ function removeItemLocal(id){
   scheduleSync();
 }
 
-function delItem(id){
+async function delItem(id){
   const it = items.find(x => x.id === id);
   if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
+  if(hasPin()){
+    const ok = await askPin('Code PIN requis pour confirmer la suppression :');
+    if(!ok) return;
+  }
   removeItemLocal(id);
 }
 
@@ -567,7 +609,7 @@ async function refreshFromServer(){
   if(hasPending()) return;
   const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
   if(error) throw error;
-  items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold)}));
+  items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold), order: (it.sort_order ?? null)}));
   cacheLocal();
   renderTabs(); render();
 }
@@ -592,9 +634,9 @@ async function loadFromSupabase(){
 // --- Tri ---
 
 function toggleSort(){
-  sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  sortDir = sortDir === 'asc' ? 'desc' : (sortDir === 'desc' ? 'order' : 'asc');
   const btn = document.getElementById('sortBtn');
-  btn.textContent = sortDir === 'asc' ? 'A→Z' : 'Z→A';
+  btn.textContent = sortDir === 'asc' ? 'A→Z' : sortDir === 'desc' ? 'Z→A' : '№ Ordre';
   btn.classList.add('active');
   render();
 }
@@ -613,6 +655,12 @@ function render(){
 
   if(sortDir === 'asc') filtered.sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
   if(sortDir === 'desc') filtered.sort((a,b) => b.name.localeCompare(a.name, 'fr', {sensitivity:'base'}));
+  if(sortDir === 'order') filtered.sort((a,b) => {
+    const oa = (a.order === null || a.order === undefined) ? Infinity : a.order;
+    const ob = (b.order === null || b.order === undefined) ? Infinity : b.order;
+    if(oa !== ob) return oa - ob;
+    return a.name.localeCompare(b.name, 'fr', {sensitivity:'base'});
+  });
 
   document.getElementById('emptyMsg').style.display = filtered.length === 0 ? 'block' : 'none';
   const activeLabel = categoryLabel(activeCategory);
@@ -646,7 +694,7 @@ function render(){
     div.className = 'item';
     div.innerHTML = `
       <div class="info">
-        <div class="name">${it.name}</div>
+        <div class="name">${it.name}${(it.order !== null && it.order !== undefined && it.order !== '') ? ` <span class="orderNum">№${it.order}</span>` : ''}</div>
         <div class="ref">${it.ref || ''}</div>
         ${it.price ? `<div class="price">${Number(it.price).toLocaleString('fr-FR')} GNF/u</div>` : ''}
       </div>
@@ -675,6 +723,7 @@ function openAdd(){
   document.getElementById('fQty').value = 0;
   document.getElementById('fThreshold').value = defaultThreshold;
   document.getElementById('fPrice').value = '';
+  document.getElementById('fOrder').value = '';
   dlg.showModal();
 }
 
@@ -689,6 +738,7 @@ function openEdit(id){
   document.getElementById('fQty').value = it.qty;
   document.getElementById('fThreshold').value = it.threshold ?? defaultThreshold;
   document.getElementById('fPrice').value = it.price || '';
+  document.getElementById('fOrder').value = (it.order === null || it.order === undefined) ? '' : it.order;
   dlg.showModal();
 }
 
@@ -699,6 +749,8 @@ function saveItem(){
   const threshold = parseInt(document.getElementById('fThreshold').value);
   const priceRaw = document.getElementById('fPrice').value;
   const price = priceRaw !== '' ? parseFloat(priceRaw) : null;
+  const orderRaw = document.getElementById('fOrder').value;
+  const order = orderRaw !== '' ? parseInt(orderRaw) : null;
 
   const sel = document.getElementById('fCategory');
   let category;
@@ -731,9 +783,9 @@ function saveItem(){
   dlg.close();
 
   if(editingId){
-    updateItemLocal(editingId, name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price);
+    updateItemLocal(editingId, name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price, order);
   } else {
-    addItemLocal(name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price);
+    addItemLocal(name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price, order);
   }
   editingId = null;
   activeCategory = category;
@@ -906,7 +958,7 @@ const backupDlg = document.getElementById('backupDlg');
 const restoreDlg = document.getElementById('restoreDlg');
 
 function openBackup(){
-  const data = items.map(it => ({name: it.name, ref: it.ref || '', qty: it.qty, category: it.category || DEFAULT_CATEGORY, threshold: it.threshold ?? defaultThreshold, price: it.price || null}));
+  const data = items.map(it => ({name: it.name, ref: it.ref || '', qty: it.qty, category: it.category || DEFAULT_CATEGORY, threshold: it.threshold ?? defaultThreshold, price: it.price || null, order: (it.order === null || it.order === undefined) ? null : it.order}));
   document.getElementById('backupText').value = JSON.stringify(data);
   settingsDlg.close();
   backupDlg.showModal();
@@ -929,18 +981,221 @@ function doRestore(){
   let data;
   try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide.'); }
   if(!Array.isArray(data)) return alert('Texte de sauvegarde invalide.');
-  if(!confirm(`Ajouter ${data.length} article(s) depuis cette sauvegarde ?\n(Les articles existants ne seront pas supprimés.)`)) return;
+  if(!confirm(`Restaurer ${data.length} article(s) depuis cette sauvegarde ?\n(Les articles déjà existants seront fusionnés — quantités additionnées, aucun doublon créé.)`)) return;
+  let added = 0, merged = 0;
   data.forEach(it => {
-    if(it && it.name){
-      addItemLocal(cap(String(it.name)), String(it.ref||''), parseInt(it.qty)||0, cap(String(it.category||DEFAULT_CATEGORY)), parseInt(it.threshold)||defaultThreshold, it.price ? parseFloat(it.price) : null);
+    if(!it || !it.name) return;
+    const name = cap(String(it.name));
+    const category = cap(String(it.category || DEFAULT_CATEGORY));
+    const qty = parseInt(it.qty) || 0;
+    const dup = findDuplicate(name, category, null);
+    if(dup){
+      changeQty(dup.id, qty);
+      merged++;
+    } else {
+      addItemLocal(name, String(it.ref||''), qty, category, parseInt(it.threshold)||defaultThreshold, it.price ? parseFloat(it.price) : null, (it.order !== undefined && it.order !== null && it.order !== '') ? parseInt(it.order) : null);
+      added++;
     }
   });
   restoreDlg.close();
+  alert(`Restauration terminée : ${added} article(s) ajouté(s), ${merged} fusionné(s) avec des articles existants.`);
+}
+
+// --- Sécurité locale : code PIN, sans Supabase ---
+// Le PIN n'est jamais stocké en clair : seul son empreinte SHA-256 est conservée localement.
+const PIN_HASH_KEY = 'stock_lcd_pin_hash';
+const RECOVERY_HASH_KEY = 'stock_lcd_recovery_hash';
+
+async function hashWithSalt(salt, value){
+  const enc = new TextEncoder().encode(salt + ':' + value);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+async function hashPin(pin){ return hashWithSalt('stocklcd-pin', pin); }
+async function hashRecovery(code){ return hashWithSalt('stocklcd-recovery', (code || '').trim().toUpperCase()); }
+
+function hasPin(){ return !!localStorage.getItem(PIN_HASH_KEY); }
+function hasRecoveryCode(){ return !!localStorage.getItem(RECOVERY_HASH_KEY); }
+
+// Code de secours : 8 caractères, sans caractères ambigus (0/O, 1/I/L).
+// Régénéré à CHAQUE changement de PIN -> un ancien code de secours ne fonctionne plus après usage.
+function generateRecoveryCode(){
+  const charset = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => charset[b % charset.length]).join('');
+}
+
+async function setPinValue(pin){
+  localStorage.setItem(PIN_HASH_KEY, await hashPin(pin));
+  const recoveryCode = generateRecoveryCode();
+  localStorage.setItem(RECOVERY_HASH_KEY, await hashRecovery(recoveryCode));
+  return recoveryCode;
+}
+async function verifyPin(pin){
+  if(!hasPin()) return true; // aucun PIN configuré : rien à vérifier
+  return (await hashPin(pin || '')) === localStorage.getItem(PIN_HASH_KEY);
+}
+async function verifyRecoveryCode(code){
+  if(!hasRecoveryCode()) return false;
+  return (await hashRecovery(code)) === localStorage.getItem(RECOVERY_HASH_KEY);
+}
+
+const catDelDlg = document.getElementById('catDelDlg');
+function openCatDelDlg(){
+  const sel = document.getElementById('catDelSelect');
+  sel.innerHTML = '';
+  const deletable = getCategories().filter(c => c !== DEFAULT_CATEGORY && c !== PERSONAL_CATEGORY_KEY);
+  if(deletable.length === 0){
+    alert('Aucune catégorie supprimable : seules "Écran" et l\'onglet stock perso existent, tous deux protégés.');
+    return;
+  }
+  deletable.forEach(cat => {
+    const count = items.filter(it => (it.category || DEFAULT_CATEGORY) === cat).length;
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = `${categoryLabel(cat)} (${count} article${count > 1 ? 's' : ''})`;
+    sel.appendChild(opt);
+  });
+  settingsDlg.close();
+  catDelDlg.showModal();
+}
+
+async function confirmDeleteCategory(){
+  const cat = document.getElementById('catDelSelect').value;
+  if(!cat) return;
+  const label = categoryLabel(cat);
+  const toDelete = items.filter(it => (it.category || DEFAULT_CATEGORY) === cat);
+
+  // Avertissement
+  const step1 = confirm(
+    `⚠️ Supprimer la catégorie "${label}" ?\n\n` +
+    `${toDelete.length} article(s) seront supprimés DÉFINITIVEMENT avec elle. Cette action est irréversible.`
+  );
+  if(!step1) return;
+
+  // Confirmation
+  const step2 = confirm(`Confirme une seconde fois : supprimer "${label}" et ses ${toDelete.length} article(s) ?`);
+  if(!step2) return;
+
+  // Mot de passe de l'application
+  if(hasPin()){
+    const ok = await askPin(`Code PIN requis pour supprimer la catégorie "${label}" :`);
+    if(!ok) return;
+  }
+
+  toDelete.forEach(it => removeItemLocal(it.id));
+  catDelDlg.close();
+  if(activeCategory === cat){
+    activeCategory = DEFAULT_CATEGORY;
+    localStorage.setItem('stock_lcd_active_tab', DEFAULT_CATEGORY);
+  }
+  renderTabs(); render();
+  alert(`Catégorie "${label}" supprimée avec ${toDelete.length} article(s).`);
+}
+
+const pinDlg = document.getElementById('pinDlg');
+function askPin(message){
+  return new Promise(resolve => {
+    document.getElementById('pinMsg').textContent = message;
+    const input = document.getElementById('pinInput');
+    input.value = '';
+    pinDlg.showModal();
+    setTimeout(() => input.focus(), 50);
+    const okBtn = document.getElementById('pinOkBtn');
+    const cancelBtn = document.getElementById('pinCancelBtn');
+    function cleanup(result){
+      pinDlg.close();
+      okBtn.onclick = null; cancelBtn.onclick = null; input.onkeydown = null;
+      resolve(result);
+    }
+    okBtn.onclick = async () => {
+      if(await verifyPin(input.value.trim())) cleanup(true);
+      else { alert('Code PIN incorrect.'); input.value=''; input.focus(); }
+    };
+    cancelBtn.onclick = () => cleanup(false);
+    input.onkeydown = (e) => { if(e.key === 'Enter') okBtn.onclick(); };
+  });
+}
+
+async function promptSetNewPin(){
+  let p1 = prompt('Nouveau code PIN (4 à 8 chiffres) :');
+  if(p1 === null) return false;
+  p1 = p1.trim();
+  if(!/^\d{4,8}$/.test(p1)){ alert('Le code PIN doit contenir entre 4 et 8 chiffres.'); return false; }
+  const p2 = prompt('Confirme le nouveau code PIN :');
+  if(p2 === null) return false;
+  if(p2.trim() !== p1){ alert('Les deux codes ne correspondent pas.'); return false; }
+  const recoveryCode = await setPinValue(p1);
+  // Affiché UNE SEULE FOIS : à noter par l'utilisateur lui-même (papier, gestionnaire de mots de passe...).
+  // Jamais stocké ailleurs qu'en local, sous forme hachée. Devient invalide dès le prochain changement de PIN.
+  prompt(
+    'Code PIN enregistré ✅\n\nCode de secours (à noter précieusement — indispensable en cas de PIN oublié, ne sera plus jamais affiché) :',
+    recoveryCode
+  );
+  return true;
+}
+
+async function editPin(){
+  if(hasPin()){
+    const ok = await askPin('Entre le code PIN actuel pour le modifier :');
+    if(!ok) return;
+  }
+  if(await promptSetNewPin()){
+    alert('Le PIN sera demandé pour verrouiller l\'app et confirmer les suppressions.');
+    openSettings();
+  }
+}
+
+// --- Verrouillage plein écran de l'application ---
+const lockDlg = document.getElementById('lockDlg');
+lockDlg.addEventListener('cancel', e => e.preventDefault()); // empêche la fermeture via Échap
+document.getElementById('lockOkBtn').onclick = async () => {
+  const input = document.getElementById('lockPinInput');
+  if(await verifyPin(input.value.trim())){ lockDlg.close(); input.value=''; }
+  else { alert('Code PIN incorrect.'); input.value=''; input.focus(); }
+};
+document.getElementById('lockPinInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('lockOkBtn').click();
+});
+
+function showLock(){
+  document.getElementById('lockPinInput').value = '';
+  lockDlg.showModal();
+  setTimeout(() => document.getElementById('lockPinInput').focus(), 50);
+}
+
+function lockAppNow(){
+  if(!hasPin()){ alert('Définis d\'abord un code PIN (bouton "🔑 Définir / modifier le code PIN") pour pouvoir verrouiller l\'application.'); return; }
+  settingsDlg.close();
+  showLock();
+}
+
+async function forgotPin(){
+  if(!hasRecoveryCode()){
+    alert('Aucun code de secours n\'a été enregistré sur cet appareil : impossible de réinitialiser le PIN sans lui.');
+    return;
+  }
+  const code = prompt('Entre ton code de secours (8 caractères) :');
+  if(code === null) return;
+  if(!(await verifyRecoveryCode(code))){
+    alert('Code de secours incorrect.');
+    return;
+  }
+  lockDlg.close();
+  alert('Code de secours valide ✅ Choisis immédiatement un nouveau code PIN.');
+  if(!(await promptSetNewPin())){
+    // Pas de nouveau PIN défini : l'app reste verrouillée par sécurité (ancien PIN toujours actif).
+    showLock();
+  }
 }
 
 renderTabs();
 render();
 loadFromSupabase();
+
+// Verrouillage automatique à chaque lancement/rechargement si un code PIN est configuré
+if(hasPin()) showLock();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
