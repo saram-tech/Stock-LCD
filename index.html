@@ -46,6 +46,11 @@
     font-size:11px; color:var(--muted); margin:0 0 12px 0; padding:0 2px;
   }
   .globalTotals b{color:var(--text); font-weight:600;}
+  .catInfo{
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:12px 14px; margin-bottom:12px; font-size:12px; line-height:1.5; color:var(--muted);
+  }
+  .catInfo b{display:block; color:var(--text); font-size:13px; margin-bottom:4px;}
   .stickyHeader{
     position:sticky; top:0; z-index:15;
     background:var(--bg);
@@ -139,29 +144,32 @@
 </head>
 <body>
 
-<h1>📦 Stock <span id="appTitleTab">LCD</span></h1>
-<div id="syncStatus" style="font-size:12px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-  <span id="syncDot" style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
-  <span id="syncText">Connexion...</span>
-</div>
-
-<div class="summaryRow">
-  <div class="summary">
-    <div class="big" id="totalQty">0</div>
-    <div class="label" id="totalLabel">disponible(s)</div>
-  </div>
-  <div class="summary value">
-    <div class="big" id="totalValue">0</div>
-    <div class="label" id="totalValueLabel">valeur du stock (GNF)</div>
-  </div>
-</div>
-
-<div class="headerBtns">
-  <button class="actionBtn whatsapp" onclick="openOrderDlg()">📋 Commande fournisseur</button>
-  <button class="actionBtn settings" onclick="openSettings()">⚙</button>
-</div>
-
 <div class="stickyHeader">
+  <h1>📦 Stock <span id="appTitleTab">LCD</span></h1>
+  <div id="syncStatus" style="font-size:12px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+    <span id="syncDot" style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
+    <span id="syncText">Connexion...</span>
+  </div>
+
+  <div class="summaryRow">
+    <div class="summary">
+      <div class="big" id="totalQty">0</div>
+      <div class="label" id="totalLabel">disponible(s)</div>
+    </div>
+    <div class="summary value">
+      <div class="big" id="totalValue">0</div>
+      <div class="label" id="totalValueLabel">valeur du stock (GNF)</div>
+    </div>
+  </div>
+
+  <div class="headerBtns">
+    <button class="actionBtn whatsapp" onclick="openOrderDlg()">📋 Commande fournisseur</button>
+    <button class="actionBtn settings" onclick="openSettings()">⚙</button>
+    <button class="actionBtn settings" onclick="lockAppNow()" title="Déconnexion">🚪</button>
+  </div>
+
+  <div class="globalTotals" id="globalTotals"></div>
+
   <div class="tabsBar" id="tabsBar"></div>
   <div class="toolbar">
     <input class="search" id="search" placeholder="Rechercher un article...">
@@ -169,7 +177,8 @@
   </div>
 </div>
 
-<div class="globalTotals" id="globalTotals"></div>
+
+<div class="catInfo" id="catInfo" style="display:none;"></div>
 
 <div id="list"></div>
 <div class="empty" id="emptyMsg" style="display:none;">Aucun article dans cette catégorie. Ajoutez-en un.</div>
@@ -202,9 +211,6 @@
   <label>Prix d'achat unitaire (GNF, optionnel — rempli quand connu)</label>
   <input id="fPrice" type="number" min="0" step="any" placeholder="Sera rempli par le fournisseur">
 
-  <label>Numéro d'ordre (optionnel — pour un tri manuel)</label>
-  <input id="fOrder" type="number" min="0" placeholder="ex: 1, 2, 3...">
-
   <div class="row">
     <button class="cancel" onclick="dlg.close()">Annuler</button>
     <button class="save" onclick="saveItem()">Enregistrer</button>
@@ -227,7 +233,7 @@
 <dialog id="pinDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:10px;">Code PIN requis</label>
   <p id="pinMsg" style="font-size:12px; color:var(--muted); margin-bottom:10px;"></p>
-  <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Code PIN" style="letter-spacing:6px; text-align:center; font-size:20px;">
+  <input id="pinInput" type="password" placeholder="Code PIN" style="letter-spacing:6px; text-align:center; font-size:20px;">
   <div class="row" style="margin-top:14px;">
     <button class="cancel" id="pinCancelBtn">Annuler</button>
     <button class="save" id="pinOkBtn">Valider</button>
@@ -237,7 +243,7 @@
 <dialog id="lockDlg">
   <label style="display:block; font-weight:700; font-size:18px; margin-bottom:6px; text-align:center;">🔒 Application verrouillée</label>
   <p style="font-size:12px; color:var(--muted); margin-bottom:14px; text-align:center;">Entre ton code PIN pour continuer</p>
-  <input id="lockPinInput" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="Code PIN" style="letter-spacing:6px; text-align:center; font-size:22px;">
+  <input id="lockPinInput" type="password" placeholder="Code PIN" style="letter-spacing:6px; text-align:center; font-size:22px;">
   <div class="row" style="margin-top:14px;">
     <button class="save" id="lockOkBtn" style="width:100%;">Déverrouiller</button>
   </div>
@@ -251,6 +257,7 @@
     <button onclick="toggleSort(); settingsDlg.close();">🔤 Trier A→Z / Z→A</button>
     <button onclick="editDefaultThreshold()">🎚 Seuil d'alerte par défaut : <span id="defThresholdLabel"></span></button>
     <button onclick="editPersonalLabel()">✏️ Nom de l'onglet stock perso : <span id="personalLabelDisplay"></span></button>
+    <button onclick="editMonCompteLabel()">✏️ Nom de l'onglet compte : <span id="monCompteLabelDisplay"></span></button>
     <button class="danger" onclick="openCatDelDlg()">🗑 Supprimer une catégorie</button>
     <button onclick="editPin()">🔑 Définir / modifier le code PIN</button>
     <button onclick="lockAppNow()">🔒 Verrouiller l'application maintenant</button>
@@ -313,7 +320,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '2.7';
+const APP_VERSION = '2.9';
 const APP_UPDATED = '18/08/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -333,9 +340,31 @@ function setPersonalLabel(label){
 function isPersonalCategory(cat){
   return cat === PERSONAL_CATEGORY_KEY;
 }
+
+// Onglet spécial "MON COMPTE" : gère l'argent/capital (transferts, crédit, dépôts, retraits
+// mobile money, autres fonds de travail/services) — isolé de tous les montants de stock.
+// Même principe : identifiant interne fixe, nom affiché séparé et modifiable.
+const MON_COMPTE_KEY = '__mon_compte__';
+const MON_COMPTE_LABEL_KEY = 'stock_lcd_moncompte_label';
+function getMonCompteLabel(){
+  return localStorage.getItem(MON_COMPTE_LABEL_KEY) || 'MON COMPTE';
+}
+function setMonCompteLabel(label){
+  localStorage.setItem(MON_COMPTE_LABEL_KEY, label);
+}
+function isMonCompteCategory(cat){
+  return cat === MON_COMPTE_KEY;
+}
+// Catégories dont le montant doit toujours rester isolé des totaux "stock" (perso ET compte).
+function isIsolatedCategory(cat){
+  return isPersonalCategory(cat) || isMonCompteCategory(cat);
+}
+
 // Convertit une clé de catégorie interne en libellé affiché à l'écran.
 function categoryLabel(cat){
-  return isPersonalCategory(cat) ? getPersonalLabel() : cat;
+  if(isPersonalCategory(cat)) return getPersonalLabel();
+  if(isMonCompteCategory(cat)) return getMonCompteLabel();
+  return cat;
 }
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
 // pending = { inserts:{tempId:{...}}, updates:{id:{...}}, deletes:[ids] }
@@ -402,12 +431,12 @@ function hasPending(){
 // --- Catégories / onglets ---
 
 function getCategories(){
-  const set = new Set([DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY]);
+  const set = new Set([DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY, MON_COMPTE_KEY]);
   items.forEach(it => set.add(it.category || DEFAULT_CATEGORY));
   const sorted = [...set]
-    .filter(c => c !== PERSONAL_CATEGORY_KEY)
+    .filter(c => c !== PERSONAL_CATEGORY_KEY && c !== MON_COMPTE_KEY)
     .sort((a,b) => categoryLabel(a).localeCompare(categoryLabel(b), 'fr'));
-  return [...sorted, PERSONAL_CATEGORY_KEY];
+  return [...sorted, PERSONAL_CATEGORY_KEY, MON_COMPTE_KEY];
 }
 
 function renderTabs(){
@@ -460,10 +489,10 @@ function findDuplicate(name, category, excludeId){
   return items.find(it => it.id !== excludeId && normName(it.name) === n && (it.category || DEFAULT_CATEGORY) === category);
 }
 
-function addItemLocal(name, ref, qty, category, threshold, price, order){
+function addItemLocal(name, ref, qty, category, threshold, price){
   const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
-  const payload = {name, ref, qty, category, threshold, price, sort_order: order ?? null};
-  items.push({id: tempId, ...payload, order: order ?? null, created_at: new Date().toISOString()});
+  const payload = {name, ref, qty, category, threshold, price};
+  items.push({id: tempId, ...payload, created_at: new Date().toISOString()});
   pending.inserts[tempId] = payload;
   cacheLocal(); cachePending(); renderTabs(); render();
   scheduleSync();
@@ -483,12 +512,12 @@ function changeQty(id, delta){
   scheduleSync();
 }
 
-function updateItemLocal(id, name, ref, qty, category, threshold, price, order){
+function updateItemLocal(id, name, ref, qty, category, threshold, price){
   const it = items.find(x => x.id === id);
   if(!it) return;
-  Object.assign(it, {name, ref, qty, category, threshold, price, order: order ?? null});
+  Object.assign(it, {name, ref, qty, category, threshold, price});
   cacheLocal(); renderTabs(); render();
-  const payload = {name, ref, qty, category, threshold, price, sort_order: order ?? null};
+  const payload = {name, ref, qty, category, threshold, price};
   if(String(id).startsWith('temp-')){
     if(pending.inserts[id]) pending.inserts[id] = payload;
   } else {
@@ -609,7 +638,7 @@ async function refreshFromServer(){
   if(hasPending()) return;
   const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
   if(error) throw error;
-  items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold), order: (it.sort_order ?? null)}));
+  items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold)}));
   cacheLocal();
   renderTabs(); render();
 }
@@ -634,9 +663,9 @@ async function loadFromSupabase(){
 // --- Tri ---
 
 function toggleSort(){
-  sortDir = sortDir === 'asc' ? 'desc' : (sortDir === 'desc' ? 'order' : 'asc');
+  sortDir = sortDir === 'asc' ? 'desc' : 'asc';
   const btn = document.getElementById('sortBtn');
-  btn.textContent = sortDir === 'asc' ? 'A→Z' : sortDir === 'desc' ? 'Z→A' : '№ Ordre';
+  btn.textContent = sortDir === 'asc' ? 'A→Z' : 'Z→A';
   btn.classList.add('active');
   render();
 }
@@ -655,12 +684,6 @@ function render(){
 
   if(sortDir === 'asc') filtered.sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
   if(sortDir === 'desc') filtered.sort((a,b) => b.name.localeCompare(a.name, 'fr', {sensitivity:'base'}));
-  if(sortDir === 'order') filtered.sort((a,b) => {
-    const oa = (a.order === null || a.order === undefined) ? Infinity : a.order;
-    const ob = (b.order === null || b.order === undefined) ? Infinity : b.order;
-    if(oa !== ob) return oa - ob;
-    return a.name.localeCompare(b.name, 'fr', {sensitivity:'base'});
-  });
 
   document.getElementById('emptyMsg').style.display = filtered.length === 0 ? 'block' : 'none';
   const activeLabel = categoryLabel(activeCategory);
@@ -674,18 +697,44 @@ function render(){
   const total = categoryItems.reduce((s,it) => s + it.qty, 0);
   document.getElementById('totalQty').textContent = total;
 
+  // Numéro d'ordre 100% automatique : rang alphabétique (A→Z) de l'article dans sa catégorie,
+  // de 1 à x. Toujours recalculé, s'applique donc à tous les articles existants ET futurs sans réglage manuel.
+  const alphaRank = new Map(
+    [...categoryItems]
+      .sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}))
+      .map((it, idx) => [it.id, idx + 1])
+  );
+
   const totalValue = categoryItems.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
   document.getElementById('totalValue').textContent = totalValue > 0 ? totalValue.toLocaleString('fr-FR') : '—';
   document.getElementById('totalValueLabel').textContent = `valeur ${activeLabel.toLowerCase()} (GNF)`;
 
-  // Total 1 : valeur globale hors Stock Perso STD — Total 2 : valeur globale, toutes catégories confondues
+  const catInfo = document.getElementById('catInfo');
+  if(isMonCompteCategory(activeCategory)){
+    catInfo.style.display = 'block';
+    catInfo.innerHTML =
+      `<b>ℹ️ ${activeLabel}</b>` +
+      `Cet onglet gère l'argent et le capital des transactions : transferts, crédits, dépôts et retraits ` +
+      `(opérations mobile money / téléphoniques), ainsi que les autres fonds de travail et de services. ` +
+      `Son montant est totalement isolé des totaux du stock et n'apparaît jamais dans la commande fournisseur.`;
+  } else {
+    catInfo.style.display = 'none';
+  }
+
+  // Total 1 : valeur du stock "opérationnel" pur — hors Stock Perso STD ET hors MON COMPTE.
+  // Total 2 : toutes les catégories de stock (Stock Perso STD inclus) — MON COMPTE reste isolé.
+  // Total 3 : montant général, cette fois MON COMPTE inclus (seul total qui l'intègre).
   const grandTotal1 = items
-    .filter(it => !isPersonalCategory(it.category || DEFAULT_CATEGORY))
+    .filter(it => !isIsolatedCategory(it.category || DEFAULT_CATEGORY))
     .reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
-  const grandTotal2 = items.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
+  const grandTotal2 = items
+    .filter(it => !isMonCompteCategory(it.category || DEFAULT_CATEGORY))
+    .reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
+  const grandTotal3 = items.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
   document.getElementById('globalTotals').innerHTML =
-    `<span>Valeur totale du stock (hors ${getPersonalLabel().toLowerCase()}) : <b>${grandTotal1.toLocaleString('fr-FR')} GNF</b></span>` +
-    `<span>Valeur totale du stock (toutes catégories) : <b>${grandTotal2.toLocaleString('fr-FR')} GNF</b></span>`;
+    `<span>Valeur totale du stock (hors ${getPersonalLabel().toLowerCase()} et hors ${getMonCompteLabel().toLowerCase()}) : <b>${grandTotal1.toLocaleString('fr-FR')} GNF</b></span>` +
+    `<span>Valeur totale du stock (toutes catégories, hors ${getMonCompteLabel().toLowerCase()}) : <b>${grandTotal2.toLocaleString('fr-FR')} GNF</b></span>` +
+    `<span>Valeur générale (${getMonCompteLabel().toLowerCase()} inclus) : <b>${grandTotal3.toLocaleString('fr-FR')} GNF</b></span>`;
 
   filtered.forEach((it) => {
     const threshold = it.threshold ?? defaultThreshold;
@@ -694,7 +743,7 @@ function render(){
     div.className = 'item';
     div.innerHTML = `
       <div class="info">
-        <div class="name">${it.name}${(it.order !== null && it.order !== undefined && it.order !== '') ? ` <span class="orderNum">№${it.order}</span>` : ''}</div>
+        <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
         <div class="ref">${it.ref || ''}</div>
         ${it.price ? `<div class="price">${Number(it.price).toLocaleString('fr-FR')} GNF/u</div>` : ''}
       </div>
@@ -723,7 +772,6 @@ function openAdd(){
   document.getElementById('fQty').value = 0;
   document.getElementById('fThreshold').value = defaultThreshold;
   document.getElementById('fPrice').value = '';
-  document.getElementById('fOrder').value = '';
   dlg.showModal();
 }
 
@@ -738,7 +786,6 @@ function openEdit(id){
   document.getElementById('fQty').value = it.qty;
   document.getElementById('fThreshold').value = it.threshold ?? defaultThreshold;
   document.getElementById('fPrice').value = it.price || '';
-  document.getElementById('fOrder').value = (it.order === null || it.order === undefined) ? '' : it.order;
   dlg.showModal();
 }
 
@@ -749,8 +796,6 @@ function saveItem(){
   const threshold = parseInt(document.getElementById('fThreshold').value);
   const priceRaw = document.getElementById('fPrice').value;
   const price = priceRaw !== '' ? parseFloat(priceRaw) : null;
-  const orderRaw = document.getElementById('fOrder').value;
-  const order = orderRaw !== '' ? parseInt(orderRaw) : null;
 
   const sel = document.getElementById('fCategory');
   let category;
@@ -783,9 +828,9 @@ function saveItem(){
   dlg.close();
 
   if(editingId){
-    updateItemLocal(editingId, name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price, order);
+    updateItemLocal(editingId, name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price);
   } else {
-    addItemLocal(name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price, order);
+    addItemLocal(name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price);
   }
   editingId = null;
   activeCategory = category;
@@ -843,9 +888,9 @@ function orderLine(num, name, qtyToOrder){
 function buildOrderText(){
   const now = new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\//g,'-');
   // Déclenchement automatique : tout article à son seuil (ou épuisé) entre dans la commande, toutes catégories confondues,
-  // SAUF l'onglet "stock perso" qui ne doit jamais générer de commande ni y figurer (même si son nom est renommé).
+  // SAUF les onglets "stock perso" et "MON COMPTE" (fonds/argent, pas du stock physique) — même si leurs noms sont renommés.
   const toOrder = items
-    .filter(it => !isPersonalCategory(it.category || DEFAULT_CATEGORY))
+    .filter(it => !isIsolatedCategory(it.category || DEFAULT_CATEGORY))
     .filter(it => it.qty <= (it.threshold ?? defaultThreshold))
     .sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
 
@@ -910,6 +955,7 @@ function openSettings(){
   const pendingCount = Object.keys(pending.inserts).length + Object.keys(pending.updates).length + pending.deletes.length;
   document.getElementById('defThresholdLabel').textContent = defaultThreshold;
   document.getElementById('personalLabelDisplay').textContent = getPersonalLabel();
+  document.getElementById('monCompteLabelDisplay').textContent = getMonCompteLabel();
   document.getElementById('settingsInfo').innerHTML =
     `Articles (toutes catégories) : ${items.length} · Total : ${total}<br>` +
     `En attente de synchronisation : ${pendingCount}<br>` +
@@ -938,6 +984,17 @@ function editPersonalLabel(){
   openSettings();
 }
 
+function editMonCompteLabel(){
+  const current = getMonCompteLabel();
+  const v = prompt("Nouveau nom pour l'onglet compte :\n(renommer n'affecte que l'affichage : ce montant reste isolé des totaux du stock et des commandes, même sous un autre nom)", current);
+  if(v === null) return;
+  const name = v.trim();
+  if(!name) return alert('Nom invalide.');
+  setMonCompteLabel(name);
+  renderTabs(); render();
+  openSettings();
+}
+
 async function forceSync(){
   setStatus('syncing','Synchronisation forcée...');
   await trySync();
@@ -958,7 +1015,7 @@ const backupDlg = document.getElementById('backupDlg');
 const restoreDlg = document.getElementById('restoreDlg');
 
 function openBackup(){
-  const data = items.map(it => ({name: it.name, ref: it.ref || '', qty: it.qty, category: it.category || DEFAULT_CATEGORY, threshold: it.threshold ?? defaultThreshold, price: it.price || null, order: (it.order === null || it.order === undefined) ? null : it.order}));
+  const data = items.map(it => ({name: it.name, ref: it.ref || '', qty: it.qty, category: it.category || DEFAULT_CATEGORY, threshold: it.threshold ?? defaultThreshold, price: it.price || null}));
   document.getElementById('backupText').value = JSON.stringify(data);
   settingsDlg.close();
   backupDlg.showModal();
@@ -993,7 +1050,7 @@ function doRestore(){
       changeQty(dup.id, qty);
       merged++;
     } else {
-      addItemLocal(name, String(it.ref||''), qty, category, parseInt(it.threshold)||defaultThreshold, it.price ? parseFloat(it.price) : null, (it.order !== undefined && it.order !== null && it.order !== '') ? parseInt(it.order) : null);
+      addItemLocal(name, String(it.ref||''), qty, category, parseInt(it.threshold)||defaultThreshold, it.price ? parseFloat(it.price) : null);
       added++;
     }
   });
@@ -1028,9 +1085,14 @@ function generateRecoveryCode(){
 
 async function setPinValue(pin){
   localStorage.setItem(PIN_HASH_KEY, await hashPin(pin));
-  const recoveryCode = generateRecoveryCode();
-  localStorage.setItem(RECOVERY_HASH_KEY, await hashRecovery(recoveryCode));
-  return recoveryCode;
+  // Le code de secours est généré UNE SEULE FOIS (au tout premier PIN) puis reste inchangé
+  // à chaque changement/réinitialisation ultérieure du PIN — il n'est jamais régénéré.
+  if(!hasRecoveryCode()){
+    const recoveryCode = generateRecoveryCode();
+    localStorage.setItem(RECOVERY_HASH_KEY, await hashRecovery(recoveryCode));
+    return recoveryCode; // à afficher une seule fois, à la toute première configuration
+  }
+  return null; // code de secours déjà existant : rien de nouveau à afficher (il reste le même)
 }
 async function verifyPin(pin){
   if(!hasPin()) return true; // aucun PIN configuré : rien à vérifier
@@ -1045,9 +1107,9 @@ const catDelDlg = document.getElementById('catDelDlg');
 function openCatDelDlg(){
   const sel = document.getElementById('catDelSelect');
   sel.innerHTML = '';
-  const deletable = getCategories().filter(c => c !== DEFAULT_CATEGORY && c !== PERSONAL_CATEGORY_KEY);
+  const deletable = getCategories().filter(c => c !== DEFAULT_CATEGORY && c !== PERSONAL_CATEGORY_KEY && c !== MON_COMPTE_KEY);
   if(deletable.length === 0){
-    alert('Aucune catégorie supprimable : seules "Écran" et l\'onglet stock perso existent, tous deux protégés.');
+    alert('Aucune catégorie supprimable : seules "Écran", l\'onglet stock perso et l\'onglet compte existent, tous protégés.');
     return;
   }
   deletable.forEach(cat => {
@@ -1119,20 +1181,23 @@ function askPin(message){
 }
 
 async function promptSetNewPin(){
-  let p1 = prompt('Nouveau code PIN (4 à 8 chiffres) :');
+  let p1 = prompt('Nouveau code PIN (4 à 8 caractères, chiffres ou lettres) :');
   if(p1 === null) return false;
   p1 = p1.trim();
-  if(!/^\d{4,8}$/.test(p1)){ alert('Le code PIN doit contenir entre 4 et 8 chiffres.'); return false; }
+  if(!/^[A-Za-z0-9]{4,8}$/.test(p1)){ alert('Le code PIN doit contenir entre 4 et 8 caractères (chiffres ou lettres).'); return false; }
   const p2 = prompt('Confirme le nouveau code PIN :');
   if(p2 === null) return false;
   if(p2.trim() !== p1){ alert('Les deux codes ne correspondent pas.'); return false; }
   const recoveryCode = await setPinValue(p1);
-  // Affiché UNE SEULE FOIS : à noter par l'utilisateur lui-même (papier, gestionnaire de mots de passe...).
-  // Jamais stocké ailleurs qu'en local, sous forme hachée. Devient invalide dès le prochain changement de PIN.
-  prompt(
-    'Code PIN enregistré ✅\n\nCode de secours (à noter précieusement — indispensable en cas de PIN oublié, ne sera plus jamais affiché) :',
-    recoveryCode
-  );
+  if(recoveryCode){
+    // Affiché UNE SEULE FOIS, à la toute première configuration : à noter précieusement
+    // (papier, gestionnaire de mots de passe...). Il restera valable pour toutes les
+    // prochaines réinitialisations de PIN — il ne change jamais.
+    prompt(
+      'Code PIN enregistré ✅\n\nCode de secours (à noter précieusement — il ne sera plus jamais affiché, et restera le même pour toute future réinitialisation) :',
+      recoveryCode
+    );
+  }
   return true;
 }
 
@@ -1148,11 +1213,15 @@ async function editPin(){
 }
 
 // --- Verrouillage plein écran de l'application ---
+const SESSION_UNLOCKED_KEY = 'stock_lcd_unlocked_session';
 const lockDlg = document.getElementById('lockDlg');
 lockDlg.addEventListener('cancel', e => e.preventDefault()); // empêche la fermeture via Échap
 document.getElementById('lockOkBtn').onclick = async () => {
   const input = document.getElementById('lockPinInput');
-  if(await verifyPin(input.value.trim())){ lockDlg.close(); input.value=''; }
+  if(await verifyPin(input.value.trim())){
+    sessionStorage.setItem(SESSION_UNLOCKED_KEY, '1');
+    lockDlg.close(); input.value='';
+  }
   else { alert('Code PIN incorrect.'); input.value=''; input.focus(); }
 };
 document.getElementById('lockPinInput').addEventListener('keydown', e => {
@@ -1184,7 +1253,9 @@ async function forgotPin(){
   }
   lockDlg.close();
   alert('Code de secours valide ✅ Choisis immédiatement un nouveau code PIN.');
-  if(!(await promptSetNewPin())){
+  if(await promptSetNewPin()){
+    sessionStorage.setItem(SESSION_UNLOCKED_KEY, '1');
+  } else {
     // Pas de nouveau PIN défini : l'app reste verrouillée par sécurité (ancien PIN toujours actif).
     showLock();
   }
@@ -1194,8 +1265,9 @@ renderTabs();
 render();
 loadFromSupabase();
 
-// Verrouillage automatique à chaque lancement/rechargement si un code PIN est configuré
-if(hasPin()) showLock();
+// Verrouillage automatique uniquement à l'ouverture RÉELLE de l'app (nouvel onglet/nouvelle session).
+// Un simple rafraîchissement ou une synchronisation dans la même session ne reverrouille plus l'app.
+if(hasPin() && !sessionStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
