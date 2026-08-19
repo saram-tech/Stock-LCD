@@ -36,6 +36,13 @@
   .summary.value .big{color:var(--gold); font-size:20px;}
   .summary .label{color:var(--muted); font-size:12px; margin-top:4px;}
   .orderNum{color:var(--muted); font-size:11px; font-weight:400;}
+  .mcAmount{
+    display:inline-block; margin-top:4px; padding:3px 10px;
+    border:1.5px solid var(--text); border-radius:4px; font-weight:600; font-size:13px;
+  }
+  .mcPhone{
+    font-weight:700; font-size:14px; color:var(--text); margin-top:2px;
+  }
   .search{
     width:100%; padding:12px 14px; border-radius:10px;
     border:1px solid var(--border); background:var(--card); color:var(--text);
@@ -192,23 +199,32 @@
   <select id="fCategory" onchange="onCategoryChange()"></select>
   <input id="fNewCategory" placeholder="Nom de la nouvelle catégorie" style="display:none;">
 
-  <label>Nom / modèle</label>
-  <input id="fName" placeholder="ex: LCD Redmi Note 10">
-  <label>Référence (optionnel)</label>
-  <input id="fRef" placeholder="ex: RN10-LCD">
+  <label id="fNameLabel">Nom / modèle</label>
+  <input id="fName" placeholder="ex: LCD Redmi Note 10" list="fNameSuggestions" autocomplete="off">
+  <datalist id="fNameSuggestions"></datalist>
 
-  <div class="fieldRow">
-    <div>
-      <label>Quantité en stock</label>
-      <input id="fQty" type="number" min="0" value="0">
-    </div>
-    <div>
-      <label>Seuil d'alerte</label>
-      <input id="fThreshold" type="number" min="0" value="2">
+  <div id="fMcFields" style="display:none;">
+    <label>Numéro de téléphone</label>
+    <input id="fPhone" placeholder="ex: +224 664 53 58 17">
+  </div>
+
+  <div id="fFullFields">
+    <label>Référence (optionnel)</label>
+    <input id="fRef" placeholder="ex: RN10-LCD">
+
+    <div class="fieldRow">
+      <div>
+        <label>Quantité en stock</label>
+        <input id="fQty" type="number" min="0" value="0">
+      </div>
+      <div>
+        <label>Seuil d'alerte</label>
+        <input id="fThreshold" type="number" min="0" value="2">
+      </div>
     </div>
   </div>
 
-  <label>Prix d'achat unitaire (GNF, optionnel — rempli quand connu)</label>
+  <label id="fPriceLabel">Prix d'achat unitaire (GNF, optionnel — rempli quand connu)</label>
   <input id="fPrice" type="number" min="0" step="any" placeholder="Sera rempli par le fournisseur">
 
   <div class="row">
@@ -302,6 +318,23 @@
   </div>
 </dialog>
 
+<dialog id="mcEditDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">Modifier l'entrée</label>
+  <label>Désignation</label>
+  <input id="mcName">
+  <label style="margin-top:8px;">Numéro de téléphone</label>
+  <input id="mcPhone" placeholder="ex: +224 664 53 58 17">
+  <p style="font-size:13px; margin:12px 0 8px 0;">Montant actuel : <b id="mcCurrentAmount">0</b> GNF</p>
+  <div class="row">
+    <button class="cancel" onclick="adjustMcAmount(-1)" style="font-size:20px;">−</button>
+    <button class="save" onclick="adjustMcAmount(1)" style="font-size:20px;">+</button>
+  </div>
+  <div class="row" style="margin-top:10px;">
+    <button class="cancel" onclick="mcEditDlg.close()">Fermer</button>
+    <button class="save" onclick="saveMcName()">Enregistrer</button>
+  </div>
+</dialog>
+
 <dialog id="aboutDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">À propos</label>
   <div class="settingsInfo" style="font-size:14px; line-height:2;">
@@ -320,8 +353,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '2.9';
-const APP_UPDATED = '18/08/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '3.2';
+const APP_UPDATED = '19/08/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -337,8 +370,33 @@ function getPersonalLabel(){
 function setPersonalLabel(label){
   localStorage.setItem(PERSONAL_LABEL_KEY, label);
 }
+// Catégories dont le montant doit toujours rester isolé des totaux "stock" (perso, compte, corbeille).
 function isPersonalCategory(cat){
   return cat === PERSONAL_CATEGORY_KEY;
+}
+function isIsolatedCategory(cat){
+  return isPersonalCategory(cat) || isMonCompteCategory(cat) || isTrashCategory(cat);
+}
+
+// --- Corbeille : suppression = déplacement réversible, pas de perte immédiate. ---
+// Aucune colonne Supabase nécessaire : l'origine est encodée dans la valeur du champ
+// "category" existant ("__corbeille__:::AncienneCatégorie"), donc 100% rétrocompatible.
+const CORBEILLE_KEY = '__corbeille__';
+const CORBEILLE_SEP = ':::';
+function isTrashCategory(cat){
+  return typeof cat === 'string' && (cat === CORBEILLE_KEY || cat.startsWith(CORBEILLE_KEY + CORBEILLE_SEP));
+}
+function trashOriginCategory(cat){
+  if(typeof cat === 'string' && cat.startsWith(CORBEILLE_KEY + CORBEILLE_SEP)){
+    return cat.slice((CORBEILLE_KEY + CORBEILLE_SEP).length) || DEFAULT_CATEGORY;
+  }
+  return DEFAULT_CATEGORY;
+}
+// Catégorie "affichée" d'un article : un article envoyé à la corbeille reste regroupé
+// sous l'onglet Corbeille quel que soit son origine, encodée dans la même valeur.
+function displayCategory(it){
+  const c = it.category || DEFAULT_CATEGORY;
+  return isTrashCategory(c) ? CORBEILLE_KEY : c;
 }
 
 // Onglet spécial "MON COMPTE" : gère l'argent/capital (transferts, crédit, dépôts, retraits
@@ -355,15 +413,12 @@ function setMonCompteLabel(label){
 function isMonCompteCategory(cat){
   return cat === MON_COMPTE_KEY;
 }
-// Catégories dont le montant doit toujours rester isolé des totaux "stock" (perso ET compte).
-function isIsolatedCategory(cat){
-  return isPersonalCategory(cat) || isMonCompteCategory(cat);
-}
 
 // Convertit une clé de catégorie interne en libellé affiché à l'écran.
 function categoryLabel(cat){
   if(isPersonalCategory(cat)) return getPersonalLabel();
   if(isMonCompteCategory(cat)) return getMonCompteLabel();
+  if(cat === CORBEILLE_KEY) return 'Corbeille';
   return cat;
 }
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
@@ -431,12 +486,12 @@ function hasPending(){
 // --- Catégories / onglets ---
 
 function getCategories(){
-  const set = new Set([DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY, MON_COMPTE_KEY]);
-  items.forEach(it => set.add(it.category || DEFAULT_CATEGORY));
+  const set = new Set([DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY, MON_COMPTE_KEY, CORBEILLE_KEY]);
+  items.forEach(it => set.add(displayCategory(it)));
   const sorted = [...set]
-    .filter(c => c !== PERSONAL_CATEGORY_KEY && c !== MON_COMPTE_KEY)
+    .filter(c => c !== PERSONAL_CATEGORY_KEY && c !== MON_COMPTE_KEY && c !== CORBEILLE_KEY)
     .sort((a,b) => categoryLabel(a).localeCompare(categoryLabel(b), 'fr'));
-  return [...sorted, PERSONAL_CATEGORY_KEY, MON_COMPTE_KEY];
+  return [...sorted, PERSONAL_CATEGORY_KEY, MON_COMPTE_KEY, CORBEILLE_KEY];
 }
 
 function renderTabs(){
@@ -460,7 +515,7 @@ function renderTabs(){
 function populateCategorySelect(preselect){
   const sel = document.getElementById('fCategory');
   sel.innerHTML = '';
-  getCategories().forEach(cat => {
+  getCategories().filter(cat => cat !== CORBEILLE_KEY).forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat; opt.textContent = categoryLabel(cat);
     sel.appendChild(opt);
@@ -472,11 +527,36 @@ function populateCategorySelect(preselect){
   onCategoryChange();
 }
 
+// Suggestions du champ Nom/Désignation limitées aux articles DÉJÀ PRÉSENTS dans la catégorie choisie
+// (jamais les noms d'autres catégories) — remplace l'autocomplete natif du navigateur qui mélangeait tout.
+function refreshNameSuggestions(category){
+  const dl = document.getElementById('fNameSuggestions');
+  dl.innerHTML = '';
+  const names = new Set(
+    items.filter(it => displayCategory(it) === category).map(it => it.name)
+  );
+  names.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    dl.appendChild(opt);
+  });
+}
+
 function onCategoryChange(){
   const sel = document.getElementById('fCategory');
   const newInput = document.getElementById('fNewCategory');
   newInput.style.display = sel.value === '__new__' ? 'block' : 'none';
   if(sel.value === '__new__') newInput.value = '';
+
+  // Formulaire simplifié pour MON COMPTE : Désignation + N° téléphone + Montant (fidèle à la fiche papier)
+  const isMc = sel.value === MON_COMPTE_KEY;
+  document.getElementById('fFullFields').style.display = isMc ? 'none' : '';
+  document.getElementById('fMcFields').style.display = isMc ? '' : 'none';
+  document.getElementById('fNameLabel').textContent = isMc ? 'Désignation' : 'Nom / modèle';
+  document.getElementById('fPriceLabel').textContent = isMc ? 'Montant (GNF)' : 'Prix d\'achat unitaire (GNF, optionnel — rempli quand connu)';
+  document.getElementById('fPrice').placeholder = isMc ? 'ex: 5000' : 'Sera rempli par le fournisseur';
+
+  if(sel.value !== '__new__') refreshNameSuggestions(sel.value);
 }
 
 // --- Mutations locales : toujours appliquées et mises en file avant toute tentative réseau ---
@@ -486,7 +566,7 @@ function onCategoryChange(){
 function normName(s){ return (s || '').trim().toLowerCase(); }
 function findDuplicate(name, category, excludeId){
   const n = normName(name);
-  return items.find(it => it.id !== excludeId && normName(it.name) === n && (it.category || DEFAULT_CATEGORY) === category);
+  return items.find(it => it.id !== excludeId && normName(it.name) === n && displayCategory(it) === category);
 }
 
 function addItemLocal(name, ref, qty, category, threshold, price){
@@ -540,11 +620,38 @@ function removeItemLocal(id){
   scheduleSync();
 }
 
-async function delItem(id){
+// Suppression = déplacement réversible vers la Corbeille (pas de perte immédiate).
+// L'origine est encodée dans le champ category existant, aucune colonne Supabase nécessaire.
+function delItem(id){
   const it = items.find(x => x.id === id);
-  if(!it || !confirm(`Supprimer "${it.name}" ?`)) return;
+  if(!it) return;
+  if(isTrashCategory(it.category || DEFAULT_CATEGORY)) return; // déjà en corbeille, rien à faire ici
+  if(!confirm(`Envoyer "${it.name}" à la corbeille ?\n(Restaurable à tout moment depuis l'onglet Corbeille.)`)) return;
+  const origin = it.category || DEFAULT_CATEGORY;
+  updateItemLocal(id, it.name, it.ref || '', it.qty, CORBEILLE_KEY + CORBEILLE_SEP + origin, it.threshold, it.price);
+}
+
+function restoreFromTrash(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  const origin = trashOriginCategory(it.category);
+  updateItemLocal(id, it.name, it.ref || '', it.qty, origin, it.threshold, it.price);
+  activeCategory = origin;
+  localStorage.setItem('stock_lcd_active_tab', origin);
+  renderTabs(); render();
+}
+
+// La VRAIE suppression, irréversible — avertissement + double confirmation + PIN, conformément
+// à notre règle permanente sur les actions destructives. Uniquement accessible depuis la Corbeille.
+async function permanentlyDeleteItem(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  const step1 = confirm(`⚠️ Supprimer définitivement "${it.name}" ?\n\nAction IRRÉVERSIBLE : il ne pourra plus être restauré.`);
+  if(!step1) return;
+  const step2 = confirm(`Confirme une seconde fois la suppression définitive de "${it.name}".`);
+  if(!step2) return;
   if(hasPin()){
-    const ok = await askPin('Code PIN requis pour confirmer la suppression :');
+    const ok = await askPin(`Code PIN requis pour supprimer définitivement "${it.name}" :`);
     if(!ok) return;
   }
   removeItemLocal(id);
@@ -678,7 +785,7 @@ function render(){
   list.innerHTML = '';
 
   let filtered = items.filter(it =>
-    (it.category || DEFAULT_CATEGORY) === activeCategory &&
+    displayCategory(it) === activeCategory &&
     (it.name.toLowerCase().includes(q) || (it.ref||'').toLowerCase().includes(q))
   );
 
@@ -691,14 +798,11 @@ function render(){
   document.getElementById('totalLabel').textContent = `${activeLabel.toLowerCase()} disponible(s)`;
 
   // Le montant affiché est celui du type d'article (onglet) sélectionné, pas un total global.
-  // Ça isole automatiquement la valeur du stock perso : elle n'apparaît que sur son propre
-  // onglet et ne se mélange jamais à la valeur des autres catégories.
-  const categoryItems = items.filter(it => (it.category || DEFAULT_CATEGORY) === activeCategory);
+  const categoryItems = items.filter(it => displayCategory(it) === activeCategory);
   const total = categoryItems.reduce((s,it) => s + it.qty, 0);
   document.getElementById('totalQty').textContent = total;
 
-  // Numéro d'ordre 100% automatique : rang alphabétique (A→Z) de l'article dans sa catégorie,
-  // de 1 à x. Toujours recalculé, s'applique donc à tous les articles existants ET futurs sans réglage manuel.
+  // Numéro d'ordre 100% automatique : rang alphabétique (A→Z) de l'article dans sa catégorie.
   const alphaRank = new Map(
     [...categoryItems]
       .sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}))
@@ -717,44 +821,79 @@ function render(){
       `Cet onglet gère l'argent et le capital des transactions : transferts, crédits, dépôts et retraits ` +
       `(opérations mobile money / téléphoniques), ainsi que les autres fonds de travail et de services. ` +
       `Son montant est totalement isolé des totaux du stock et n'apparaît jamais dans la commande fournisseur.`;
+  } else if(activeCategory === CORBEILLE_KEY){
+    catInfo.style.display = 'block';
+    catInfo.innerHTML =
+      `<b>🗑 Corbeille</b>` +
+      `Les articles supprimés passent d'abord ici. Restaure-les à tout moment, ou supprime-les ` +
+      `définitivement (irréversible, nécessite le code PIN). Ils ne comptent dans aucun total ni commande.`;
   } else {
     catInfo.style.display = 'none';
   }
 
-  // Total 1 : valeur du stock "opérationnel" pur — hors Stock Perso STD ET hors MON COMPTE.
-  // Total 2 : toutes les catégories de stock (Stock Perso STD inclus) — MON COMPTE reste isolé.
-  // Total 3 : montant général, cette fois MON COMPTE inclus (seul total qui l'intègre).
+  // Total 1 : stock "opérationnel" pur — hors Stock Perso STD, hors MON COMPTE, hors Corbeille.
+  // Total 2 : toutes les catégories de stock (Stock Perso STD inclus) — MON COMPTE et Corbeille exclus.
+  // Total 3 : montant général, MON COMPTE inclus cette fois — Corbeille toujours exclue (articles supprimés).
   const grandTotal1 = items
-    .filter(it => !isIsolatedCategory(it.category || DEFAULT_CATEGORY))
+    .filter(it => !isIsolatedCategory(displayCategory(it)))
     .reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
   const grandTotal2 = items
-    .filter(it => !isMonCompteCategory(it.category || DEFAULT_CATEGORY))
+    .filter(it => !isMonCompteCategory(displayCategory(it)) && !isTrashCategory(displayCategory(it)))
     .reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
-  const grandTotal3 = items.reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
+  const grandTotal3 = items
+    .filter(it => !isTrashCategory(displayCategory(it)))
+    .reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
   document.getElementById('globalTotals').innerHTML =
     `<span>Valeur totale du stock (hors ${getPersonalLabel().toLowerCase()} et hors ${getMonCompteLabel().toLowerCase()}) : <b>${grandTotal1.toLocaleString('fr-FR')} GNF</b></span>` +
     `<span>Valeur totale du stock (toutes catégories, hors ${getMonCompteLabel().toLowerCase()}) : <b>${grandTotal2.toLocaleString('fr-FR')} GNF</b></span>` +
     `<span>Valeur générale (${getMonCompteLabel().toLowerCase()} inclus) : <b>${grandTotal3.toLocaleString('fr-FR')} GNF</b></span>`;
 
   filtered.forEach((it) => {
-    const threshold = it.threshold ?? defaultThreshold;
-    const cls = it.qty === 0 ? 'out' : (it.qty <= threshold ? 'low' : 'ok');
     const div = document.createElement('div');
     div.className = 'item';
-    div.innerHTML = `
-      <div class="info">
-        <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
-        <div class="ref">${it.ref || ''}</div>
-        ${it.price ? `<div class="price">${Number(it.price).toLocaleString('fr-FR')} GNF/u</div>` : ''}
-      </div>
-      <div class="qty ${cls}">${it.qty}</div>
-      <div class="controls">
-        <button class="btn del" onclick="delItem('${it.id}')">✕</button>
-        <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
-        <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
-        <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
-      </div>
-    `;
+
+    if(activeCategory === CORBEILLE_KEY){
+      const origin = categoryLabel(trashOriginCategory(it.category));
+      div.innerHTML = `
+        <div class="info">
+          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
+          <div class="ref">Origine : ${origin}${it.price ? ` · ${Number(it.price).toLocaleString('fr-FR')} GNF` : ''}</div>
+        </div>
+        <div class="controls">
+          <button class="btn edit" onclick="restoreFromTrash('${it.id}')" title="Restaurer">♻️</button>
+          <button class="btn del" onclick="permanentlyDeleteItem('${it.id}')" title="Supprimer définitivement">🗑</button>
+        </div>
+      `;
+    } else if(isMonCompteCategory(activeCategory)){
+      div.innerHTML = `
+        <div class="info">
+          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
+          ${it.ref ? `<div class="mcPhone">${it.ref}</div>` : ''}
+          <div class="mcAmount">${it.price ? Number(it.price).toLocaleString('fr-FR') : 0} GNF</div>
+        </div>
+        <div class="controls">
+          <button class="btn edit" onclick="openMcEdit('${it.id}')">✎</button>
+          <button class="btn del" onclick="delItem('${it.id}')">✕</button>
+        </div>
+      `;
+    } else {
+      const threshold = it.threshold ?? defaultThreshold;
+      const cls = it.qty === 0 ? 'out' : (it.qty <= threshold ? 'low' : 'ok');
+      div.innerHTML = `
+        <div class="info">
+          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
+          <div class="ref">${it.ref || ''}</div>
+          ${it.price ? `<div class="price">${Number(it.price).toLocaleString('fr-FR')} GNF/u</div>` : ''}
+        </div>
+        <div class="qty ${cls}">${it.qty}</div>
+        <div class="controls">
+          <button class="btn del" onclick="delItem('${it.id}')">✕</button>
+          <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
+          <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
+          <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
+        </div>
+      `;
+    }
     list.appendChild(div);
   });
 }
@@ -769,6 +908,7 @@ function openAdd(){
   populateCategorySelect(activeCategory);
   document.getElementById('fName').value = '';
   document.getElementById('fRef').value = '';
+  document.getElementById('fPhone').value = '+224 ';
   document.getElementById('fQty').value = 0;
   document.getElementById('fThreshold').value = defaultThreshold;
   document.getElementById('fPrice').value = '';
@@ -780,9 +920,10 @@ function openEdit(id){
   if(!it) return;
   editingId = id;
   document.getElementById('dlgTitle').textContent = 'Modifier l\'article';
-  populateCategorySelect(it.category || DEFAULT_CATEGORY);
+  populateCategorySelect(displayCategory(it));
   document.getElementById('fName').value = it.name;
   document.getElementById('fRef').value = it.ref || '';
+  document.getElementById('fPhone').value = it.ref || '';
   document.getElementById('fQty').value = it.qty;
   document.getElementById('fThreshold').value = it.threshold ?? defaultThreshold;
   document.getElementById('fPrice').value = it.price || '';
@@ -791,8 +932,8 @@ function openEdit(id){
 
 function saveItem(){
   const name = cap(document.getElementById('fName').value.trim());
-  const ref = document.getElementById('fRef').value.trim();
-  const qty = parseInt(document.getElementById('fQty').value) || 0;
+  let ref = document.getElementById('fRef').value.trim();
+  let qty = parseInt(document.getElementById('fQty').value) || 0;
   const threshold = parseInt(document.getElementById('fThreshold').value);
   const priceRaw = document.getElementById('fPrice').value;
   const price = priceRaw !== '' ? parseFloat(priceRaw) : null;
@@ -806,7 +947,15 @@ function saveItem(){
     category = sel.value;
   }
 
-  if(!name) return alert('Entrez un nom d\'article');
+  if(!name) return alert(isMonCompteCategory(category) ? 'Entrez une désignation' : 'Entrez un nom d\'article');
+
+  // MON COMPTE : pas de notion de quantité de stock, juste désignation + téléphone + montant.
+  // Le téléphone réutilise le champ "ref" existant, aucun changement de schéma Supabase.
+  if(isMonCompteCategory(category)){
+    qty = 1;
+    ref = document.getElementById('fPhone').value.trim();
+    if(price === null || price <= 0) return alert('Entrez un montant valide.');
+  }
 
   const dup = findDuplicate(name, category, editingId);
   if(dup){
@@ -890,7 +1039,7 @@ function buildOrderText(){
   // Déclenchement automatique : tout article à son seuil (ou épuisé) entre dans la commande, toutes catégories confondues,
   // SAUF les onglets "stock perso" et "MON COMPTE" (fonds/argent, pas du stock physique) — même si leurs noms sont renommés.
   const toOrder = items
-    .filter(it => !isIsolatedCategory(it.category || DEFAULT_CATEGORY))
+    .filter(it => !isIsolatedCategory(displayCategory(it)))
     .filter(it => it.qty <= (it.threshold ?? defaultThreshold))
     .sort((a,b) => a.name.localeCompare(b.name, 'fr', {sensitivity:'base'}));
 
@@ -1103,17 +1252,53 @@ async function verifyRecoveryCode(code){
   return (await hashRecovery(code)) === localStorage.getItem(RECOVERY_HASH_KEY);
 }
 
+let mcEditingId = null;
+const mcEditDlg = document.getElementById('mcEditDlg');
+
+function openMcEdit(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  mcEditingId = id;
+  document.getElementById('mcName').value = it.name;
+  document.getElementById('mcPhone').value = it.ref || '+224 ';
+  document.getElementById('mcCurrentAmount').textContent = (it.price || 0).toLocaleString('fr-FR');
+  mcEditDlg.showModal();
+}
+
+function saveMcName(){
+  const it = items.find(x => x.id === mcEditingId);
+  if(!it) return;
+  const name = cap(document.getElementById('mcName').value.trim());
+  const phone = document.getElementById('mcPhone').value.trim();
+  if(!name) return alert('Désignation invalide.');
+  updateItemLocal(it.id, name, phone, it.qty, it.category, it.threshold, it.price);
+  mcEditDlg.close();
+}
+
+// + ajoute automatiquement au montant existant, − retire automatiquement — comme demandé.
+function adjustMcAmount(sign){
+  const it = items.find(x => x.id === mcEditingId);
+  if(!it) return;
+  const raw = prompt(`Montant à ${sign > 0 ? 'ajouter' : 'retirer'} (GNF) :`);
+  if(raw === null) return;
+  const delta = parseFloat(raw);
+  if(isNaN(delta) || delta <= 0) return alert('Montant invalide.');
+  const newAmount = Math.max(0, (it.price || 0) + sign * delta);
+  updateItemLocal(it.id, it.name, it.ref || '', it.qty, it.category, it.threshold, newAmount);
+  document.getElementById('mcCurrentAmount').textContent = newAmount.toLocaleString('fr-FR');
+}
+
 const catDelDlg = document.getElementById('catDelDlg');
 function openCatDelDlg(){
   const sel = document.getElementById('catDelSelect');
   sel.innerHTML = '';
-  const deletable = getCategories().filter(c => c !== DEFAULT_CATEGORY && c !== PERSONAL_CATEGORY_KEY && c !== MON_COMPTE_KEY);
+  const deletable = getCategories().filter(c => c !== DEFAULT_CATEGORY && c !== PERSONAL_CATEGORY_KEY && c !== MON_COMPTE_KEY && c !== CORBEILLE_KEY);
   if(deletable.length === 0){
-    alert('Aucune catégorie supprimable : seules "Écran", l\'onglet stock perso et l\'onglet compte existent, tous protégés.');
+    alert('Aucune catégorie supprimable : seules "Écran", l\'onglet stock perso, l\'onglet compte et la corbeille existent, tous protégés.');
     return;
   }
   deletable.forEach(cat => {
-    const count = items.filter(it => (it.category || DEFAULT_CATEGORY) === cat).length;
+    const count = items.filter(it => displayCategory(it) === cat).length;
     const opt = document.createElement('option');
     opt.value = cat;
     opt.textContent = `${categoryLabel(cat)} (${count} article${count > 1 ? 's' : ''})`;
@@ -1127,17 +1312,17 @@ async function confirmDeleteCategory(){
   const cat = document.getElementById('catDelSelect').value;
   if(!cat) return;
   const label = categoryLabel(cat);
-  const toDelete = items.filter(it => (it.category || DEFAULT_CATEGORY) === cat);
+  const toDelete = items.filter(it => displayCategory(it) === cat);
 
   // Avertissement
   const step1 = confirm(
     `⚠️ Supprimer la catégorie "${label}" ?\n\n` +
-    `${toDelete.length} article(s) seront supprimés DÉFINITIVEMENT avec elle. Cette action est irréversible.`
+    `${toDelete.length} article(s) seront envoyés à la corbeille (restaurables ensuite individuellement).`
   );
   if(!step1) return;
 
   // Confirmation
-  const step2 = confirm(`Confirme une seconde fois : supprimer "${label}" et ses ${toDelete.length} article(s) ?`);
+  const step2 = confirm(`Confirme une seconde fois : supprimer "${label}" et envoyer ses ${toDelete.length} article(s) à la corbeille ?`);
   if(!step2) return;
 
   // Mot de passe de l'application
@@ -1146,14 +1331,16 @@ async function confirmDeleteCategory(){
     if(!ok) return;
   }
 
-  toDelete.forEach(it => removeItemLocal(it.id));
+  toDelete.forEach(it => {
+    updateItemLocal(it.id, it.name, it.ref || '', it.qty, CORBEILLE_KEY + CORBEILLE_SEP + cat, it.threshold, it.price);
+  });
   catDelDlg.close();
   if(activeCategory === cat){
     activeCategory = DEFAULT_CATEGORY;
     localStorage.setItem('stock_lcd_active_tab', DEFAULT_CATEGORY);
   }
   renderTabs(); render();
-  alert(`Catégorie "${label}" supprimée avec ${toDelete.length} article(s).`);
+  alert(`Catégorie "${label}" supprimée : ${toDelete.length} article(s) envoyé(s) à la corbeille.`);
 }
 
 const pinDlg = document.getElementById('pinDlg');
