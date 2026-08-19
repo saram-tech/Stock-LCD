@@ -53,11 +53,6 @@
     font-size:11px; color:var(--muted); margin:0 0 12px 0; padding:0 2px;
   }
   .globalTotals b{color:var(--text); font-weight:600;}
-  .catInfo{
-    background:var(--card); border:1px solid var(--border); border-radius:12px;
-    padding:12px 14px; margin-bottom:12px; font-size:12px; line-height:1.5; color:var(--muted);
-  }
-  .catInfo b{display:block; color:var(--text); font-size:13px; margin-bottom:4px;}
   .stickyHeader{
     position:sticky; top:0; z-index:15;
     background:var(--bg);
@@ -85,15 +80,16 @@
   .qty.low{color:var(--orange);}
   .qty.out{color:var(--red);}
   .qty.ok{color:var(--green);}
-  .controls{display:flex; align-items:center; gap:6px;}
+  .controls{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .controls.spaced{gap:22px;}
   .btn{
-    width:34px; height:34px; border-radius:8px; border:none;
+    width:42px; height:42px; border-radius:10px; border:none;
     font-size:18px; font-weight:700; cursor:pointer;
   }
   .btn.minus{background:#3a1f22; color:var(--red);}
   .btn.plus{background:#1a3a24; color:var(--green);}
-  .btn.edit{background:#1f2a3a; color:var(--blue); font-size:14px;}
-  .btn.del{background:transparent; color:var(--muted); font-size:14px; width:26px;}
+  .btn.edit{background:#1f2a3a; color:var(--blue); font-size:15px;}
+  .btn.del{background:#2a1a1a; color:var(--muted); font-size:15px;}
   .toolbar{display:flex; gap:8px; margin-bottom:12px;}
   .toolbar .search{margin-bottom:0; flex:1;}
   .sortBtn{
@@ -158,7 +154,7 @@
     <span id="syncText">Connexion...</span>
   </div>
 
-  <div class="summaryRow">
+  <div class="summaryRow" id="summaryRow">
     <div class="summary">
       <div class="big" id="totalQty">0</div>
       <div class="label" id="totalLabel">disponible(s)</div>
@@ -170,7 +166,7 @@
   </div>
 
   <div class="headerBtns">
-    <button class="actionBtn whatsapp" onclick="openOrderDlg()">📋 Commande fournisseur</button>
+    <button class="actionBtn whatsapp" id="orderBtn" onclick="openOrderDlg()">📋 Commande fournisseur</button>
     <button class="actionBtn settings" onclick="openSettings()">⚙</button>
     <button class="actionBtn settings" onclick="lockAppNow()" title="Déconnexion">🚪</button>
   </div>
@@ -180,17 +176,16 @@
   <div class="tabsBar" id="tabsBar"></div>
   <div class="toolbar">
     <input class="search" id="search" placeholder="Rechercher un article...">
+    <button class="sortBtn" id="infosBtn" onclick="openInfos()">ℹ️ Infos</button>
     <button class="sortBtn active" id="sortBtn" onclick="toggleSort()">A→Z</button>
   </div>
 </div>
 
 
-<div class="catInfo" id="catInfo" style="display:none;"></div>
-
 <div id="list"></div>
 <div class="empty" id="emptyMsg" style="display:none;">Aucun article dans cette catégorie. Ajoutez-en un.</div>
 
-<button class="fab" onclick="openAdd()">+ Ajouter un article</button>
+<button class="fab" id="fabAdd" onclick="openAdd()">+ Ajouter un article</button>
 
 <dialog id="dlg">
   <label id="dlgTitle" style="display:block; font-weight:600; font-size:16px; margin-bottom:12px; color:var(--text);">Ajouter un article</label>
@@ -335,6 +330,16 @@
   </div>
 </dialog>
 
+<dialog id="infosDlg" style="max-height:80vh; overflow-y:auto;">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">ℹ️ Informations des catégories</label>
+  <div id="infosList"></div>
+  <p style="font-size:11px; color:var(--muted); border-top:1px solid var(--border); padding-top:10px; margin-top:14px; line-height:1.5;">
+    Tout le contenu de cette application appartient à <b>BAH OUSMANE</b><br>
+    📞 622 31 46 95 · ✉️ bahousmane611@gmail.com
+  </p>
+  <button class="cancel" onclick="infosDlg.close()" style="width:100%; margin-top:12px;">Fermer</button>
+</dialog>
+
 <dialog id="aboutDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">À propos</label>
   <div class="settingsInfo" style="font-size:14px; line-height:2;">
@@ -353,7 +358,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '3.2';
+const APP_VERSION = '3.3';
 const APP_UPDATED = '19/08/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -421,6 +426,29 @@ function categoryLabel(cat){
   if(cat === CORBEILLE_KEY) return 'Corbeille';
   return cat;
 }
+
+// --- Informations / descriptions par catégorie (bouton Infos) ---
+const CATEGORY_DESC_KEY = 'stock_lcd_category_descriptions';
+const DEFAULT_CATEGORY_DESCRIPTIONS = {
+  [MON_COMPTE_KEY]: "Cet onglet gère l'argent et le capital des transactions : transferts, crédits, dépôts et retraits (opérations mobile money / téléphoniques), ainsi que les autres fonds de travail et de services. Son montant est totalement isolé des totaux du stock et n'apparaît jamais dans la commande fournisseur.",
+  [CORBEILLE_KEY]: "Les articles supprimés passent d'abord ici. Restaure-les à tout moment, ou supprime-les définitivement (irréversible, nécessite le code PIN). Ils ne comptent dans aucun total ni commande.",
+  [DEFAULT_CATEGORY]: "Écran — acheté et propriété personnelle de BAH Ousmane."
+};
+function getCategoryDescriptions(){
+  return JSON.parse(localStorage.getItem(CATEGORY_DESC_KEY) || '{}');
+}
+function getCategoryDescription(cat){
+  const custom = getCategoryDescriptions();
+  if(custom[cat]) return custom[cat];
+  if(DEFAULT_CATEGORY_DESCRIPTIONS[cat]) return DEFAULT_CATEGORY_DESCRIPTIONS[cat];
+  return 'Aucune description ajoutée pour cette catégorie.';
+}
+function setCategoryDescription(cat, text){
+  const map = getCategoryDescriptions();
+  map[cat] = text;
+  localStorage.setItem(CATEGORY_DESC_KEY, JSON.stringify(map));
+}
+
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
 // pending = { inserts:{tempId:{...}}, updates:{id:{...}}, deletes:[ids] }
 let pending = JSON.parse(localStorage.getItem(PKEY) || 'null') || {inserts:{}, updates:{}, deletes:[]};
@@ -813,23 +841,12 @@ function render(){
   document.getElementById('totalValue').textContent = totalValue > 0 ? totalValue.toLocaleString('fr-FR') : '—';
   document.getElementById('totalValueLabel').textContent = `valeur ${activeLabel.toLowerCase()} (GNF)`;
 
-  const catInfo = document.getElementById('catInfo');
-  if(isMonCompteCategory(activeCategory)){
-    catInfo.style.display = 'block';
-    catInfo.innerHTML =
-      `<b>ℹ️ ${activeLabel}</b>` +
-      `Cet onglet gère l'argent et le capital des transactions : transferts, crédits, dépôts et retraits ` +
-      `(opérations mobile money / téléphoniques), ainsi que les autres fonds de travail et de services. ` +
-      `Son montant est totalement isolé des totaux du stock et n'apparaît jamais dans la commande fournisseur.`;
-  } else if(activeCategory === CORBEILLE_KEY){
-    catInfo.style.display = 'block';
-    catInfo.innerHTML =
-      `<b>🗑 Corbeille</b>` +
-      `Les articles supprimés passent d'abord ici. Restaure-les à tout moment, ou supprime-les ` +
-      `définitivement (irréversible, nécessite le code PIN). Ils ne comptent dans aucun total ni commande.`;
-  } else {
-    catInfo.style.display = 'none';
-  }
+  // La Corbeille n'affiche QUE ses articles : pas d'ajout, pas de commande, pas de cartes de résumé.
+  const inTrash = activeCategory === CORBEILLE_KEY;
+  document.getElementById('summaryRow').style.display = inTrash ? 'none' : '';
+  document.getElementById('globalTotals').style.display = inTrash ? 'none' : '';
+  document.getElementById('orderBtn').style.display = inTrash ? 'none' : '';
+  document.getElementById('fabAdd').style.display = inTrash ? 'none' : '';
 
   // Total 1 : stock "opérationnel" pur — hors Stock Perso STD, hors MON COMPTE, hors Corbeille.
   // Total 2 : toutes les catégories de stock (Stock Perso STD inclus) — MON COMPTE et Corbeille exclus.
@@ -859,7 +876,7 @@ function render(){
           <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
           <div class="ref">Origine : ${origin}${it.price ? ` · ${Number(it.price).toLocaleString('fr-FR')} GNF` : ''}</div>
         </div>
-        <div class="controls">
+        <div class="controls spaced">
           <button class="btn edit" onclick="restoreFromTrash('${it.id}')" title="Restaurer">♻️</button>
           <button class="btn del" onclick="permanentlyDeleteItem('${it.id}')" title="Supprimer définitivement">🗑</button>
         </div>
@@ -871,7 +888,7 @@ function render(){
           ${it.ref ? `<div class="mcPhone">${it.ref}</div>` : ''}
           <div class="mcAmount">${it.price ? Number(it.price).toLocaleString('fr-FR') : 0} GNF</div>
         </div>
-        <div class="controls">
+        <div class="controls spaced">
           <button class="btn edit" onclick="openMcEdit('${it.id}')">✎</button>
           <button class="btn del" onclick="delItem('${it.id}')">✕</button>
         </div>
@@ -1151,6 +1168,37 @@ async function forceSync(){
 }
 
 const aboutDlg = document.getElementById('aboutDlg');
+const infosDlg = document.getElementById('infosDlg');
+function openInfos(){
+  // La catégorie active passe en n°1, les autres suivent dans l'ordre des onglets.
+  const cats = getCategories();
+  const ordered = [activeCategory, ...cats.filter(c => c !== activeCategory)];
+  const container = document.getElementById('infosList');
+  container.innerHTML = ordered.map((cat, idx) => `
+    <div style="margin-bottom:14px; padding-bottom:14px; ${idx < ordered.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <b style="font-size:14px;">${idx + 1}. ${cat === DEFAULT_CATEGORY ? '🖥️' : (isMonCompteCategory(cat) ? 'ℹ️' : (cat === CORBEILLE_KEY ? '🗑' : '📦'))} ${categoryLabel(cat)}</b>
+        <button onclick="editCategoryDescription('${cat}')" style="background:none; border:none; color:var(--blue); font-size:14px; cursor:pointer;">✎</button>
+      </div>
+      <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0;">${getCategoryDescription(cat)}</p>
+    </div>
+  `).join('') + `
+    <div>
+      <b style="font-size:14px; display:block; margin-bottom:4px;">${ordered.length + 1}. 📦 Stock LCD</b>
+      <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0;">Application de gestion de stock — à titre personnel de BAH Ousmane.</p>
+    </div>
+  `;
+  infosDlg.showModal();
+}
+
+function editCategoryDescription(cat){
+  const current = getCategoryDescription(cat);
+  const v = prompt(`Description de "${categoryLabel(cat)}" :`, current);
+  if(v === null) return;
+  setCategoryDescription(cat, v.trim());
+  openInfos();
+}
+
 function openAbout(){
   document.getElementById('aboutVersion').textContent = APP_VERSION;
   document.getElementById('aboutUpdated').textContent = APP_UPDATED;
