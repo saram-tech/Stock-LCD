@@ -188,7 +188,7 @@
 <div class="stickyHeader">
   <div class="headRow">
     <h1>📦 Stock LCD</h1>
-    <div id="syncStatus" style="font-size:11px; color:var(--muted); display:flex; align-items:center; gap:5px;">
+    <div id="syncStatus" onclick="showSyncErrorDetail()" style="font-size:11px; color:var(--muted); display:flex; align-items:center; gap:5px; cursor:pointer;">
       <span id="syncDot" style="width:7px; height:7px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
       <span id="syncText">Connexion...</span>
     </div>
@@ -384,6 +384,15 @@
   <button class="cancel" onclick="infosDlg.close()" style="width:100%; margin-top:12px;">Fermer</button>
 </dialog>
 
+<dialog id="syncErrorDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:10px; color:var(--red);">⚠️ Détail de l'erreur de synchronisation</label>
+  <pre id="syncErrorDlgContent" style="white-space:pre-wrap; word-break:break-word; font-size:13px; background:#111318; border:1px solid var(--border); border-radius:8px; padding:12px; max-height:50vh; overflow-y:auto;"></pre>
+  <div class="row" style="margin-top:14px; gap:8px;">
+    <button class="cancel" onclick="copySyncErrorDetail()" style="flex:1;">📋 Copier</button>
+    <button class="cancel" onclick="syncErrorDlg.close()" style="flex:1;">Fermer</button>
+  </div>
+</dialog>
+
 <dialog id="globalTotalsDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">📊 Totaux globaux</label>
   <div class="globalTotals" id="globalTotalsDlgContent" style="flex-direction:column; font-size:13px; gap:12px;"></div>
@@ -407,10 +416,10 @@
 
 <!-- =========================================================================
      PAGE ISOLÉE : VENTE WIFI
-     Contenu appartenant à un tiers. Stockage 100% séparé (clés localStorage
-     dédiées, jamais dans le tableau "items"), jamais synchronisé avec Supabase,
-     jamais additionné à aucun total du stock (présent ou futur). Uniquement
-     stocké sur cet appareil : penser à utiliser Sauvegarder/Restaurer.
+     Contenu appartenant à un tiers. Stockage séparé du tableau "items" principal
+     (tables Supabase dédiées : wifi_rows / wifi_history / wifi_meta), jamais
+     additionné à aucun total du stock (présent ou futur). Synchronisé en temps
+     réel entre appareils comme le reste de l'app, mais totalement isolé côté calculs.
      ========================================================================= -->
 <div id="wifiPage">
   <div class="wifiWrap">
@@ -437,6 +446,10 @@
       </div>
     </div>
     <p class="wifiIsoNote">🔒 Page isolée — aucun montant ici n'est compté dans les totaux du stock</p>
+    <div id="wifiSyncStatus" onclick="showWifiSyncErrorDetail()" style="display:none; font-size:11px; color:var(--orange); align-items:center; justify-content:center; gap:5px; margin:-6px 0 12px; cursor:pointer; font-weight:600;">
+      <span id="wifiSyncDot" style="width:7px; height:7px; border-radius:50%; background:var(--orange); display:inline-block;"></span>
+      <span id="wifiSyncText"></span>
+    </div>
 
     <div class="headerBtns">
       <button class="actionBtn" onclick="openWifiSettings()">⚙ Paramètres</button>
@@ -500,7 +513,7 @@
     <button onclick="openWifiBackup()">💾 Sauvegarder les données (backup)</button>
     <button onclick="openWifiRestore()">📥 Restaurer depuis une sauvegarde</button>
   </div>
-  <p class="settingsInfo">Ces données sont isolées : jamais additionnées aux totaux ou catégories du stock (présentes ou futures). Elles sont stockées uniquement sur cet appareil — pas de synchronisation serveur — pense à faire une sauvegarde régulièrement.</p>
+  <p class="settingsInfo">Ces données sont isolées : jamais additionnées aux totaux ou catégories du stock (présentes ou futures). Elles sont désormais synchronisées entre tous les appareils connectés — pense quand même à faire une sauvegarde régulière en complément.</p>
   <button onclick="wifiSettingsDlg.close(); confirmWifiCloture();" style="width:100%; margin-top:14px; padding:12px; border-radius:8px; border:1px solid var(--border); background:#111318; color:var(--orange); font-weight:600; cursor:pointer; font-size:13.5px;">🔒 Clôturer la vente (archiver puis remettre les compteurs à zéro)</button>
   <div class="row">
     <button class="cancel" onclick="wifiSettingsDlg.close()" style="flex:none; width:100%;">Fermer</button>
@@ -650,6 +663,7 @@ let defaultThreshold = parseInt(localStorage.getItem('stock_lcd_default_threshol
 let activeCategory = localStorage.getItem('stock_lcd_active_tab') || DEFAULT_CATEGORY;
 let sortDir = 'asc'; // Tri A→Z activé par défaut
 const dlg = document.getElementById('dlg');
+const syncErrorDlg = document.getElementById('syncErrorDlg');
 
 // Ouvre un <dialog> en toute sécurité : showModal() lève une erreur si la boîte est déjà
 // ouverte (ex: on rouvre les Paramètres après un prompt() sans jamais l'avoir fermée).
@@ -692,13 +706,58 @@ function scheduleSync(delay = 600){
 }
 
 let currentConnState = 'offline'; // reflète le dernier état RÉEL constaté (résultat de requête), pas navigator.onLine seul
-function setStatus(state, text){
+let lastSyncErrorDetail = null;   // texte exact de la dernière erreur de synchro (stock principal)
+let lastSyncErrorSignature = null; // sert à ne notifier qu'UNE fois par erreur distincte, jamais à chaque nouvelle tentative
+function setStatus(state, text, detail){
   currentConnState = state;
   const dot = document.getElementById('syncDot');
   const txt = document.getElementById('syncText');
-  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)'};
+  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)', error:'var(--red)'};
   dot.style.background = colors[state] || 'var(--muted)';
   txt.textContent = text;
+  lastSyncErrorDetail = detail || null;
+}
+
+// Transforme une erreur Supabase/PostgREST (ou réseau) en message EXACT et compréhensible,
+// jamais un simple "erreur de synchronisation" vague. Utilisé partout (stock ET Vente WiFi).
+function formatSyncError(e){
+  if(!e) return 'Erreur inconnue (aucun détail fourni par le serveur).';
+  const lines = [];
+  if(e.message) lines.push(`Message : ${e.message}`);
+  if(e.code) lines.push(`Code : ${e.code}`);
+  if(e.details) lines.push(`Détails : ${e.details}`);
+  if(e.hint) lines.push(`Piste de résolution : ${e.hint}`);
+  if(lines.length === 0) lines.push(String(e.toString ? e.toString() : e));
+  // Cas fréquent et bloquant : la table Supabase n'existe pas encore.
+  if(e.code === '42P01' || (e.message && /relation .* does not exist/i.test(e.message))){
+    lines.push('→ Cause certaine : une table Supabase requise est introuvable. Exécute le script SQL de création des tables dans Supabase (SQL Editor), puis réessaie.');
+  }
+  if(e.code === '42501' || (e.message && /permission denied/i.test(e.message))){
+    lines.push("→ Cause certaine : la politique de sécurité (RLS) de Supabase bloque cette action. Vérifie les policies de la table concernée.");
+  }
+  return lines.join('\n');
+}
+
+function notifySyncErrorOnce(scope, detail){
+  const sig = scope + '::' + detail;
+  if(scope === 'stock'){
+    if(lastSyncErrorSignature === sig) return;
+    lastSyncErrorSignature = sig;
+  } else {
+    if(lastWifiSyncErrorSignature === sig) return;
+    lastWifiSyncErrorSignature = sig;
+  }
+  alert(`❌ Erreur de synchronisation ${scope === 'wifi' ? '(Vente WiFi) ' : ''}:\n\n${detail}`);
+}
+
+function showSyncErrorDetail(){
+  if(!lastSyncErrorDetail){ alert('Aucune erreur de synchronisation en cours. Tout fonctionne normalement.'); return; }
+  document.getElementById('syncErrorDlgContent').textContent = lastSyncErrorDetail;
+  openDialogSafe(syncErrorDlg);
+}
+async function copySyncErrorDetail(){
+  const ok = await copyToClipboard(document.getElementById('syncErrorDlgContent').textContent);
+  alert(ok ? 'Détail copié.' : 'Impossible de copier automatiquement — sélectionne le texte manuellement.');
 }
 
 // navigator.onLine n'est pas fiable partout (WebView Android, portails captifs...).
@@ -967,7 +1026,9 @@ async function trySync(){
     if(isNetworkError(e)){
       setStatus('offline','Hors ligne — sera synchronisé');
     } else {
-      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
+      const detail = formatSyncError(e);
+      setStatus('error','⚠️ Erreur de synchro — appuyer pour détail', detail);
+      notifySyncErrorOnce('stock', detail);
       scheduleSync(3000);
     }
   }finally{
@@ -992,10 +1053,13 @@ async function loadFromSupabase(){
     await refreshFromServer();
     setStatus('online','Synchronisé');
   }catch(e){
+    console.log('initial sync error', e);
     if(isNetworkError(e)){
       setStatus('offline','Hors ligne — données locales');
     } else {
-      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
+      const detail = formatSyncError(e);
+      setStatus('error','⚠️ Erreur de synchro — appuyer pour détail', detail);
+      notifySyncErrorOnce('stock', detail);
       scheduleSync(3000);
     }
   }
@@ -1717,6 +1781,7 @@ async function forgotPin(){
 renderTabs();
 render();
 loadFromSupabase();
+loadWifiFromSupabase();
 
 // Verrouillage automatique uniquement à l'ouverture RÉELLE de l'app (nouvel onglet/nouvelle session).
 // Un simple rafraîchissement ou une synchronisation dans la même session ne reverrouille plus l'app.
@@ -1750,6 +1815,315 @@ const WIFI_ROWS_KEY = 'stock_lcd_wifi_rows';
 const WIFI_TRASH_KEY = 'stock_lcd_wifi_trash';
 const WIFI_HISTORY_KEY = 'stock_lcd_wifi_history';
 
+/* --- Synchronisation multi-appareils de Vente WiFi -------------------------------------
+   Tables Supabase DÉDIÉES (wifi_rows, wifi_history, wifi_meta), séparées de "items" :
+   le contenu reste isolé des totaux du stock, seule la synchronisation est ajoutée.
+   wifi_rows unifie lignes actives et corbeille via la colonne deleted_at (comme le
+   stock principal encode sa corbeille dans "category"), donc aucune duplication de table.
+   ------------------------------------------------------------------------------------- */
+const WIFI_TABLE = 'wifi_rows';
+const WIFI_HISTORY_TABLE = 'wifi_history';
+const WIFI_META_TABLE = 'wifi_meta';
+const WIFI_PKEY = 'stock_lcd_wifi_pending';
+const WIFI_MIGRATED_KEY = 'stock_lcd_wifi_migrated_v1';
+
+let wifiPending = JSON.parse(localStorage.getItem(WIFI_PKEY) || 'null') || {
+  rows: {inserts:{}, updates:{}, deletes:[]},
+  history: {inserts:{}},
+  meta: null
+};
+let wifiSyncing = false;
+let wifiSyncTimer = null;
+let wifiCloudSeeded = false; // reflète le drapeau "seeded" du cloud (wifi_meta) : empêche toute recréation des désignations par défaut sur un nouvel appareil.
+let lastWifiSyncErrorDetail = null;
+let lastWifiSyncErrorSignature = null;
+
+function setWifiSyncStatus(state, text, detail){
+  const box = document.getElementById('wifiSyncStatus');
+  const dot = document.getElementById('wifiSyncDot');
+  const txt = document.getElementById('wifiSyncText');
+  lastWifiSyncErrorDetail = detail || null;
+  if(state === 'ok'){
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'flex';
+  dot.style.background = state === 'error' ? 'var(--red)' : 'var(--orange)';
+  txt.textContent = text;
+}
+function showWifiSyncErrorDetail(){
+  if(!lastWifiSyncErrorDetail){ alert('Aucune erreur de synchronisation Vente WiFi en cours.'); return; }
+  document.getElementById('syncErrorDlgContent').textContent = lastWifiSyncErrorDetail;
+  openDialogSafe(syncErrorDlg);
+}
+
+function cacheWifiPending(){ localStorage.setItem(WIFI_PKEY, JSON.stringify(wifiPending)); }
+function hasWifiPending(){
+  return Object.keys(wifiPending.rows.inserts).length > 0 ||
+         Object.keys(wifiPending.rows.updates).length > 0 ||
+         wifiPending.rows.deletes.length > 0 ||
+         Object.keys(wifiPending.history.inserts).length > 0 ||
+         !!wifiPending.meta;
+}
+function isWifiTempId(id){ return typeof id === 'string' && id.startsWith('wtemp-'); }
+function looksLikeUuid(id){ return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id); }
+function wifiNewTempId(){ return 'wtemp-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+function wifiRowToDb(r){
+  return {
+    designation: r.designation,
+    prix: r.prix || 0,
+    ticket_recu: r.ticketRecu || 0,
+    vendu: r.vendu || 0,
+    montant: r.montant || 0,
+    deleted_at: r.deletedAt || null
+  };
+}
+function scheduleWifiSync(delay = 600){ clearTimeout(wifiSyncTimer); wifiSyncTimer = setTimeout(trySyncWifi, delay); }
+
+// Programme l'envoi au serveur d'une modification touchant UNE SEULE ligne (reçu, vente,
+// correction, édition, suppression/restauration) — jamais les autres lignes ni le reste de l'app.
+function queueWifiRowUpdate(id, fields){
+  if(isWifiTempId(id)){
+    if(wifiPending.rows.inserts[id]) Object.assign(wifiPending.rows.inserts[id], fields);
+  } else {
+    wifiPending.rows.updates[id] = {...(wifiPending.rows.updates[id]||{}), ...fields};
+  }
+  cacheWifiPending();
+  scheduleWifiSync();
+}
+function queueWifiRowInsert(tempId, payload){
+  wifiPending.rows.inserts[tempId] = payload;
+  cacheWifiPending();
+  scheduleWifiSync();
+}
+function queueWifiRowDelete(id){
+  if(isWifiTempId(id)){
+    delete wifiPending.rows.inserts[id];
+  } else {
+    delete wifiPending.rows.updates[id];
+    if(!wifiPending.rows.deletes.includes(id)) wifiPending.rows.deletes.push(id);
+  }
+  cacheWifiPending();
+  scheduleWifiSync();
+}
+function queueWifiHistoryInsert(payload){
+  const tempId = 'whtemp-' + Date.now() + '-' + Math.random().toString(36).slice(2,7) + Math.random().toString(36).slice(2,4);
+  wifiPending.history.inserts[tempId] = payload;
+  cacheWifiPending();
+  scheduleWifiSync();
+}
+function queueWifiMeta(){
+  wifiPending.meta = {...(wifiPending.meta||{}), title: getWifiTitle(), subtitle: getWifiSubtitle()};
+  cacheWifiPending();
+  scheduleWifiSync();
+}
+function queueWifiSeededFlag(){
+  wifiPending.meta = {...(wifiPending.meta||{}), title: getWifiTitle(), subtitle: getWifiSubtitle(), seeded: 'true'};
+  cacheWifiPending();
+  scheduleWifiSync();
+}
+
+async function trySyncWifi(){
+  if(wifiSyncing) return;
+  wifiSyncing = true;
+  try{
+    let pass = 0;
+    do{
+      pass++;
+
+      for(const tempId of Object.keys(wifiPending.rows.inserts)){
+        const payload = wifiPending.rows.inserts[tempId];
+        const { data, error } = await sb.from(WIFI_TABLE).insert(payload).select();
+        if(error) throw error;
+        const newId = data[0].id;
+        const rows = getWifiRows(); const trash = getWifiTrash();
+        const ar = rows.find(x => x.id === tempId); if(ar) ar.id = newId;
+        const tr = trash.find(x => x.id === tempId); if(tr) tr.id = newId;
+        saveWifiRows(rows); saveWifiTrash(trash);
+        if(JSON.stringify(wifiPending.rows.inserts[tempId]) === JSON.stringify(payload)){
+          delete wifiPending.rows.inserts[tempId];
+        } else {
+          const latest = wifiPending.rows.inserts[tempId];
+          delete wifiPending.rows.inserts[tempId];
+          wifiPending.rows.updates[newId] = {...(wifiPending.rows.updates[newId]||{}), ...latest};
+        }
+        cacheWifiPending();
+      }
+
+      for(const id of Object.keys(wifiPending.rows.updates)){
+        const payload = wifiPending.rows.updates[id];
+        const { error } = await sb.from(WIFI_TABLE).update(payload).eq('id', id);
+        if(error) throw error;
+        if(JSON.stringify(wifiPending.rows.updates[id]) === JSON.stringify(payload)){
+          delete wifiPending.rows.updates[id];
+        }
+        cacheWifiPending();
+      }
+
+      for(const id of [...wifiPending.rows.deletes]){
+        const { error } = await sb.from(WIFI_TABLE).delete().eq('id', id);
+        if(error) throw error;
+        wifiPending.rows.deletes = wifiPending.rows.deletes.filter(x => x !== id);
+        delete wifiPending.rows.updates[id];
+        cacheWifiPending();
+      }
+
+      for(const tempId of Object.keys(wifiPending.history.inserts)){
+        const payload = wifiPending.history.inserts[tempId];
+        const { error } = await sb.from(WIFI_HISTORY_TABLE).insert(payload);
+        if(error) throw error;
+        delete wifiPending.history.inserts[tempId];
+        cacheWifiPending();
+      }
+
+      if(wifiPending.meta){
+        const meta = wifiPending.meta;
+        const metaRows = [{key:'title', value:meta.title}, {key:'subtitle', value:meta.subtitle}];
+        if(meta.seeded !== undefined) metaRows.push({key:'seeded', value:meta.seeded});
+        const { error } = await sb.from(WIFI_META_TABLE)
+          .upsert(metaRows, {onConflict:'key'});
+        if(error) throw error;
+        wifiPending.meta = null;
+        cacheWifiPending();
+      }
+    } while(hasWifiPending() && pass < 5);
+
+    if(!hasWifiPending()){
+      await refreshWifiFromServer();
+      setWifiSyncStatus('ok', '');
+    } else {
+      scheduleWifiSync(500);
+    }
+  }catch(e){
+    console.log('wifi sync error', e);
+    if(isNetworkError(e)){
+      setWifiSyncStatus('offline', '🔌 Vente WiFi hors ligne — sera synchronisé dès le retour du réseau');
+    } else {
+      const detail = formatSyncError(e);
+      setWifiSyncStatus('error', '⚠️ Erreur de synchro WiFi — appuyer pour détail', detail);
+      notifySyncErrorOnce('wifi', detail);
+      scheduleWifiSync(3000);
+    }
+  }finally{
+    wifiSyncing = false;
+  }
+}
+
+async function refreshWifiFromServer(){
+  if(hasWifiPending()) return;
+  const { data: rowsData, error: e1 } = await sb.from(WIFI_TABLE).select('*').order('created_at', {ascending:true});
+  if(e1) throw e1;
+  const active = [], trashed = [];
+  (rowsData || []).forEach(row => {
+    const r = { id: row.id, designation: row.designation, prix: row.prix || 0, ticketRecu: row.ticket_recu || 0, vendu: row.vendu || 0, montant: row.montant || 0 };
+    if(row.deleted_at){ r.deletedAt = row.deleted_at; trashed.push(r); } else active.push(r);
+  });
+  saveWifiRows(active);
+  saveWifiTrash(trashed);
+
+  const { data: histData, error: e2 } = await sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true});
+  if(e2) throw e2;
+  saveWifiHistory((histData || []).map(h => ({
+    date: h.date, rows: h.rows || [], totalRecu: h.total_recu || 0, totalVendu: h.total_vendu || 0, totalMontant: h.total_montant || 0
+  })));
+
+  const { data: metaData, error: e3 } = await sb.from(WIFI_META_TABLE).select('*');
+  if(e3) throw e3;
+  const metaMap = {};
+  (metaData || []).forEach(m => { metaMap[m.key] = m.value; });
+  if(metaMap.title !== undefined) setWifiTitle(metaMap.title);
+  if(metaMap.subtitle !== undefined) setWifiSubtitle(metaMap.subtitle);
+  wifiCloudSeeded = metaMap.seeded === 'true';
+
+  if(document.getElementById('wifiPage').style.display === 'block'){
+    refreshWifiHeader(); renderWifiList();
+  }
+}
+
+// Migration ponctuelle (une seule fois par appareil) : envoie vers Supabase les données Vente
+// WiFi déjà présentes localement AVANT l'activation de la synchronisation, sans jamais rien
+// effacer. Si plusieurs appareils avaient chacun leurs propres désignations avant cette mise à
+// jour, elles se retrouveront TOUTES dans la liste commune après migration (pas de perte, mais
+// doublons possibles à fusionner manuellement une fois — via Corbeille — si besoin).
+// Un appareil sans aucune donnée locale (nouvel appareil) ne migre et n'envoie RIEN : ça évite
+// d'écraser le titre/sous-titre déjà partagé par les autres appareils avec des valeurs par défaut.
+function migrateWifiLegacyDataIfNeeded(){
+  if(localStorage.getItem(WIFI_MIGRATED_KEY) === 'true') return;
+  localStorage.setItem(WIFI_MIGRATED_KEY, 'true');
+  const rows = getWifiRows();
+  const trash = getWifiTrash();
+  const history = getWifiHistory();
+  if(rows.length === 0 && trash.length === 0 && history.length === 0) return; // rien à migrer ici
+
+  rows.forEach(r => {
+    if(!isWifiTempId(r.id)){
+      const newId = wifiNewTempId();
+      wifiPending.rows.inserts[newId] = wifiRowToDb(r);
+      r.id = newId;
+    }
+  });
+  trash.forEach(r => {
+    if(!isWifiTempId(r.id)){
+      const newId = wifiNewTempId();
+      wifiPending.rows.inserts[newId] = wifiRowToDb(r);
+      r.id = newId;
+    }
+  });
+  history.forEach(h => {
+    const tempId = 'whtemp-' + Date.now() + '-' + Math.random().toString(36).slice(2,7) + Math.random().toString(36).slice(2,4);
+    wifiPending.history.inserts[tempId] = {
+      date: h.date, rows: h.rows || [], total_recu: h.totalRecu || 0, total_vendu: h.totalVendu || 0, total_montant: h.totalMontant || 0
+    };
+  });
+  wifiPending.meta = {...(wifiPending.meta||{}), title: getWifiTitle(), subtitle: getWifiSubtitle()};
+
+  saveWifiRows(rows);
+  saveWifiTrash(trash);
+  cacheWifiPending();
+}
+
+// Crée les désignations par défaut (5H/24H/7 jours/1 mois) UNE SEULE FOIS pour l'ensemble des
+// appareils : déclenché uniquement quand le cloud confirme qu'aucun appareil ne les a jamais
+// créées (drapeau "seeded" partagé), jamais simplement parce que CET appareil est vide.
+function seedWifiDefaults(){
+  const initial = JSON.parse(JSON.stringify(WIFI_DEFAULT_ROWS));
+  initial.forEach(r => {
+    const tempId = wifiNewTempId();
+    r.id = tempId;
+    queueWifiRowInsert(tempId, wifiRowToDb(r));
+  });
+  saveWifiRows(initial);
+  queueWifiSeededFlag();
+  if(document.getElementById('wifiPage').style.display === 'block'){
+    renderWifiList(); renderWifiSettingsRows();
+  }
+}
+
+async function loadWifiFromSupabase(){
+  migrateWifiLegacyDataIfNeeded();
+  if(hasWifiPending()){ await trySyncWifi(); return; }
+  try{
+    await refreshWifiFromServer();
+    setWifiSyncStatus('ok', '');
+  }catch(e){
+    console.log('wifi initial sync error', e);
+    if(isNetworkError(e)){
+      setWifiSyncStatus('offline', '🔌 Vente WiFi hors ligne — données locales affichées');
+    } else {
+      const detail = formatSyncError(e);
+      setWifiSyncStatus('error', '⚠️ Erreur de synchro WiFi — appuyer pour détail', detail);
+      notifySyncErrorOnce('wifi', detail);
+      scheduleWifiSync(3000);
+    }
+    return;
+  }
+  if(!hasWifiPending() && !wifiCloudSeeded && getWifiRows().length === 0 && getWifiTrash().length === 0){
+    seedWifiDefaults();
+  }
+}
+window.addEventListener('online', () => trySyncWifi());
+setInterval(() => { if(hasWifiPending()) trySyncWifi(); }, 15000);
+
 const WIFI_DEFAULT_ROWS = [
   {id:'w-5h',  designation:'5H',      prix:3000,  ticketRecu:0, vendu:0, montant:0},
   {id:'w-24h', designation:'24H',     prix:5000,  ticketRecu:0, vendu:0, montant:0},
@@ -1763,14 +2137,8 @@ function getWifiSubtitle(){ return localStorage.getItem(WIFI_SUBTITLE_KEY) || 'G
 function setWifiSubtitle(v){ localStorage.setItem(WIFI_SUBTITLE_KEY, v); }
 
 function getWifiRows(){
-  const raw = localStorage.getItem(WIFI_ROWS_KEY);
-  if(raw === null){
-    const initial = JSON.parse(JSON.stringify(WIFI_DEFAULT_ROWS));
-    saveWifiRows(initial);
-    return initial;
-  }
   try{
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(localStorage.getItem(WIFI_ROWS_KEY) || '[]');
     return Array.isArray(parsed) ? parsed : [];
   }catch(e){
     console.log('wifi rows parse error, recovering with empty list to avoid crashing the page', e);
@@ -1784,17 +2152,15 @@ function saveWifiRows(rows){
 
 function getWifiTrash(){
   try{ const p = JSON.parse(localStorage.getItem(WIFI_TRASH_KEY) || '[]'); return Array.isArray(p) ? p : []; }
-  catch(e){ return []; }
+  catch(e){ console.log('wifi trash parse error, recovering with empty list', e); return []; }
 }
 function saveWifiTrash(t){ localStorage.setItem(WIFI_TRASH_KEY, JSON.stringify(t)); }
 
 function getWifiHistory(){
   try{ const p = JSON.parse(localStorage.getItem(WIFI_HISTORY_KEY) || '[]'); return Array.isArray(p) ? p : []; }
-  catch(e){ return []; }
+  catch(e){ console.log('wifi history parse error, recovering with empty list', e); return []; }
 }
 function saveWifiHistory(h){ localStorage.setItem(WIFI_HISTORY_KEY, JSON.stringify(h)); }
-
-function wifiNewId(){ return 'w-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
 
 // --- Ouverture / fermeture de la page ---
 
@@ -1803,6 +2169,18 @@ function openWifiPage(){
   document.body.style.overflow = 'hidden';
   refreshWifiHeader();
   renderWifiList();
+  if(!hasWifiPending()){
+    refreshWifiFromServer().then(() => setWifiSyncStatus('ok','')).catch(e => {
+      console.log('wifi refresh error', e);
+      if(isNetworkError(e)){
+        setWifiSyncStatus('offline', '🔌 Vente WiFi hors ligne — données locales affichées');
+      } else {
+        const detail = formatSyncError(e);
+        setWifiSyncStatus('error', '⚠️ Erreur de synchro WiFi — appuyer pour détail', detail);
+        notifySyncErrorOnce('wifi', detail);
+      }
+    });
+  }
 }
 function closeWifiPage(){
   document.getElementById('wifiPage').style.display = 'none';
@@ -1889,6 +2267,7 @@ function confirmWifiReceive(){
   if(!r) return alert('Cette désignation est introuvable (a-t-elle été supprimée entre temps ?).');
   r.ticketRecu = (r.ticketRecu || 0) + qty; // n'affecte que cette ligne
   saveWifiRows(rows);
+  queueWifiRowUpdate(r.id, {ticket_recu: r.ticketRecu});
   wifiReceiveDlg.close();
   renderWifiList();
 }
@@ -1927,6 +2306,7 @@ function confirmWifiSale(){
   r.vendu = (r.vendu || 0) + qty;       // n'affecte que cette ligne
   r.montant = (r.montant || 0) + montant; // n'affecte que cette ligne
   saveWifiRows(rows);
+  queueWifiRowUpdate(r.id, {vendu: r.vendu, montant: r.montant});
   wifiSaleDlg.close();
   renderWifiList();
 }
@@ -1956,6 +2336,7 @@ function confirmWifiSaleRemove(){
   r.vendu = Math.max(0, currentVendu - qty);           // n'affecte que cette ligne
   r.montant = Math.max(0, (r.montant || 0) - montant); // n'affecte que cette ligne
   saveWifiRows(rows);
+  queueWifiRowUpdate(r.id, {vendu: r.vendu, montant: r.montant});
   wifiSaleDlg.close();
   renderWifiList();
 }
@@ -1993,10 +2374,15 @@ function saveWifiRow(){
     const r = rows.find(x => x.id === wifiEditingRowId);
     if(!r) return alert('Cette désignation est introuvable.');
     r.designation = name; r.prix = prix;
+    saveWifiRows(rows);
+    queueWifiRowUpdate(r.id, {designation: name, prix: prix});
   } else {
-    rows.push({id: wifiNewId(), designation:name, prix, ticketRecu:0, vendu:0, montant:0});
+    const tempId = wifiNewTempId();
+    const newRow = {id: tempId, designation:name, prix, ticketRecu:0, vendu:0, montant:0};
+    rows.push(newRow);
+    saveWifiRows(rows);
+    queueWifiRowInsert(tempId, wifiRowToDb(newRow));
   }
-  saveWifiRows(rows);
   wifiRowDlg.close();
   renderWifiList();
   renderWifiSettingsRows();
@@ -2012,9 +2398,11 @@ function wifiDeleteRow(id){
   if(!confirm(`Envoyer "${r.designation}" à la corbeille Vente WiFi ?\n(Restaurable à tout moment, ses données ne sont pas perdues.)`)) return;
   rows.splice(idx, 1);
   saveWifiRows(rows);
+  const deletedAt = new Date().toISOString();
   const trash = getWifiTrash();
-  trash.push({...r, deletedAt: new Date().toISOString()});
+  trash.push({...r, deletedAt});
   saveWifiTrash(trash);
+  queueWifiRowUpdate(r.id, {deleted_at: deletedAt});
   renderWifiList();
   renderWifiSettingsRows();
 }
@@ -2051,6 +2439,7 @@ function wifiRestoreRow(id){
   const rows = getWifiRows();
   rows.push(restored);
   saveWifiRows(rows);
+  queueWifiRowUpdate(restored.id, {deleted_at: null});
   renderWifiTrash();
   renderWifiList();
   renderWifiSettingsRows();
@@ -2068,6 +2457,7 @@ async function wifiPermanentDelete(id){
     if(!ok) return;
   }
   saveWifiTrash(trash.filter(x => x.id !== id));
+  queueWifiRowDelete(id);
   renderWifiTrash();
 }
 
@@ -2103,14 +2493,22 @@ async function confirmWifiCloture(){
   }
 
   const history = getWifiHistory();
-  history.push({
+  const historyEntry = {
     date: new Date().toISOString(),
     rows: rows.map(r => ({designation:r.designation, prix:r.prix||0, ticketRecu:r.ticketRecu||0, vendu:r.vendu||0, montant:r.montant||0})),
     totalRecu, totalVendu, totalMontant
-  });
+  };
+  history.push(historyEntry);
   saveWifiHistory(history);
+  queueWifiHistoryInsert({
+    date: historyEntry.date, rows: historyEntry.rows,
+    total_recu: totalRecu, total_vendu: totalVendu, total_montant: totalMontant
+  });
 
-  rows.forEach(r => { r.ticketRecu = 0; r.vendu = 0; r.montant = 0; });
+  rows.forEach(r => {
+    r.ticketRecu = 0; r.vendu = 0; r.montant = 0;
+    queueWifiRowUpdate(r.id, {ticket_recu: 0, vendu: 0, montant: 0});
+  });
   saveWifiRows(rows);
 
   renderWifiList();
@@ -2171,6 +2569,7 @@ function editWifiTitle(){
   const t = v.trim();
   if(!t) return alert('Titre invalide.');
   setWifiTitle(t);
+  queueWifiMeta();
   refreshWifiHeader();
   openWifiSettings();
 }
@@ -2178,6 +2577,7 @@ function editWifiSubtitle(){
   const v = prompt('Sous-titre (ex: nom du fournisseur / réseau) :', getWifiSubtitle());
   if(v === null) return;
   setWifiSubtitle(v.trim());
+  queueWifiMeta();
   refreshWifiHeader();
   openWifiSettings();
 }
