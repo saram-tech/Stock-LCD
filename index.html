@@ -650,7 +650,7 @@ const dlg = document.getElementById('dlg');
 // ouverte (ex: on rouvre les Paramètres après un prompt() sans jamais l'avoir fermée).
 // On l'utilise partout pour que ces réouvertures ne génèrent plus d'erreur silencieuse.
 function openDialogSafe(d){
-  if(d && !d.open) openDialogSafe(d);
+  if(d && !d.open) d.showModal();
 }
 
 // Échappe les caractères HTML avant insertion via innerHTML, pour qu'une désignation ou
@@ -1825,11 +1825,11 @@ function renderWifiList(){
     div.className = 'item wifiRowCard';
     div.innerHTML = `
       <div class="wifiRowTop">
-        <div class="name">${idx + 1}. ${escHtml(r.designation)}</div>
-        <div style="display:flex; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+          <div class="name">${idx + 1}. ${escHtml(r.designation)}</div>
           <button class="wifiMiniBtn edit" onclick="openWifiEditRow('${r.id}')" title="Modifier">✎</button>
-          <button class="wifiMiniBtn del" onclick="wifiDeleteRow('${r.id}')" title="Supprimer">✕</button>
         </div>
+        <button class="wifiMiniBtn del" onclick="wifiDeleteRow('${r.id}')" title="Supprimer">✕</button>
       </div>
       <div class="price">Prix unitaire : ${Number(r.prix || 0).toLocaleString('fr-FR')} GNF</div>
       <div style="display:flex; gap:8px;">
