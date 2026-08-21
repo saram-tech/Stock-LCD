@@ -26,7 +26,12 @@
     padding-bottom:90px;
   }
   h1{font-size:17px; margin-bottom:0; display:flex; align-items:center; gap:6px;}
-  .summaryRow{display:flex; gap:10px; margin-bottom:8px;}
+  .summaryRow{display:flex; gap:10px; margin-bottom:8px; align-items:stretch;}
+  .refreshBtn{
+    flex:0 0 auto; width:clamp(34px,9vw,44px); border-radius:12px; border:1px solid var(--border);
+    background:var(--card); color:var(--blue); font-size:clamp(15px,4vw,18px); cursor:pointer;
+  }
+  .refreshBtn:active{transform:scale(0.92);}
   .summary{
     flex:1; background:linear-gradient(135deg,#1a1d24,#22262f);
     border:1px solid var(--border); border-radius:12px;
@@ -199,6 +204,7 @@
       <div class="big" id="totalQty">0</div>
       <div class="label" id="totalLabel">disponible(s)</div>
     </div>
+    <button class="refreshBtn" id="refreshStockBtn" onclick="forceRefreshStock()" title="Actualiser">🔄</button>
     <div class="summary value">
       <div class="big" id="totalValue">0</div>
       <div class="label" id="totalValueLabel">valeur du stock (GNF)</div>
@@ -429,7 +435,10 @@
         <h1 id="wifiTitleDisplay" style="font-size:16px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📶 VENTE WIFI</h1>
       </div>
     </div>
-    <div id="wifiSubtitleDisplay" style="font-size:12px; color:var(--muted); margin:0 0 12px 28px;"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 12px 28px;">
+      <div id="wifiSubtitleDisplay" style="font-size:12px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+      <button class="refreshBtn" onclick="forceRefreshWifi()" title="Actualiser Vente WiFi" style="width:30px; height:30px; font-size:14px; flex:0 0 auto;">🔄</button>
+    </div>
 
     <div class="summaryRow">
       <div class="summary">
@@ -462,13 +471,15 @@
 </div>
 
 <dialog id="wifiReceiveDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">🎫 Ticket reçu</label>
-  <p id="wifiReceiveRowName" style="font-size:13px; color:var(--muted); margin-bottom:12px;"></p>
-  <label>Quantité à ajouter</label>
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">🎫 Tickets reçus</label>
+  <p id="wifiReceiveRowName" style="font-size:13px; color:var(--muted); margin-bottom:4px;"></p>
+  <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Actuellement reçu : <b id="wifiReceiveCurrent" style="color:var(--text);">0</b></p>
+  <label>Quantité (➕ pour ajouter, ➖ pour corriger/retirer)</label>
   <input id="wifiReceiveQty" type="number" min="1" step="1" placeholder="00" inputmode="numeric">
   <div class="row">
     <button class="cancel" onclick="wifiReceiveDlg.close()">Annuler</button>
-    <button class="save" onclick="confirmWifiReceive()">Ajouter</button>
+    <button class="cancel" onclick="confirmWifiReceiveDelta(-1)" style="color:var(--red); border:1px solid var(--red);">➖ Retirer</button>
+    <button class="save" onclick="confirmWifiReceiveDelta(1)">➕ Ajouter</button>
   </div>
 </dialog>
 
@@ -700,8 +711,9 @@ function attachAutoCap(el){
 
 // Anti-rebond : regroupe les taps rapprochés (+/-) en un seul envoi réseau,
 // au lieu d'envoyer une requête à chaque frappe.
-function scheduleSync(delay = 600){
+function scheduleSync(delay = 50){
   clearTimeout(syncTimer);
+  setStatus('pending','En attente de synchronisation');
   syncTimer = setTimeout(trySync, delay);
 }
 
@@ -712,7 +724,7 @@ function setStatus(state, text, detail){
   currentConnState = state;
   const dot = document.getElementById('syncDot');
   const txt = document.getElementById('syncText');
-  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)', error:'var(--red)'};
+  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)', error:'var(--red)', pending:'var(--muted)'};
   dot.style.background = colors[state] || 'var(--muted)';
   txt.textContent = text;
   lastSyncErrorDetail = detail || null;
@@ -959,7 +971,7 @@ async function trySync(){
     let pass = 0;
     do{
       pass++;
-      setStatus('syncing','Synchronisation...');
+      setStatus('syncing','Synchronisation en cours…');
 
       for(const tempId of Object.keys(pending.inserts)){
         const payload = pending.inserts[tempId];
@@ -1018,16 +1030,16 @@ async function trySync(){
       await refreshFromServer();
       setStatus('online','Synchronisé');
     } else {
-      setStatus('syncing','Synchronisation...');
+      setStatus('pending','En attente de synchronisation');
       scheduleSync(500);
     }
   }catch(e){
     console.log('sync error', e);
     if(isNetworkError(e)){
-      setStatus('offline','Hors ligne — sera synchronisé');
+      setStatus('offline','Hors connexion');
     } else {
       const detail = formatSyncError(e);
-      setStatus('error','⚠️ Erreur de synchro — appuyer pour détail', detail);
+      setStatus('error','Échec de synchronisation — appuyer pour détail', detail);
       notifySyncErrorOnce('stock', detail);
       scheduleSync(3000);
     }
@@ -1040,7 +1052,19 @@ async function refreshFromServer(){
   if(hasPending()) return;
   const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
   if(error) throw error;
-  items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold)}));
+  // Protection anti-écrasement : si des saisies locales sont arrivées PENDANT cette requête
+  // réseau (round-trip), on ignore la réponse (potentiellement déjà périmée) plutôt que
+  // d'écraser une donnée plus récente — la synchro planifiée s'en chargera juste après.
+  if(hasPending()) return;
+  items = data.map(it => ({
+    ...it,
+    name: it.name || '',
+    ref: it.ref || '',
+    qty: it.qty ?? 0,
+    price: it.price ?? 0,
+    category: it.category || DEFAULT_CATEGORY,
+    threshold: (it.threshold ?? defaultThreshold)
+  }));
   cacheLocal();
   renderTabs(); render();
 }
@@ -1048,19 +1072,43 @@ async function refreshFromServer(){
 async function loadFromSupabase(){
   renderTabs(); render();
   if(hasPending()){ await trySync(); return; }
-  setStatus('syncing','Synchronisation...');
+  setStatus('syncing','Synchronisation en cours…');
   try{
     await refreshFromServer();
     setStatus('online','Synchronisé');
   }catch(e){
     console.log('initial sync error', e);
     if(isNetworkError(e)){
-      setStatus('offline','Hors ligne — données locales');
+      setStatus('offline','Hors connexion');
     } else {
       const detail = formatSyncError(e);
-      setStatus('error','⚠️ Erreur de synchro — appuyer pour détail', detail);
+      setStatus('error','Échec de synchronisation — appuyer pour détail', detail);
       notifySyncErrorOnce('stock', detail);
       scheduleSync(3000);
+    }
+  }
+}
+
+// Bouton d'actualisation de secours : vérifie réellement Supabase (pas de simple reload),
+// synchronise les changements en attente, récupère les dernières données, actualise l'UI.
+async function forceRefreshStock(){
+  if(syncing){ setStatus('syncing','Synchronisation en cours…'); return; }
+  setStatus('syncing','Synchronisation en cours…');
+  if(hasPending()){
+    await trySync();
+    return;
+  }
+  try{
+    await refreshFromServer();
+    setStatus('online','Synchronisé');
+  }catch(e){
+    console.log('force refresh error', e);
+    if(isNetworkError(e)){
+      setStatus('offline','Hors connexion');
+    } else {
+      const detail = formatSyncError(e);
+      setStatus('error','Échec de synchronisation — appuyer pour détail', detail);
+      notifySyncErrorOnce('stock', detail);
     }
   }
 }
@@ -1730,13 +1778,13 @@ async function editPin(){
 }
 
 // --- Verrouillage plein écran de l'application ---
-const SESSION_UNLOCKED_KEY = 'stock_lcd_unlocked_session';
+const SESSION_UNLOCKED_KEY = 'stock_lcd_unlocked_persist'; // localStorage (PAS sessionStorage) : reste déverrouillé après un simple rafraîchissement, uniquement remis à zéro par "🚪 Déconnexion".
 const lockDlg = document.getElementById('lockDlg');
 lockDlg.addEventListener('cancel', e => e.preventDefault()); // empêche la fermeture via Échap
 document.getElementById('lockOkBtn').onclick = async () => {
   const input = document.getElementById('lockPinInput');
   if(await verifyPin(input.value.trim())){
-    sessionStorage.setItem(SESSION_UNLOCKED_KEY, '1');
+    localStorage.setItem(SESSION_UNLOCKED_KEY, '1');
     lockDlg.close(); input.value='';
   }
   else { alert('Code PIN incorrect.'); input.value=''; input.focus(); }
@@ -1754,6 +1802,7 @@ function showLock(){
 function lockAppNow(){
   if(!hasPin()){ alert('Définis d\'abord un code PIN (bouton "🔑 Définir / modifier le code PIN") pour pouvoir verrouiller l\'application.'); return; }
   settingsDlg.close();
+  localStorage.removeItem(SESSION_UNLOCKED_KEY);
   showLock();
 }
 
@@ -1771,7 +1820,7 @@ async function forgotPin(){
   lockDlg.close();
   alert('Code de secours valide ✅ Choisis immédiatement un nouveau code PIN.');
   if(await promptSetNewPin()){
-    sessionStorage.setItem(SESSION_UNLOCKED_KEY, '1');
+    localStorage.setItem(SESSION_UNLOCKED_KEY, '1');
   } else {
     // Pas de nouveau PIN défini : l'app reste verrouillée par sécurité (ancien PIN toujours actif).
     showLock();
@@ -1783,9 +1832,9 @@ render();
 loadFromSupabase();
 loadWifiFromSupabase();
 
-// Verrouillage automatique uniquement à l'ouverture RÉELLE de l'app (nouvel onglet/nouvelle session).
-// Un simple rafraîchissement ou une synchronisation dans la même session ne reverrouille plus l'app.
-if(hasPin() && !sessionStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
+// Verrouillage automatique uniquement si l'app n'a jamais été déverrouillée sur CET appareil, ou
+// après un "🚪 Déconnexion" explicite. Un simple rafraîchissement ne reverrouille plus jamais l'app.
+if(hasPin() && !localStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -1837,8 +1886,10 @@ let wifiSyncTimer = null;
 let wifiCloudSeeded = false; // reflète le drapeau "seeded" du cloud (wifi_meta) : empêche toute recréation des désignations par défaut sur un nouvel appareil.
 let lastWifiSyncErrorDetail = null;
 let lastWifiSyncErrorSignature = null;
+let currentWifiConnState = 'offline';
 
 function setWifiSyncStatus(state, text, detail){
+  currentWifiConnState = state;
   const box = document.getElementById('wifiSyncStatus');
   const dot = document.getElementById('wifiSyncDot');
   const txt = document.getElementById('wifiSyncText');
@@ -1847,8 +1898,10 @@ function setWifiSyncStatus(state, text, detail){
     box.style.display = 'none';
     return;
   }
+  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)', error:'var(--red)', pending:'var(--muted)'};
   box.style.display = 'flex';
-  dot.style.background = state === 'error' ? 'var(--red)' : 'var(--orange)';
+  dot.style.background = colors[state] || 'var(--orange)';
+  box.style.color = colors[state] || 'var(--orange)';
   txt.textContent = text;
 }
 function showWifiSyncErrorDetail(){
@@ -1878,7 +1931,11 @@ function wifiRowToDb(r){
     deleted_at: r.deletedAt || null
   };
 }
-function scheduleWifiSync(delay = 600){ clearTimeout(wifiSyncTimer); wifiSyncTimer = setTimeout(trySyncWifi, delay); }
+function scheduleWifiSync(delay = 50){
+  clearTimeout(wifiSyncTimer);
+  setWifiSyncStatus('pending','En attente de synchronisation');
+  wifiSyncTimer = setTimeout(trySyncWifi, delay);
+}
 
 // Programme l'envoi au serveur d'une modification touchant UNE SEULE ligne (reçu, vente,
 // correction, édition, suppression/restauration) — jamais les autres lignes ni le reste de l'app.
@@ -1930,6 +1987,7 @@ async function trySyncWifi(){
     let pass = 0;
     do{
       pass++;
+      setWifiSyncStatus('syncing','Synchronisation en cours…');
 
       for(const tempId of Object.keys(wifiPending.rows.inserts)){
         const payload = wifiPending.rows.inserts[tempId];
@@ -1997,10 +2055,10 @@ async function trySyncWifi(){
   }catch(e){
     console.log('wifi sync error', e);
     if(isNetworkError(e)){
-      setWifiSyncStatus('offline', '🔌 Vente WiFi hors ligne — sera synchronisé dès le retour du réseau');
+      setWifiSyncStatus('offline', 'Hors connexion — sera synchronisé');
     } else {
       const detail = formatSyncError(e);
-      setWifiSyncStatus('error', '⚠️ Erreur de synchro WiFi — appuyer pour détail', detail);
+      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
       notifySyncErrorOnce('wifi', detail);
       scheduleWifiSync(3000);
     }
@@ -2013,22 +2071,28 @@ async function refreshWifiFromServer(){
   if(hasWifiPending()) return;
   const { data: rowsData, error: e1 } = await sb.from(WIFI_TABLE).select('*').order('created_at', {ascending:true});
   if(e1) throw e1;
+  const { data: histData, error: e2 } = await sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true});
+  if(e2) throw e2;
+  const { data: metaData, error: e3 } = await sb.from(WIFI_META_TABLE).select('*');
+  if(e3) throw e3;
+
+  // Protection anti-écrasement : si des saisies locales sont arrivées PENDANT ces requêtes
+  // réseau, on ignore entièrement la réponse plutôt que d'écraser une donnée plus récente —
+  // la synchro planifiée s'en chargera juste après.
+  if(hasWifiPending()) return;
+
   const active = [], trashed = [];
   (rowsData || []).forEach(row => {
-    const r = { id: row.id, designation: row.designation, prix: row.prix || 0, ticketRecu: row.ticket_recu || 0, vendu: row.vendu || 0, montant: row.montant || 0 };
+    const r = { id: row.id, designation: row.designation || '', prix: row.prix ?? 0, ticketRecu: row.ticket_recu ?? 0, vendu: row.vendu ?? 0, montant: row.montant ?? 0 };
     if(row.deleted_at){ r.deletedAt = row.deleted_at; trashed.push(r); } else active.push(r);
   });
   saveWifiRows(active);
   saveWifiTrash(trashed);
 
-  const { data: histData, error: e2 } = await sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true});
-  if(e2) throw e2;
   saveWifiHistory((histData || []).map(h => ({
-    date: h.date, rows: h.rows || [], totalRecu: h.total_recu || 0, totalVendu: h.total_vendu || 0, totalMontant: h.total_montant || 0
+    date: h.date, rows: h.rows || [], totalRecu: h.total_recu ?? 0, totalVendu: h.total_vendu ?? 0, totalMontant: h.total_montant ?? 0
   })));
 
-  const { data: metaData, error: e3 } = await sb.from(WIFI_META_TABLE).select('*');
-  if(e3) throw e3;
   const metaMap = {};
   (metaData || []).forEach(m => { metaMap[m.key] = m.value; });
   if(metaMap.title !== undefined) setWifiTitle(metaMap.title);
@@ -2102,16 +2166,24 @@ function seedWifiDefaults(){
 async function loadWifiFromSupabase(){
   migrateWifiLegacyDataIfNeeded();
   if(hasWifiPending()){ await trySyncWifi(); return; }
+  setWifiSyncStatus('syncing','Synchronisation en cours…');
   try{
     await refreshWifiFromServer();
     setWifiSyncStatus('ok', '');
+    // Corrige une bonne fois pour toutes une éventuelle faute "Fasto" déjà synchronisée
+    // (ancien texte par défaut), et propage la correction à tous les appareils.
+    if(getWifiSubtitle().includes('Fasto')){
+      setWifiSubtitle(getWifiSubtitle().replace(/Fasto/g, 'Fast'));
+      queueWifiMeta();
+      refreshWifiHeader();
+    }
   }catch(e){
     console.log('wifi initial sync error', e);
     if(isNetworkError(e)){
-      setWifiSyncStatus('offline', '🔌 Vente WiFi hors ligne — données locales affichées');
+      setWifiSyncStatus('offline', 'Hors connexion — données locales affichées');
     } else {
       const detail = formatSyncError(e);
-      setWifiSyncStatus('error', '⚠️ Erreur de synchro WiFi — appuyer pour détail', detail);
+      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
       notifySyncErrorOnce('wifi', detail);
       scheduleWifiSync(3000);
     }
@@ -2124,6 +2196,30 @@ async function loadWifiFromSupabase(){
 window.addEventListener('online', () => trySyncWifi());
 setInterval(() => { if(hasWifiPending()) trySyncWifi(); }, 15000);
 
+// Bouton d'actualisation de secours (Vente WiFi) : vérifie réellement Supabase, synchronise
+// les changements en attente, récupère les dernières données, actualise l'UI. Jamais un simple reload.
+async function forceRefreshWifi(){
+  if(wifiSyncing){ setWifiSyncStatus('syncing','Synchronisation en cours…'); return; }
+  setWifiSyncStatus('syncing','Synchronisation en cours…');
+  if(hasWifiPending()){
+    await trySyncWifi();
+    return;
+  }
+  try{
+    await refreshWifiFromServer();
+    setWifiSyncStatus('ok', '');
+  }catch(e){
+    console.log('force refresh wifi error', e);
+    if(isNetworkError(e)){
+      setWifiSyncStatus('offline', 'Hors connexion — données locales affichées');
+    } else {
+      const detail = formatSyncError(e);
+      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
+      notifySyncErrorOnce('wifi', detail);
+    }
+  }
+}
+
 const WIFI_DEFAULT_ROWS = [
   {id:'w-5h',  designation:'5H',      prix:3000,  ticketRecu:0, vendu:0, montant:0},
   {id:'w-24h', designation:'24H',     prix:5000,  ticketRecu:0, vendu:0, montant:0},
@@ -2133,7 +2229,7 @@ const WIFI_DEFAULT_ROWS = [
 
 function getWifiTitle(){ return localStorage.getItem(WIFI_TITLE_KEY) || 'VENTE WIFI'; }
 function setWifiTitle(v){ localStorage.setItem(WIFI_TITLE_KEY, v); }
-function getWifiSubtitle(){ return localStorage.getItem(WIFI_SUBTITLE_KEY) || 'Guinée Wifi - Fasto - DALEIN'; }
+function getWifiSubtitle(){ return localStorage.getItem(WIFI_SUBTITLE_KEY) || 'Guinée Wifi - Fast - DALEIN'; }
 function setWifiSubtitle(v){ localStorage.setItem(WIFI_SUBTITLE_KEY, v); }
 
 function getWifiRows(){
@@ -2170,13 +2266,14 @@ function openWifiPage(){
   refreshWifiHeader();
   renderWifiList();
   if(!hasWifiPending()){
+    setWifiSyncStatus('syncing','Synchronisation en cours…');
     refreshWifiFromServer().then(() => setWifiSyncStatus('ok','')).catch(e => {
       console.log('wifi refresh error', e);
       if(isNetworkError(e)){
-        setWifiSyncStatus('offline', '🔌 Vente WiFi hors ligne — données locales affichées');
+        setWifiSyncStatus('offline', 'Hors connexion — données locales affichées');
       } else {
         const detail = formatSyncError(e);
-        setWifiSyncStatus('error', '⚠️ Erreur de synchro WiFi — appuyer pour détail', detail);
+        setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
         notifySyncErrorOnce('wifi', detail);
       }
     });
@@ -2193,8 +2290,32 @@ function refreshWifiHeader(){
 
 // --- Rendu de la liste des désignations ---
 
+// Convertit une désignation ("5H", "24H", "1 Semaine", "1 Mois", "7 jours"...) en durée
+// exprimée en minutes, pour pouvoir trier automatiquement du plus court au plus long.
+// Une désignation sans durée reconnaissable est classée à la toute fin (jamais d'erreur).
+function wifiDurationMinutes(designation){
+  try{
+    const s = String(designation || '').toLowerCase();
+    const m = s.match(/(\d+(?:[.,]\d+)?)\s*(minutes?|min|heures?|h|semaines?|jours?|j|mois|ann[ée]es?|ans?)/i);
+    if(!m) return Infinity;
+    const n = parseFloat(m[1].replace(',', '.'));
+    if(isNaN(n)) return Infinity;
+    const unit = m[2];
+    if(unit.startsWith('min')) return n;
+    if(unit.startsWith('h')) return n * 60;
+    if(unit.startsWith('sem')) return n * 60 * 24 * 7;
+    if(unit.startsWith('j')) return n * 60 * 24;
+    if(unit.startsWith('moi')) return n * 60 * 24 * 30;
+    if(unit.startsWith('an')) return n * 60 * 24 * 365;
+    return Infinity;
+  }catch(e){ return Infinity; }
+}
+function sortWifiRowsByDuration(rows){
+  return rows.slice().sort((a,b) => wifiDurationMinutes(a.designation) - wifiDurationMinutes(b.designation));
+}
+
 function renderWifiList(){
-  const rows = getWifiRows();
+  const rows = sortWifiRowsByDuration(getWifiRows());
   const list = document.getElementById('wifiList');
   list.innerHTML = '';
 
@@ -2255,17 +2376,21 @@ function openWifiReceive(rowId){
   if(!r) return;
   wifiActiveRowId = rowId;
   document.getElementById('wifiReceiveRowName').textContent = r.designation;
+  document.getElementById('wifiReceiveCurrent').textContent = r.ticketRecu || 0;
   document.getElementById('wifiReceiveQty').value = '';
   openDialogSafe(wifiReceiveDlg);
   setTimeout(() => document.getElementById('wifiReceiveQty').focus(), 50);
 }
-function confirmWifiReceive(){
+function confirmWifiReceiveDelta(sign){
   const qty = parseInt(document.getElementById('wifiReceiveQty').value);
   if(isNaN(qty) || qty <= 0) return alert('Entrez une quantité valide (nombre entier positif).');
   const rows = getWifiRows();
   const r = rows.find(x => x.id === wifiActiveRowId);
   if(!r) return alert('Cette désignation est introuvable (a-t-elle été supprimée entre temps ?).');
-  r.ticketRecu = (r.ticketRecu || 0) + qty; // n'affecte que cette ligne
+  const current = r.ticketRecu || 0;
+  let next = current + (sign * qty);
+  if(next < 0) next = 0; // ne descend jamais sous zéro, quelle que soit la correction demandée
+  r.ticketRecu = next;
   saveWifiRows(rows);
   queueWifiRowUpdate(r.id, {ticket_recu: r.ticketRecu});
   wifiReceiveDlg.close();
@@ -2391,20 +2516,25 @@ function saveWifiRow(){
 // --- Suppression = déplacement vers la corbeille dédiée (réversible, rien n'est perdu) ---
 
 function wifiDeleteRow(id){
-  const rows = getWifiRows();
-  const idx = rows.findIndex(x => x.id === id);
-  if(idx === -1) return;
-  const r = rows[idx];
-  if(!confirm(`Envoyer "${r.designation}" à la corbeille Vente WiFi ?\n(Restaurable à tout moment, ses données ne sont pas perdues.)`)) return;
-  rows.splice(idx, 1);
-  saveWifiRows(rows);
-  const deletedAt = new Date().toISOString();
-  const trash = getWifiTrash();
-  trash.push({...r, deletedAt});
-  saveWifiTrash(trash);
-  queueWifiRowUpdate(r.id, {deleted_at: deletedAt});
-  renderWifiList();
-  renderWifiSettingsRows();
+  try{
+    const rows = getWifiRows();
+    const idx = rows.findIndex(x => x.id === id);
+    if(idx === -1){ alert("Cette désignation n'existe plus (déjà supprimée ailleurs)."); renderWifiList(); return; }
+    const r = rows[idx];
+    if(!confirm(`Envoyer "${r.designation}" à la corbeille Vente WiFi ?\n(Restaurable à tout moment, ses données ne sont pas perdues.)`)) return;
+    rows.splice(idx, 1);
+    saveWifiRows(rows);
+    const deletedAt = new Date().toISOString();
+    const trash = getWifiTrash();
+    trash.push({...r, deletedAt});
+    saveWifiTrash(trash);
+    queueWifiRowUpdate(r.id, {deleted_at: deletedAt});
+    renderWifiList();
+    renderWifiSettingsRows();
+  }catch(e){
+    console.log('wifiDeleteRow error', e);
+    alert('❌ Erreur lors de la suppression :\n\n' + formatSyncError(e));
+  }
 }
 
 const wifiTrashDlg = document.getElementById('wifiTrashDlg');
