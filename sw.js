@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stock-lcd-v21';
+const CACHE_NAME = 'stock-lcd-v22';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -23,6 +23,13 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Ne jamais intercepter les requêtes vers un autre domaine (Supabase, etc.) : les laisser
+  // passer directement au réseau. Les mettre en cache pourrait faire croire à l'application
+  // qu'une synchronisation a réussi alors qu'elle a en réalité reçu une VIEILLE réponse mise
+  // en cache — c'est exactement ce qui causait le faux statut "Synchronisé" hors connexion.
+  const reqUrl = new URL(event.request.url);
+  if(reqUrl.origin !== self.location.origin) return;
+
   const isHTML = event.request.mode === 'navigate' || event.request.url.endsWith('.html');
 
   if (isHTML) {
