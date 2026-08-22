@@ -78,6 +78,7 @@
   }
   .item .info{flex:1; min-width:0;}
   .item .name{font-weight:600; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .item .name.nameWrap{white-space:normal; overflow:visible; text-overflow:clip; line-height:1.3;}
   .item .ref{color:var(--muted); font-size:12px; margin-top:2px;}
   .item .price{color:var(--gold); font-size:11px; margin-top:2px;}
   .item .qty{
@@ -96,6 +97,7 @@
   .btn.plus{background:#1a3a24; color:var(--green);}
   .btn.edit{background:#1f2a3a; color:var(--blue); font-size:15px;}
   .btn.del{background:#2a1a1a; color:var(--muted); font-size:15px;}
+  .btn.menu{background:#2a2e38; color:var(--text); font-size:19px;}
   .toolbar{display:flex; gap:8px; margin-bottom:12px;}
   .toolbar .search{margin-bottom:0; flex:1;}
   .sortBtn{
@@ -364,6 +366,16 @@
   <div class="row">
     <button class="cancel" onclick="restoreDlg.close()">Annuler</button>
     <button class="save" onclick="doRestore()">Restaurer</button>
+  </div>
+</dialog>
+
+<dialog id="itemActionsDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">Actions</label>
+  <p id="itemActionsName" style="font-size:13px; color:var(--muted); margin-bottom:16px;"></p>
+  <div class="row" style="flex-direction:column; gap:10px;">
+    <button class="cancel" onclick="itemActionsEdit()" style="color:var(--blue); border:1px solid var(--blue); text-align:left; padding-left:16px;">✎ Modifier</button>
+    <button class="cancel" onclick="itemActionsDelete()" style="color:var(--red); border:1px solid var(--red); text-align:left; padding-left:16px;">✕ Supprimer</button>
+    <button class="cancel" onclick="itemActionsDlg.close()">Annuler</button>
   </div>
 </dialog>
 
@@ -1242,15 +1254,14 @@ function render(){
       const cls = it.qty === 0 ? 'out' : (it.qty <= threshold ? 'low' : 'ok');
       div.innerHTML = `
         <div class="info">
-          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${escHtml(it.name)}</div>
+          <div class="name nameWrap"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${escHtml(it.name)}</div>
           <div class="ref">${escHtml(it.ref || '')}</div>
           ${it.price ? `<div class="price">${Number(it.price).toLocaleString('fr-FR')} GNF/u</div>` : ''}
         </div>
         <div class="qty ${cls}">${it.qty}</div>
         <div class="controls">
-          <button class="btn del" onclick="delItem('${it.id}')">✕</button>
-          <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
           <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
+          <button class="btn menu" onclick="openItemActions('${it.id}')" title="Actions">⋮</button>
           <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
         </div>
       `;
@@ -1689,6 +1700,26 @@ function adjustMcAmount(sign){
   const newAmount = Math.max(0, (it.price || 0) + sign * delta);
   updateItemLocal(it.id, it.name, it.ref || '', it.qty, it.category, it.threshold, newAmount);
   document.getElementById('mcCurrentAmount').textContent = newAmount.toLocaleString('fr-FR');
+}
+
+const itemActionsDlg = document.getElementById('itemActionsDlg');
+let itemActionsId = null;
+function openItemActions(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  itemActionsId = id;
+  document.getElementById('itemActionsName').textContent = it.name;
+  openDialogSafe(itemActionsDlg);
+}
+function itemActionsEdit(){
+  const id = itemActionsId;
+  itemActionsDlg.close();
+  if(id) openEdit(id);
+}
+function itemActionsDelete(){
+  const id = itemActionsId;
+  itemActionsDlg.close();
+  if(id) delItem(id);
 }
 
 const catDelDlg = document.getElementById('catDelDlg');
