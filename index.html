@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stock LCD">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
 <style>
   :root{
     --bg:#0f1115; --card:#1a1d24; --border:#2a2e38;
@@ -177,6 +177,20 @@
   }
   .wifiTapBox .v{font-size:15px; font-weight:700; line-height:1.1;}
   .wifiTapBox .l{font-size:9px; color:var(--muted); margin-top:1px;}
+  .wifiVenduBox{
+    flex:1; background:#111318; border:1px solid var(--border); border-radius:7px;
+    padding:4px; display:flex; align-items:stretch; gap:4px;
+  }
+  .wifiVenduCenter{flex:1; text-align:center; cursor:pointer; padding:1px 0;}
+  .wifiVenduCenter .v{font-size:15px; font-weight:700; line-height:1.1;}
+  .wifiVenduCenter .l{font-size:9px; color:var(--muted); margin-top:1px;}
+  .wifiStepBtn{
+    flex:0 0 auto; width:26px; border:none; border-radius:6px; font-size:16px; font-weight:700;
+    cursor:pointer; color:#fff;
+  }
+  .wifiStepBtn.minus{background:#3a1f1f; color:var(--red);}
+  .wifiStepBtn.plus{background:#1a3a24; color:var(--green);}
+  .wifiLastStepBadge{font-size:9px; font-weight:700; color:var(--muted); vertical-align:super;}
   .wifiRowCard{display:flex; flex-direction:column; align-items:stretch; gap:5px; padding:9px !important; margin-bottom:6px !important;}
   .wifiRowTop{display:flex; justify-content:space-between; align-items:center; gap:6px;}
   .wifiMiniBtn{width:28px; height:28px; border-radius:8px; border:none; font-size:12px; cursor:pointer; flex:0 0 auto;}
@@ -688,6 +702,17 @@ function openDialogSafe(d){
 // puisque son contenu peut être saisi par un tiers).
 function escHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Échappe une valeur pour l'utiliser comme argument JS littéral à l'intérieur d'un attribut
+// onclick="...('...')". Nécessaire partout où une chaîne modifiable par l'utilisateur (et donc
+// potentiellement synchronisée vers d'autres appareils via Supabase) sert d'identifiant — par
+// exemple le NOM d'une catégorie, qui n'a pas d'UUID séparé. Sans ça, un nom de catégorie
+// contenant une apostrophe pourrait sortir de l'attribut onclick et exécuter du code arbitraire
+// (XSS stocké) sur tout appareil affichant cette catégorie.
+function escJsAttr(s){
+  const jsEscaped = String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return escHtml(jsEscaped);
 }
 
 // --- Utilitaire : première lettre toujours en majuscule, quel que soit le texte saisi ---
@@ -1506,7 +1531,7 @@ function openInfos(){
     <div style="margin-bottom:14px; padding-bottom:14px; ${idx < ordered.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
         <b style="font-size:14px;">${idx + 1}. ${cat === DEFAULT_CATEGORY ? '🖥️' : (isMonCompteCategory(cat) ? 'ℹ️' : (cat === CORBEILLE_KEY ? '🗑' : '📦'))} ${escHtml(categoryLabel(cat))}</b>
-        <button onclick="editCategoryDescription('${cat}')" style="background:none; border:none; color:var(--blue); font-size:14px; cursor:pointer;">✎</button>
+        <button onclick="editCategoryDescription('${escJsAttr(cat)}')" style="background:none; border:none; color:var(--blue); font-size:14px; cursor:pointer;">✎</button>
       </div>
       <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0;">${escHtml(getCategoryDescription(cat))}</p>
     </div>
@@ -1884,6 +1909,8 @@ let wifiPending = JSON.parse(localStorage.getItem(WIFI_PKEY) || 'null') || {
 let wifiSyncing = false;
 let wifiSyncTimer = null;
 let wifiCloudSeeded = false; // reflète le drapeau "seeded" du cloud (wifi_meta) : empêche toute recréation des désignations par défaut sur un nouvel appareil.
+const wifiStepCooldown = {}; // { rowId: timestamp jusqu'auquel les boutons −/+ sont verrouillés (2 min) }
+const wifiLastStep = {};     // { rowId: {delta, time} } dernière correction ±1, affichée tant qu'elle a moins d'une minute
 let lastWifiSyncErrorDetail = null;
 let lastWifiSyncErrorSignature = null;
 let currentWifiConnState = 'offline';
@@ -2332,6 +2359,13 @@ function renderWifiList(){
     const reste = recu - vendu;
     totalRecu += recu; totalVendu += vendu; totalMontant += montant;
 
+    const now = Date.now();
+    const inCooldown = (wifiStepCooldown[r.id] || 0) > now;
+    const lastStep = wifiLastStep[r.id];
+    const lastStepBadge = (lastStep && (now - lastStep.time < 60000))
+      ? ` <span class="wifiLastStepBadge">${lastStep.delta > 0 ? '+1' : '−1'}</span>`
+      : '';
+
     const div = document.createElement('div');
     div.className = 'item wifiRowCard';
     div.innerHTML = `
@@ -2352,10 +2386,14 @@ function renderWifiList(){
           <div class="v" style="color:${reste < 0 ? 'var(--red)' : (reste === 0 ? 'var(--orange)' : 'var(--green)')};">${reste}</div>
           <div class="l">Reste</div>
         </div>
-        <button class="wifiTapBox" onclick="openWifiSale('${r.id}')">
-          <div class="v" style="color:var(--gold);">${vendu}</div>
-          <div class="l">Vendu</div>
-        </button>
+        <div class="wifiVenduBox">
+          <button class="wifiStepBtn minus" onclick="wifiSaleStep('${r.id}', -1)" title="Retirer 1 vente" style="opacity:${inCooldown ? '0.4' : '1'};">−</button>
+          <div class="wifiVenduCenter" onclick="openWifiSale('${r.id}')" title="Vente en quantité">
+            <div class="v" style="color:var(--gold);">${vendu}${lastStepBadge}</div>
+            <div class="l">Vendu</div>
+          </div>
+          <button class="wifiStepBtn plus" onclick="wifiSaleStep('${r.id}', 1)" title="Ajouter 1 vente" style="opacity:${inCooldown ? '0.4' : '1'};">+</button>
+        </div>
       </div>
     `;
     list.appendChild(div);
@@ -2401,12 +2439,42 @@ function confirmWifiReceiveDelta(sign){
 
 const wifiSaleDlg = document.getElementById('wifiSaleDlg');
 
+// Ajustement rapide ±1 depuis la ligne elle-même (boutons − / + de la case "Vendu"),
+// sans ouvrir de boîte de dialogue. Même calcul que confirmWifiSale/confirmWifiSaleRemove :
+// montant = quantité × prix unitaire. N'affecte que cette ligne, jamais sous zéro.
+function wifiSaleStep(rowId, delta){
+  const now = Date.now();
+  const lockedUntil = wifiStepCooldown[rowId] || 0;
+  if(now < lockedUntil){
+    const remainingSec = Math.max(1, Math.ceil((lockedUntil - now) / 1000));
+    alert(`✅ Votre frappe précédente a bien été enregistrée avec succès.\n\nPar sécurité (anti-double-frappe), patiente encore ${remainingSec}s avant la prochaine correction sur cette ligne.`);
+    return;
+  }
+  const rows = getWifiRows();
+  const r = rows.find(x => x.id === rowId);
+  if(!r) return;
+  const currentVendu = r.vendu || 0;
+  if(delta > 0){
+    r.vendu = currentVendu + 1;
+    r.montant = (r.montant || 0) + (r.prix || 0);
+  } else {
+    if(currentVendu <= 0) return; // déjà à zéro, rien à retirer
+    r.vendu = currentVendu - 1;
+    r.montant = Math.max(0, (r.montant || 0) - (r.prix || 0));
+  }
+  saveWifiRows(rows);
+  queueWifiRowUpdate(r.id, {vendu: r.vendu, montant: r.montant});
+  wifiStepCooldown[rowId] = now + 2 * 60 * 1000; // verrouille cette ligne 2 minutes
+  wifiLastStep[rowId] = { delta, time: now };
+  renderWifiList();
+}
+
 function openWifiSale(rowId){
   const r = getWifiRows().find(x => x.id === rowId);
   if(!r) return;
   wifiActiveRowId = rowId;
   document.getElementById('wifiSaleRowName').textContent = `${r.designation} — ${Number(r.prix || 0).toLocaleString('fr-FR')} GNF/u`;
-  document.getElementById('wifiSaleQty').value = 1;
+  document.getElementById('wifiSaleQty').value = '';
   updateWifiSaleMontant();
   openDialogSafe(wifiSaleDlg);
   setTimeout(() => document.getElementById('wifiSaleQty').focus(), 50);
