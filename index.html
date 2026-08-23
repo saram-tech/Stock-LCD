@@ -233,7 +233,7 @@
       <span class="gtValue" id="globalTotalsBtnValue">0 GNF</span>
     </button>
     <button class="actionBtn whatsapp" id="orderBtn" onclick="openOrderDlg()">📋 Commande</button>
-    <button class="actionBtn wifi" id="wifiPageBtn" onclick="openWifiPage()" title="Vente WiFi">📶</button>
+    <button class="actionBtn wifi" id="wifiPageBtn" onclick="openWifiPage()" title="Gérer les ventes et quantités WiFi.">📶</button>
     <button class="actionBtn settings" onclick="openSettings()">⚙</button>
     <button class="actionBtn settings" onclick="lockAppNow()" title="Déconnexion">🚪</button>
   </div>
@@ -488,7 +488,7 @@
 
     <div class="headerBtns">
       <button class="actionBtn" onclick="openWifiSettings()">⚙ Paramètres</button>
-      <button class="actionBtn" onclick="openWifiAssociatesList()">👥 <span id="wifiAssociatesBtnLabel">Associés</span></button>
+      <button class="actionBtn" onclick="openWifiAssociatesList()" title="Gérer les associés et attribuer les tickets.">👥 <span id="wifiAssociatesBtnLabel">Associés</span></button>
       <button class="actionBtn" onclick="openWifiTrash()">🗑 Corbeille</button>
       <button class="actionBtn" onclick="openWifiHistory()">🕘 Historique</button>
     </div>
@@ -562,7 +562,8 @@
 <dialog id="wifiPersonReceiveDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">🎫 Tickets reçus — <span id="wifiPersonReceiveWho"></span></label>
   <p id="wifiPersonReceiveRowName" style="font-size:13px; color:var(--muted); margin-bottom:4px;"></p>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Actuellement reçu par cette personne : <b id="wifiPersonReceiveCurrent" style="color:var(--text);">0</b></p>
+  <p style="font-size:12px; color:var(--muted); margin-bottom:4px;">Actuellement reçu par cette personne : <b id="wifiPersonReceiveCurrent" style="color:var(--text);">0</b></p>
+  <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Disponible (non attribué) sur cette désignation : <b id="wifiPersonReceiveAvailable" style="color:var(--green);">0</b></p>
   <label>Quantité (➕ pour attribuer, ➖ pour corriger/retirer)</label>
   <input id="wifiPersonReceiveQty" type="number" min="1" step="1" placeholder="00" inputmode="numeric">
   <div class="row">
@@ -2436,17 +2437,17 @@ function renderWifiPersonDetail(){
         <div style="display:flex; gap:6px;">
           <button class="wifiTapBox" onclick="openWifiPersonReceive('${r.id}')">
             <div class="v">${recu}</div>
-            <div class="l">Reçu (+)</div>
+            <div class="l" title="Quantité de tickets remise par l'administrateur.">Reçu (+)</div>
           </button>
           <div class="wifiTapBox" style="cursor:default;">
             <div class="v" style="color:${reste < 0 ? 'var(--red)' : (reste === 0 ? 'var(--orange)' : 'var(--green)')};">${reste}</div>
-            <div class="l">Reste</div>
+            <div class="l" title="Tickets non encore vendus.">Reste</div>
           </div>
           <div class="wifiVenduBox">
             <button class="wifiStepBtn minus" onclick="wifiPersonSaleStep('${r.id}', -1)" title="Retirer 1 vente">−</button>
             <div class="wifiVenduCenter" style="cursor:default;">
               <div class="v" style="color:var(--gold);">${vendu}</div>
-              <div class="l">Vendu</div>
+              <div class="l" title="Quantité vendue, saisie par l'administrateur.">Vendu</div>
             </div>
             <button class="wifiStepBtn plus" onclick="wifiPersonSaleStep('${r.id}', 1)" title="Ajouter 1 vente">+</button>
           </div>
@@ -2470,9 +2471,13 @@ function openWifiPersonReceive(rowId){
   if(!r) return;
   wifiPersonReceiveRowId = rowId;
   const stat = getOrCreatePersonStat(rowId, wifiPersonDetailKey);
+  const allStats = getWifiPersonStats().filter(s => s.row_id === rowId);
+  const sumAllPersons = allStats.reduce((s, x) => s + (x.ticketRecu || 0), 0);
+  const disponible = (r.ticketRecu || 0) - sumAllPersons;
   document.getElementById('wifiPersonReceiveWho').textContent = wifiPersonDetailKey === ADMIN_SELF ? 'Administrateur (moi)' : wifiPersonDetailKey;
   document.getElementById('wifiPersonReceiveRowName').textContent = r.designation;
   document.getElementById('wifiPersonReceiveCurrent').textContent = stat.ticketRecu || 0;
+  document.getElementById('wifiPersonReceiveAvailable').textContent = disponible;
   document.getElementById('wifiPersonReceiveQty').value = '';
   openDialogSafe(wifiPersonReceiveDlg);
   setTimeout(() => document.getElementById('wifiPersonReceiveQty').focus(), 50);
@@ -2486,6 +2491,21 @@ function confirmWifiPersonReceiveDelta(sign){
   let rec = stats.find(s => s.row_id === rowId && s.person === person);
   if(!rec){ rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 }; stats.push(rec); }
   const current = rec.ticketRecu || 0;
+
+  if(sign > 0){
+    // Impossible d'attribuer plus que le stock disponible (jamais de double comptage) :
+    // le total déjà attribué à TOUTES les personnes ne peut jamais dépasser le total
+    // global reçu par l'administrateur sur cette désignation.
+    const globalRow = getWifiRows().find(r => r.id === rowId);
+    const globalRecu = globalRow ? (globalRow.ticketRecu || 0) : 0;
+    const sumAllPersons = stats.filter(s => s.row_id === rowId).reduce((s, x) => s + (x.ticketRecu || 0), 0);
+    const disponible = globalRecu - sumAllPersons;
+    if(qty > disponible){
+      alert(`Impossible d'attribuer ${qty} ticket(s) : seulement ${disponible} disponible(s) sur cette désignation (déjà réparti(s) : ${sumAllPersons} sur ${globalRecu} reçus au total).`);
+      return;
+    }
+  }
+
   let next = current + (sign * qty);
   if(next < 0) next = 0;
   rec.ticketRecu = next;
@@ -2750,17 +2770,17 @@ function renderWifiList(){
       <div style="display:flex; gap:6px;">
         <button class="wifiTapBox" onclick="openWifiReceive('${r.id}')">
           <div class="v">${recu}</div>
-          <div class="l">Reçu (+)</div>
+          <div class="l" title="Quantité de tickets remise par l'administrateur.">Reçu (+)</div>
         </button>
         <div class="wifiTapBox" style="cursor:default;">
           <div class="v" style="color:${reste < 0 ? 'var(--red)' : (reste === 0 ? 'var(--orange)' : 'var(--green)')};">${reste}</div>
-          <div class="l">Reste</div>
+          <div class="l" title="Tickets non encore vendus.">Reste</div>
         </div>
         <div class="wifiVenduBox">
           <button class="wifiStepBtn minus" onclick="wifiSaleStep('${r.id}', -1)" title="Retirer 1 vente" style="opacity:${inCooldown ? '0.4' : '1'};">−</button>
           <div class="wifiVenduCenter" onclick="openWifiSale('${r.id}')" title="Vente en quantité">
             <div class="v" style="color:var(--gold);">${vendu}${lastStepBadge}</div>
-            <div class="l">Vendu</div>
+            <div class="l" title="Quantité vendue, saisie par l'administrateur.">Vendu</div>
           </div>
           <button class="wifiStepBtn plus" onclick="wifiSaleStep('${r.id}', 1)" title="Ajouter 1 vente" style="opacity:${inCooldown ? '0.4' : '1'};">+</button>
         </div>
