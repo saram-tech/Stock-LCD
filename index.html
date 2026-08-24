@@ -1923,6 +1923,7 @@ renderTabs();
 render();
 loadFromSupabase();
 loadWifiFromSupabase();
+if(localStorage.getItem('stock_lcd_current_page') === 'wifi'){ openWifiPage(); }
 
 // Verrouillage automatique uniquement si l'app n'a jamais été déverrouillée sur CET appareil, ou
 // après un "🚪 Déconnexion" explicite. Un simple rafraîchissement ne reverrouille plus jamais l'app.
@@ -2340,6 +2341,10 @@ function seedWifiDefaults(){
   }
 }
 
+const wifiPersonReceiveDlg = document.getElementById('wifiPersonReceiveDlg');
+const wifiAssociatesListDlg = document.getElementById('wifiAssociatesListDlg');
+const wifiPersonDetailDlg = document.getElementById('wifiPersonDetailDlg');
+
 // ============================================================================
 // ASSOCIÉS : répartition des tickets WiFi par personne (administrateur + associés)
 // Couche entièrement additive : ne modifie JAMAIS wifi_rows (totaux globaux
@@ -2534,6 +2539,11 @@ function wifiPersonSaleStep(rowId, delta){
   if(!rec){ rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 }; stats.push(rec); }
   const currentVendu = rec.vendu || 0;
   if(delta > 0){
+    // Contrôle : impossible de vendre plus que ce que cette personne a effectivement reçu.
+    if(currentVendu >= (rec.ticketRecu || 0)){
+      alert(`Impossible de vendre plus que la quantité reçue (${rec.ticketRecu || 0}) pour cette personne sur cette désignation.`);
+      return;
+    }
     rec.vendu = currentVendu + 1;
     rec.montant = (rec.montant || 0) + (r.prix || 0);
   } else {
@@ -2679,6 +2689,7 @@ function saveWifiHistory(h){ localStorage.setItem(WIFI_HISTORY_KEY, JSON.stringi
 function openWifiPage(){
   document.getElementById('wifiPage').style.display = 'block';
   document.body.style.overflow = 'hidden';
+  localStorage.setItem('stock_lcd_current_page', 'wifi');
   refreshWifiHeader();
   renderWifiList();
   if(!hasWifiPending()){
@@ -2698,6 +2709,7 @@ function openWifiPage(){
 function closeWifiPage(){
   document.getElementById('wifiPage').style.display = 'none';
   document.body.style.overflow = '';
+  localStorage.setItem('stock_lcd_current_page', 'stock');
 }
 function refreshWifiHeader(){
   document.getElementById('wifiTitleDisplay').textContent = '📶 ' + getWifiTitle();
