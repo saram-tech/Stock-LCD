@@ -852,7 +852,17 @@ function isNetworkError(e){
   if(!navigator.onLine) return true;
   if(e instanceof TypeError) return true; // fetch échoue avec TypeError en cas de coupure réseau
   const msg = (e && e.message) ? String(e.message).toLowerCase() : '';
-  return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch');
+  return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch') || msg.includes('délai') || msg.includes('timeout');
+}
+
+// Empêche tout appel Supabase de rester bloqué indéfiniment (ex: réseau qui ne répond jamais) :
+// au-delà de 15s, la requête est considérée en échec et remonte une erreur claire au lieu de
+// laisser l'application affichée éternellement sur "Synchronisation en cours…".
+function withTimeout(promise, ms = 15000){
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Délai de synchronisation dépassé (15s) — le serveur ne répond pas.')), ms))
+  ]);
 }
 
 function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
@@ -1633,8 +1643,8 @@ function doRestore(){
   const raw = document.getElementById('restoreText').value.trim();
   if(!raw) return alert('Colle d\'abord le texte de sauvegarde.');
   let data;
-  try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide.'); }
-  if(!Array.isArray(data)) return alert('Texte de sauvegarde invalide.');
+  try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide : ce n\'est pas un texte JSON correctement formé.\n\nCause exacte : ' + e.message); }
+  if(!Array.isArray(data)) return alert('Texte de sauvegarde invalide : le contenu attendu est une liste d\'articles, mais ce texte contient autre chose (format inattendu).');
   if(!confirm(`Restaurer ${data.length} article(s) depuis cette sauvegarde ?\n(Les articles déjà existants seront fusionnés — quantités additionnées, aucun doublon créé.)`)) return;
   let added = 0, merged = 0;
   data.forEach(it => {
@@ -1929,7 +1939,10 @@ if(hasPin() && !localStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.log('SW error:', err);
+      alert('⚠️ Le mode hors-ligne n\'a pas pu être activé sur cet appareil.\n\nCause exacte : ' + (err && err.message ? err.message : String(err)) + '\n\nL\'application reste utilisable normalement avec une connexion internet.');
+    });
   });
 }
 
@@ -2128,7 +2141,7 @@ async function trySyncWifi(){
 
       for(const tempId of Object.keys(wifiPending.rows.inserts)){
         const payload = wifiPending.rows.inserts[tempId];
-        const { data, error } = await sb.from(WIFI_TABLE).insert(payload).select();
+        const { data, error } = await withTimeout(sb.from(WIFI_TABLE).insert(payload).select());
         if(error) throw error;
         const newId = data[0].id;
         const rows = getWifiRows(); const trash = getWifiTrash();
@@ -2147,7 +2160,7 @@ async function trySyncWifi(){
 
       for(const id of Object.keys(wifiPending.rows.updates)){
         const payload = wifiPending.rows.updates[id];
-        const { error } = await sb.from(WIFI_TABLE).update(payload).eq('id', id);
+        const { error } = await withTimeout(sb.from(WIFI_TABLE).update(payload).eq('id', id));
         if(error) throw error;
         if(JSON.stringify(wifiPending.rows.updates[id]) === JSON.stringify(payload)){
           delete wifiPending.rows.updates[id];
@@ -2156,7 +2169,7 @@ async function trySyncWifi(){
       }
 
       for(const id of [...wifiPending.rows.deletes]){
-        const { error } = await sb.from(WIFI_TABLE).delete().eq('id', id);
+        const { error } = await withTimeout(sb.from(WIFI_TABLE).delete().eq('id', id));
         if(error) throw error;
         wifiPending.rows.deletes = wifiPending.rows.deletes.filter(x => x !== id);
         delete wifiPending.rows.updates[id];
@@ -2165,7 +2178,7 @@ async function trySyncWifi(){
 
       for(const tempId of Object.keys(wifiPending.history.inserts)){
         const payload = wifiPending.history.inserts[tempId];
-        const { error } = await sb.from(WIFI_HISTORY_TABLE).insert(payload);
+        const { error } = await withTimeout(sb.from(WIFI_HISTORY_TABLE).insert(payload));
         if(error) throw error;
         delete wifiPending.history.inserts[tempId];
         cacheWifiPending();
@@ -2173,8 +2186,8 @@ async function trySyncWifi(){
 
       for(const key of Object.keys(wifiPending.personStats)){
         const rec = wifiPending.personStats[key];
-        const { error } = await sb.from(WIFI_PERSON_STATS_TABLE)
-          .upsert(rec, {onConflict:'row_id,person'});
+        const { error } = await withTimeout(sb.from(WIFI_PERSON_STATS_TABLE)
+          .upsert(rec, {onConflict:'row_id,person'}));
         if(error) throw error;
         if(JSON.stringify(wifiPending.personStats[key]) === JSON.stringify(rec)){
           delete wifiPending.personStats[key];
@@ -2184,7 +2197,7 @@ async function trySyncWifi(){
 
       for(const tempId of Object.keys(wifiPending.personLog)){
         const payload = wifiPending.personLog[tempId];
-        const { error } = await sb.from(WIFI_PERSON_LOG_TABLE).insert(payload);
+        const { error } = await withTimeout(sb.from(WIFI_PERSON_LOG_TABLE).insert(payload));
         if(error) throw error;
         delete wifiPending.personLog[tempId];
         cacheWifiPending();
@@ -2196,8 +2209,8 @@ async function trySyncWifi(){
         if(meta.seeded !== undefined) metaRows.push({key:'seeded', value:meta.seeded});
         if(meta.associates_list !== undefined) metaRows.push({key:'associates_list', value:meta.associates_list});
         if(meta.associates_label !== undefined) metaRows.push({key:'associates_label', value:meta.associates_label});
-        const { error } = await sb.from(WIFI_META_TABLE)
-          .upsert(metaRows, {onConflict:'key'});
+        const { error } = await withTimeout(sb.from(WIFI_META_TABLE)
+          .upsert(metaRows, {onConflict:'key'}));
         if(error) throw error;
         wifiPending.meta = null;
         cacheWifiPending();
@@ -2228,15 +2241,15 @@ async function trySyncWifi(){
 
 async function refreshWifiFromServer(){
   if(hasWifiPending()) return;
-  const { data: rowsData, error: e1 } = await sb.from(WIFI_TABLE).select('*').order('created_at', {ascending:true});
+  const { data: rowsData, error: e1 } = await withTimeout(sb.from(WIFI_TABLE).select('*').order('created_at', {ascending:true}));
   if(e1) throw e1;
-  const { data: histData, error: e2 } = await sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true});
+  const { data: histData, error: e2 } = await withTimeout(sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true}));
   if(e2) throw e2;
-  const { data: metaData, error: e3 } = await sb.from(WIFI_META_TABLE).select('*');
+  const { data: metaData, error: e3 } = await withTimeout(sb.from(WIFI_META_TABLE).select('*'));
   if(e3) throw e3;
-  const { data: statsData, error: e4 } = await sb.from(WIFI_PERSON_STATS_TABLE).select('*');
+  const { data: statsData, error: e4 } = await withTimeout(sb.from(WIFI_PERSON_STATS_TABLE).select('*'));
   if(e4) throw e4;
-  const { data: logData, error: e5 } = await sb.from(WIFI_PERSON_LOG_TABLE).select('*').order('created_at', {ascending:false}).limit(1000);
+  const { data: logData, error: e5 } = await withTimeout(sb.from(WIFI_PERSON_LOG_TABLE).select('*').order('created_at', {ascending:false}).limit(1000));
   if(e5) throw e5;
 
   // Protection anti-écrasement : si des saisies locales sont arrivées PENDANT ces requêtes
@@ -2270,7 +2283,10 @@ async function refreshWifiFromServer(){
   if(metaMap.associates_label !== undefined) setWifiAssociatesLabel(metaMap.associates_label);
   if(metaMap.associates_list !== undefined){
     try{ const list = JSON.parse(metaMap.associates_list); if(Array.isArray(list)) saveWifiAssociates(list); }
-    catch(e){ console.log('associates_list parse error', e); }
+    catch(e){
+      console.log('associates_list parse error', e);
+      notifySyncErrorOnce('wifi', 'Liste des associés reçue du serveur corrompue (JSON invalide) : ' + e.message + '\n\nLa liste locale actuelle est conservée en attendant une correction.');
+    }
   }
   wifiCloudSeeded = metaMap.seeded === 'true';
 
@@ -3221,8 +3237,8 @@ function doWifiRestore(){
   const raw = document.getElementById('wifiRestoreText').value.trim();
   if(!raw) return alert('Colle d\'abord le texte de sauvegarde Vente WiFi.');
   let data;
-  try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide.'); }
-  if(!data || !Array.isArray(data.rows)) return alert('Texte de sauvegarde invalide (format inattendu).');
+  try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide : ce n\'est pas un texte JSON correctement formé.\n\nCause exacte : ' + e.message); }
+  if(!data || !Array.isArray(data.rows)) return alert('Texte de sauvegarde invalide : le champ "rows" (désignations) est absent ou mal formé dans ce texte.');
   if(!confirm('Remplacer les données actuelles de Vente WiFi (désignations, corbeille, historique) par cette sauvegarde ?\nCette action ne touche à rien d\'autre dans l\'application.')) return;
 
   if(data.title) setWifiTitle(String(data.title));
