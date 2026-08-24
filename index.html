@@ -1922,8 +1922,6 @@ async function forgotPin(){
 renderTabs();
 render();
 loadFromSupabase();
-loadWifiFromSupabase();
-if(localStorage.getItem('stock_lcd_current_page') === 'wifi'){ openWifiPage(); }
 
 // Verrouillage automatique uniquement si l'app n'a jamais été déverrouillée sur CET appareil, ou
 // après un "🚪 Déconnexion" explicite. Un simple rafraîchissement ne reverrouille plus jamais l'app.
@@ -3238,6 +3236,14 @@ function doWifiRestore(){
   renderWifiList();
   alert('Restauration Vente WiFi terminée ✅');
 }
+
+// Démarrage de la synchronisation Vente WiFi + restauration de la page ouverte :
+// placé ici, à la toute fin du script, une fois TOUTES les constantes et fonctions
+// de cette section définies (appeler ceci plus tôt provoquait une erreur JS qui
+// bloquait entièrement Vente WiFi — Paramètres, Associés, Corbeille, Historique —
+// à chaque chargement de page).
+loadWifiFromSupabase();
+if(localStorage.getItem('stock_lcd_current_page') === 'wifi'){ openWifiPage(); }
 </script>
 </body>
 </html>
