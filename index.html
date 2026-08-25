@@ -106,7 +106,8 @@
     white-space:nowrap; display:flex; align-items:center; gap:4px;
   }
   .sortBtn.active{border-color:var(--blue); color:var(--blue);}
-  .headerBtns{display:flex; gap:8px; margin-bottom:8px;}
+  .headerBtns{display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
+  .headerBtns .actionBtn{flex:1 1 auto; min-width:110px;}
   .actionBtn{
     flex:1; padding:clamp(6px,1.8vw,11px) clamp(6px,3vw,14px); border-radius:10px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:clamp(11px,3vw,13px); font-weight:600; cursor:pointer;
@@ -487,6 +488,7 @@
     </div>
 
     <div class="headerBtns">
+      <button class="actionBtn" onclick="openWifiDistribute()" title="Répartir les tickets reçus entre l'administrateur et les associés.">📤 Distribuer</button>
       <button class="actionBtn" onclick="openWifiSettings()">⚙ Paramètres</button>
       <button class="actionBtn" onclick="openWifiAssociatesList()" title="Gérer les associés et attribuer les tickets.">👥 <span id="wifiAssociatesBtnLabel">Associés</span></button>
       <button class="actionBtn" onclick="openWifiTrash()">🗑 Corbeille</button>
@@ -584,6 +586,24 @@
     <button class="cancel" onclick="wifiPersonReceiveDlg.close()">Annuler</button>
     <button class="cancel" onclick="confirmWifiPersonReceiveDelta(-1)" style="color:var(--red); border:1px solid var(--red);">➖ Retirer</button>
     <button class="save" onclick="confirmWifiPersonReceiveDelta(1)">➕ Ajouter</button>
+  </div>
+</dialog>
+
+<dialog id="wifiDistributeDlg" style="max-height:85vh; overflow-y:auto;">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">📤 Distribuer les tickets</label>
+  <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Répartis les tickets reçus entre l'administrateur et les associés — également ou en quantités différentes.</p>
+  <label>Désignation</label>
+  <select id="wifiDistributeRow" onchange="renderWifiDistributeForm()"></select>
+  <p id="wifiDistributeAvailable" style="font-size:12px; color:var(--green); margin:4px 0 12px;"></p>
+  <div style="display:flex; gap:8px; margin-bottom:14px;">
+    <input id="wifiDistributeEqualQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantité totale à répartir également">
+    <button class="cancel" onclick="wifiDistributeEqual()" style="flex:0 0 auto; white-space:nowrap;">Répartir également</button>
+  </div>
+  <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">Ou saisis une quantité différente pour chaque personne :</div>
+  <div id="wifiDistributeForm" style="display:flex; flex-direction:column; gap:8px;"></div>
+  <div class="row" style="margin-top:16px;">
+    <button class="cancel" onclick="wifiDistributeDlg.close()">Annuler</button>
+    <button class="save" onclick="confirmWifiDistribute()">Valider la répartition</button>
   </div>
 </dialog>
 
@@ -2421,6 +2441,90 @@ const wifiPersonDetailDlg = document.getElementById('wifiPersonDetailDlg');
 // existants), seulement wifi_person_stats / wifi_person_receipt_log.
 // ============================================================================
 
+// --- Distribution : répartir les tickets reçus entre l'administrateur et les associés,
+//     également ou en quantités différentes, en un seul geste (bouton à gauche de Paramètres). ---
+const wifiDistributeDlg = document.getElementById('wifiDistributeDlg');
+function getWifiDistributePeople(){
+  return [{ key: ADMIN_SELF, name: 'Administrateur (moi)' }].concat(getWifiAssociates().map(a => ({ key: a, name: a })));
+}
+function openWifiDistribute(){
+  const rows = getWifiRows();
+  if(rows.length === 0){ alert('Aucune désignation disponible pour le moment.'); return; }
+  const sel = document.getElementById('wifiDistributeRow');
+  sel.innerHTML = rows.map(r => `<option value="${r.id}">${escHtml(r.designation)}</option>`).join('');
+  document.getElementById('wifiDistributeEqualQty').value = '';
+  renderWifiDistributeForm();
+  openDialogSafe(wifiDistributeDlg);
+}
+function renderWifiDistributeForm(){
+  const rowId = document.getElementById('wifiDistributeRow').value;
+  const r = getWifiRows().find(x => x.id === rowId);
+  if(!r) return;
+  const stats = getWifiPersonStats().filter(s => s.row_id === rowId);
+  const sumAllPersons = stats.reduce((s, x) => s + (x.ticketRecu || 0), 0);
+  const disponible = (r.ticketRecu || 0) - sumAllPersons;
+  document.getElementById('wifiDistributeAvailable').textContent = `Disponible (non attribué) sur "${r.designation}" : ${disponible} sur ${r.ticketRecu || 0} reçus au total.`;
+
+  const people = getWifiDistributePeople();
+  const form = document.getElementById('wifiDistributeForm');
+  form.innerHTML = people.map(p => {
+    const stat = stats.find(s => s.person === p.key);
+    const current = stat ? (stat.ticketRecu || 0) : 0;
+    return `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="flex:1; min-width:0; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.key === ADMIN_SELF ? '⭐' : '👤'} ${escHtml(p.name)} <span style="color:var(--muted); font-size:11px;">(actuel : ${current})</span></span>
+        <input type="number" min="0" step="1" inputmode="numeric" class="wifiDistributeInput" data-person="${escHtml(p.key)}" placeholder="0" style="width:76px; flex:0 0 auto;">
+      </div>
+    `;
+  }).join('');
+}
+function wifiDistributeEqual(){
+  const total = parseInt(document.getElementById('wifiDistributeEqualQty').value);
+  if(isNaN(total) || total <= 0) return alert('Entrez une quantité totale valide à répartir également.');
+  const inputs = document.querySelectorAll('#wifiDistributeForm .wifiDistributeInput');
+  const n = inputs.length;
+  if(n === 0) return;
+  const base = Math.floor(total / n);
+  let remainder = total - base * n;
+  inputs.forEach(inp => {
+    let val = base;
+    if(remainder > 0){ val += 1; remainder--; }
+    inp.value = val;
+  });
+  if(total % n !== 0){
+    alert(`${total} n'est pas divisible exactement par ${n} personne(s) : le reste (${total % n}) a été ajouté aux premières personnes de la liste. Ajuste manuellement si besoin.`);
+  }
+}
+function confirmWifiDistribute(){
+  const rowId = document.getElementById('wifiDistributeRow').value;
+  const r = getWifiRows().find(x => x.id === rowId);
+  if(!r) return alert('Désignation introuvable.');
+
+  const inputs = document.querySelectorAll('#wifiDistributeForm .wifiDistributeInput');
+  const entries = [];
+  let total = 0;
+  inputs.forEach(inp => {
+    const person = inp.dataset.person;
+    const qty = parseInt(inp.value);
+    if(!isNaN(qty) && qty > 0){ entries.push({ person, qty }); total += qty; }
+  });
+  if(entries.length === 0) return alert('Entre au moins une quantité à distribuer.');
+
+  const stats = getWifiPersonStats().filter(s => s.row_id === rowId);
+  const sumAllPersons = stats.reduce((s, x) => s + (x.ticketRecu || 0), 0);
+  const disponible = (r.ticketRecu || 0) - sumAllPersons;
+  if(total > disponible){
+    alert(`Impossible : cette répartition totalise ${total} ticket(s), mais seulement ${disponible} sont disponibles (non attribués) sur "${r.designation}". Réduis les quantités.`);
+    return;
+  }
+
+  entries.forEach(e => applyPersonReceiveDelta(rowId, e.person, 1, e.qty));
+
+  wifiDistributeDlg.close();
+  alert(`✅ Répartition effectuée : ${total} ticket(s) distribué(s) sur "${r.designation}" entre ${entries.length} personne(s).`);
+  if(wifiPersonDetailDlg.open) renderWifiPersonDetail();
+}
+
 function openWifiAssociatesList(){
   document.getElementById('wifiAssociatesListTitle').textContent = getWifiAssociatesLabel();
   renderWifiAssociatesList();
@@ -2557,36 +2661,19 @@ function openWifiPersonReceive(rowId){
   openDialogSafe(wifiPersonReceiveDlg);
   setTimeout(() => document.getElementById('wifiPersonReceiveQty').focus(), 50);
 }
-function confirmWifiPersonReceiveDelta(sign){
-  const qty = parseInt(document.getElementById('wifiPersonReceiveQty').value);
-  if(isNaN(qty) || qty <= 0) return alert('Entrez une quantité valide (nombre entier positif).');
-  const rowId = wifiPersonReceiveRowId;
-  const person = wifiPersonDetailKey;
+// Logique centrale d'attribution (partagée entre le dialogue "Reçu" par personne et le
+// nouveau bouton "Distribuer") : applique un +/- sur le compteur reçu d'UNE personne pour
+// UNE désignation, journalise le mouvement avec sa date, jamais sous zéro.
+function applyPersonReceiveDelta(rowId, person, sign, qty){
   const stats = getWifiPersonStats();
   let rec = stats.find(s => s.row_id === rowId && s.person === person);
   if(!rec){ rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 }; stats.push(rec); }
   const current = rec.ticketRecu || 0;
-
-  if(sign > 0){
-    // Impossible d'attribuer plus que le stock disponible (jamais de double comptage) :
-    // le total déjà attribué à TOUTES les personnes ne peut jamais dépasser le total
-    // global reçu par l'administrateur sur cette désignation.
-    const globalRow = getWifiRows().find(r => r.id === rowId);
-    const globalRecu = globalRow ? (globalRow.ticketRecu || 0) : 0;
-    const sumAllPersons = stats.filter(s => s.row_id === rowId).reduce((s, x) => s + (x.ticketRecu || 0), 0);
-    const disponible = globalRecu - sumAllPersons;
-    if(qty > disponible){
-      alert(`Impossible d'attribuer ${qty} ticket(s) : seulement ${disponible} disponible(s) sur cette désignation (déjà réparti(s) : ${sumAllPersons} sur ${globalRecu} reçus au total).`);
-      return;
-    }
-  }
-
   let next = current + (sign * qty);
   if(next < 0) next = 0;
   rec.ticketRecu = next;
   saveWifiPersonStats(stats);
   queueWifiPersonStats(rowId, person, { ticket_recu: rec.ticketRecu, vendu: rec.vendu, montant: rec.montant });
-  // Journal daté (traçabilité + "reçu par date") : n'enregistre que le mouvement réellement appliqué.
   const applied = next - current;
   if(applied !== 0){
     const eventDate = new Date().toISOString().slice(0,10);
@@ -2595,6 +2682,30 @@ function confirmWifiPersonReceiveDelta(sign){
     saveWifiPersonLog(log);
     queueWifiPersonLog(rowId, person, applied, eventDate);
   }
+  return rec.ticketRecu;
+}
+
+function confirmWifiPersonReceiveDelta(sign){
+  const qty = parseInt(document.getElementById('wifiPersonReceiveQty').value);
+  if(isNaN(qty) || qty <= 0) return alert('Entrez une quantité valide (nombre entier positif).');
+  const rowId = wifiPersonReceiveRowId;
+  const person = wifiPersonDetailKey;
+
+  if(sign > 0){
+    // Impossible d'attribuer plus que le stock disponible (jamais de double comptage) :
+    // le total déjà attribué à TOUTES les personnes ne peut jamais dépasser le total
+    // global reçu par l'administrateur sur cette désignation.
+    const globalRow = getWifiRows().find(r => r.id === rowId);
+    const globalRecu = globalRow ? (globalRow.ticketRecu || 0) : 0;
+    const sumAllPersons = getWifiPersonStats().filter(s => s.row_id === rowId).reduce((s, x) => s + (x.ticketRecu || 0), 0);
+    const disponible = globalRecu - sumAllPersons;
+    if(qty > disponible){
+      alert(`Impossible d'attribuer ${qty} ticket(s) : seulement ${disponible} disponible(s) sur cette désignation (déjà réparti(s) : ${sumAllPersons} sur ${globalRecu} reçus au total).`);
+      return;
+    }
+  }
+
+  applyPersonReceiveDelta(rowId, person, sign, qty);
   wifiPersonReceiveDlg.close();
   renderWifiPersonDetail();
 }
@@ -3250,8 +3361,17 @@ async function confirmWifiCloture(){
   });
   saveWifiRows(rows);
 
+  // La clôture remet TOUT à zéro, y compris la répartition par personne
+  // (administrateur + chaque associé), pas seulement les totaux globaux.
+  const personStats = getWifiPersonStats();
+  personStats.forEach(s => {
+    s.ticketRecu = 0; s.vendu = 0; s.montant = 0;
+    queueWifiPersonStats(s.row_id, s.person, { ticket_recu: 0, vendu: 0, montant: 0 });
+  });
+  saveWifiPersonStats(personStats);
+
   renderWifiList();
-  alert('Vente WiFi clôturée et archivée dans l\'Historique ✅ Les compteurs sont repartis à zéro.');
+  alert('Vente WiFi clôturée et archivée dans l\'Historique ✅ Les compteurs sont repartis à zéro (y compris la répartition administrateur/associés).');
 }
 
 const wifiHistoryDlg = document.getElementById('wifiHistoryDlg');
