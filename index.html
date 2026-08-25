@@ -793,8 +793,10 @@ function scheduleSync(delay = 50){
 let currentConnState = 'offline'; // reflète le dernier état RÉEL constaté (résultat de requête), pas navigator.onLine seul
 let lastSyncErrorDetail = null;   // texte exact de la dernière erreur de synchro (stock principal)
 let lastSyncErrorSignature = null; // sert à ne notifier qu'UNE fois par erreur distincte, jamais à chaque nouvelle tentative
+let syncingSince = null; // horodatage du dernier passage à l'état "syncing" : sert au chien de garde.
 function setStatus(state, text, detail){
   currentConnState = state;
+  syncingSince = (state === 'syncing') ? Date.now() : null;
   const dot = document.getElementById('syncDot');
   const txt = document.getElementById('syncText');
   const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)', error:'var(--red)', pending:'var(--muted)'};
@@ -1419,6 +1421,18 @@ window.addEventListener('offline', () => setStatus('offline','Hors ligne — don
 
 setInterval(() => { if(hasPending()) trySync(); }, 15000);
 
+// Chien de garde (stock principal) : même protection que Vente WiFi.
+setInterval(() => {
+  if(currentConnState === 'syncing' && syncingSince && (Date.now() - syncingSince > 20000)){
+    syncing = false;
+    const detail = 'La synchronisation est restée bloquée plus de 20 secondes sans réponse du serveur.\n\n'
+      + 'Cause probable : connexion internet instable/trop lente, ou serveur Supabase temporairement injoignable.\n\n'
+      + 'Solution : vérifie ta connexion internet, puis appuie sur le bouton 🔄 pour relancer une synchronisation.';
+    setStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
+    notifySyncErrorOnce('stock', detail);
+  }
+}, 5000);
+
 // --- Commande fournisseur (format tableau WhatsApp, une seule ligne par article) ---
 
 const orderDlg = document.getElementById('orderDlg');
@@ -2006,8 +2020,10 @@ let lastWifiSyncErrorDetail = null;
 let lastWifiSyncErrorSignature = null;
 let currentWifiConnState = 'offline';
 
+let wifiSyncingSince = null; // horodatage du dernier passage à l'état "syncing" : sert au chien de garde ci-dessous.
 function setWifiSyncStatus(state, text, detail){
   currentWifiConnState = state;
+  wifiSyncingSince = (state === 'syncing') ? Date.now() : null;
   const box = document.getElementById('wifiSyncStatus');
   const dot = document.getElementById('wifiSyncDot');
   const txt = document.getElementById('wifiSyncText');
@@ -2602,6 +2618,21 @@ async function loadWifiFromSupabase(){
 }
 window.addEventListener('online', () => trySyncWifi());
 setInterval(() => { if(hasWifiPending()) trySyncWifi(); }, 15000);
+
+// Chien de garde : quelle que soit la cause exacte, l'application ne doit JAMAIS rester
+// affichée sur "Synchronisation en cours…" indéfiniment. Si l'état reste bloqué sur
+// "syncing" plus de 20 secondes, on force un diagnostic clair et on débloque les boutons.
+setInterval(() => {
+  if(currentWifiConnState === 'syncing' && wifiSyncingSince && (Date.now() - wifiSyncingSince > 20000)){
+    wifiSyncing = false;
+    const detail = 'La synchronisation est restée bloquée plus de 20 secondes sans réponse du serveur.\n\n'
+      + 'Cause probable : connexion internet instable/trop lente, ou serveur Supabase temporairement injoignable.\n\n'
+      + 'Solution : vérifie ta connexion internet, puis appuie sur le bouton 🔄 pour relancer une synchronisation. '
+      + 'Si le problème persiste après plusieurs essais avec une bonne connexion, les tables Supabase (wifi_person_stats / wifi_person_receipt_log) sont peut-être encore manquantes — exécute le script SQL fourni.';
+    setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
+    notifySyncErrorOnce('wifi', detail);
+  }
+}, 5000);
 
 // Bouton d'actualisation de secours (Vente WiFi) : vérifie réellement Supabase, synchronise
 // les changements en attente, récupère les dernières données, actualise l'UI. Jamais un simple reload.
