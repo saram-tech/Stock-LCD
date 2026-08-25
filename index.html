@@ -559,6 +559,20 @@
   </div>
 </dialog>
 
+<dialog id="wifiPersonSaleDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">💵 Vente — <span id="wifiPersonSaleWho"></span></label>
+  <p id="wifiPersonSaleRowName" style="font-size:13px; color:var(--muted); margin-bottom:12px;"></p>
+  <label>Quantité</label>
+  <input id="wifiPersonSaleQty" type="number" min="1" step="1" inputmode="numeric" oninput="updateWifiPersonSaleMontant()">
+  <label>Montant (automatique)</label>
+  <input id="wifiPersonSaleMontant" type="text" disabled style="opacity:0.85;">
+  <p id="wifiPersonSaleWarning" style="font-size:12px; color:var(--orange); display:none; margin:-8px 0 12px;">⚠ Quantité supérieure à la quantité attribuée à cette personne pour cette désignation.</p>
+  <div class="row">
+    <button class="cancel" onclick="wifiPersonSaleDlg.close()">Annuler</button>
+    <button class="save" onclick="confirmWifiPersonSaleQty()">Valider la vente</button>
+  </div>
+</dialog>
+
 <dialog id="wifiPersonReceiveDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">🎫 Tickets reçus — <span id="wifiPersonReceiveWho"></span></label>
   <p id="wifiPersonReceiveRowName" style="font-size:13px; color:var(--muted); margin-bottom:4px;"></p>
@@ -854,17 +868,42 @@ function isNetworkError(e){
   if(!navigator.onLine) return true;
   if(e instanceof TypeError) return true; // fetch échoue avec TypeError en cas de coupure réseau
   const msg = (e && e.message) ? String(e.message).toLowerCase() : '';
-  return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch') || msg.includes('délai') || msg.includes('timeout');
+  return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch') || msg.includes('délai') || msg.includes('timeout') || msg.includes('abort');
 }
 
-// Empêche tout appel Supabase de rester bloqué indéfiniment (ex: réseau qui ne répond jamais) :
-// au-delà de 15s, la requête est considérée en échec et remonte une erreur claire au lieu de
-// laisser l'application affichée éternellement sur "Synchronisation en cours…".
-function withTimeout(promise, ms = 15000){
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Délai de synchronisation dépassé (15s) — le serveur ne répond pas.')), ms))
-  ]);
+// Annule RÉELLEMENT la requête réseau sous-jacente au bout de 10s (pas une simple course de
+// promesses qui laisse la requête tourner en arrière-plan) : buildQuery reçoit le signal
+// d'annulation à passer à .abortSignal(signal). Donne un message précis à l'échec.
+function withAbortTimeout(buildQuery, ms = 10000){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return buildQuery(controller.signal).then(
+    (result) => { clearTimeout(timer); return result; },
+    (err) => {
+      clearTimeout(timer);
+      if(controller.signal.aborted){
+        throw new Error(`Aucune réponse du serveur Supabase après ${ms/1000}s (requête annulée).`);
+      }
+      throw err;
+    }
+  );
+}
+
+// Diagnostic ciblé : distingue avec certitude "pas d'accès internet du tout" de
+// "internet fonctionne mais Supabase précisément est injoignable", au lieu de deviner.
+async function diagnoseSyncFailure(){
+  if(!navigator.onLine){
+    return 'Cause certaine : cet appareil n\'a AUCUN accès internet actif en ce moment (mode avion, pas de réseau, ou WiFi/données mobiles coupées).\n\nSolution : active le WiFi ou les données mobiles, puis appuie sur 🔄.';
+  }
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    const resp = await fetch(SUPABASE_URL + '/rest/v1/', { method: 'HEAD', signal: controller.signal, headers: { apikey: SUPABASE_ANON_KEY } });
+    clearTimeout(timer);
+    return `Cause certaine : cet appareil A accès à internet (le serveur Supabase répond, code ${resp.status}), mais une requête précise vers les tables Vente WiFi échoue quand même.\n\nSolution : vérifie que le script SQL des tables (wifi_rows, wifi_history, wifi_meta, wifi_person_stats, wifi_person_receipt_log) a bien été exécuté intégralement dans Supabase → SQL Editor, sans erreur.`;
+  }catch(e){
+    return 'Cause certaine : cet appareil a une connexion réseau (WiFi/4G) MAIS n\'arrive PAS à joindre le serveur Supabase précisément (adresse bloquée, pare-feu, DNS, ou serveur Supabase en panne).\n\nSolution : essaie avec une autre connexion (WiFi ↔ données mobiles), ou réessaie dans quelques minutes si Supabase est temporairement indisponible.';
+  }
 }
 
 function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
@@ -1421,15 +1460,15 @@ window.addEventListener('offline', () => setStatus('offline','Hors ligne — don
 
 setInterval(() => { if(hasPending()) trySync(); }, 15000);
 
-// Chien de garde (stock principal) : même protection que Vente WiFi.
+// Chien de garde (stock principal) : même protection que Vente WiFi, même diagnostic ciblé.
 setInterval(() => {
   if(currentConnState === 'syncing' && syncingSince && (Date.now() - syncingSince > 20000)){
     syncing = false;
-    const detail = 'La synchronisation est restée bloquée plus de 20 secondes sans réponse du serveur.\n\n'
-      + 'Cause probable : connexion internet instable/trop lente, ou serveur Supabase temporairement injoignable.\n\n'
-      + 'Solution : vérifie ta connexion internet, puis appuie sur le bouton 🔄 pour relancer une synchronisation.';
-    setStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-    notifySyncErrorOnce('stock', detail);
+    setStatus('syncing', 'Diagnostic en cours…');
+    diagnoseSyncFailure().then(detail => {
+      setStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
+      notifySyncErrorOnce('stock', detail);
+    });
   }
 }, 5000);
 
@@ -2157,7 +2196,7 @@ async function trySyncWifi(){
 
       for(const tempId of Object.keys(wifiPending.rows.inserts)){
         const payload = wifiPending.rows.inserts[tempId];
-        const { data, error } = await withTimeout(sb.from(WIFI_TABLE).insert(payload).select());
+        const { data, error } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).insert(payload).select().abortSignal(signal));
         if(error) throw error;
         const newId = data[0].id;
         const rows = getWifiRows(); const trash = getWifiTrash();
@@ -2176,7 +2215,7 @@ async function trySyncWifi(){
 
       for(const id of Object.keys(wifiPending.rows.updates)){
         const payload = wifiPending.rows.updates[id];
-        const { error } = await withTimeout(sb.from(WIFI_TABLE).update(payload).eq('id', id));
+        const { error } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).update(payload).eq('id', id).abortSignal(signal));
         if(error) throw error;
         if(JSON.stringify(wifiPending.rows.updates[id]) === JSON.stringify(payload)){
           delete wifiPending.rows.updates[id];
@@ -2185,7 +2224,7 @@ async function trySyncWifi(){
       }
 
       for(const id of [...wifiPending.rows.deletes]){
-        const { error } = await withTimeout(sb.from(WIFI_TABLE).delete().eq('id', id));
+        const { error } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).delete().eq('id', id).abortSignal(signal));
         if(error) throw error;
         wifiPending.rows.deletes = wifiPending.rows.deletes.filter(x => x !== id);
         delete wifiPending.rows.updates[id];
@@ -2194,7 +2233,7 @@ async function trySyncWifi(){
 
       for(const tempId of Object.keys(wifiPending.history.inserts)){
         const payload = wifiPending.history.inserts[tempId];
-        const { error } = await withTimeout(sb.from(WIFI_HISTORY_TABLE).insert(payload));
+        const { error } = await withAbortTimeout(signal => sb.from(WIFI_HISTORY_TABLE).insert(payload).abortSignal(signal));
         if(error) throw error;
         delete wifiPending.history.inserts[tempId];
         cacheWifiPending();
@@ -2202,8 +2241,8 @@ async function trySyncWifi(){
 
       for(const key of Object.keys(wifiPending.personStats)){
         const rec = wifiPending.personStats[key];
-        const { error } = await withTimeout(sb.from(WIFI_PERSON_STATS_TABLE)
-          .upsert(rec, {onConflict:'row_id,person'}));
+        const { error } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_STATS_TABLE)
+          .upsert(rec, {onConflict:'row_id,person'}).abortSignal(signal));
         if(error) throw error;
         if(JSON.stringify(wifiPending.personStats[key]) === JSON.stringify(rec)){
           delete wifiPending.personStats[key];
@@ -2213,7 +2252,7 @@ async function trySyncWifi(){
 
       for(const tempId of Object.keys(wifiPending.personLog)){
         const payload = wifiPending.personLog[tempId];
-        const { error } = await withTimeout(sb.from(WIFI_PERSON_LOG_TABLE).insert(payload));
+        const { error } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_LOG_TABLE).insert(payload).abortSignal(signal));
         if(error) throw error;
         delete wifiPending.personLog[tempId];
         cacheWifiPending();
@@ -2225,8 +2264,8 @@ async function trySyncWifi(){
         if(meta.seeded !== undefined) metaRows.push({key:'seeded', value:meta.seeded});
         if(meta.associates_list !== undefined) metaRows.push({key:'associates_list', value:meta.associates_list});
         if(meta.associates_label !== undefined) metaRows.push({key:'associates_label', value:meta.associates_label});
-        const { error } = await withTimeout(sb.from(WIFI_META_TABLE)
-          .upsert(metaRows, {onConflict:'key'}));
+        const { error } = await withAbortTimeout(signal => sb.from(WIFI_META_TABLE)
+          .upsert(metaRows, {onConflict:'key'}).abortSignal(signal));
         if(error) throw error;
         wifiPending.meta = null;
         cacheWifiPending();
@@ -2257,15 +2296,15 @@ async function trySyncWifi(){
 
 async function refreshWifiFromServer(){
   if(hasWifiPending()) return;
-  const { data: rowsData, error: e1 } = await withTimeout(sb.from(WIFI_TABLE).select('*').order('created_at', {ascending:true}));
+  const { data: rowsData, error: e1 } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).select('*').order('created_at', {ascending:true}).abortSignal(signal));
   if(e1) throw e1;
-  const { data: histData, error: e2 } = await withTimeout(sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true}));
+  const { data: histData, error: e2 } = await withAbortTimeout(signal => sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true}).abortSignal(signal));
   if(e2) throw e2;
-  const { data: metaData, error: e3 } = await withTimeout(sb.from(WIFI_META_TABLE).select('*'));
+  const { data: metaData, error: e3 } = await withAbortTimeout(signal => sb.from(WIFI_META_TABLE).select('*').abortSignal(signal));
   if(e3) throw e3;
-  const { data: statsData, error: e4 } = await withTimeout(sb.from(WIFI_PERSON_STATS_TABLE).select('*'));
+  const { data: statsData, error: e4 } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_STATS_TABLE).select('*').abortSignal(signal));
   if(e4) throw e4;
-  const { data: logData, error: e5 } = await withTimeout(sb.from(WIFI_PERSON_LOG_TABLE).select('*').order('created_at', {ascending:false}).limit(1000));
+  const { data: logData, error: e5 } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_LOG_TABLE).select('*').order('created_at', {ascending:false}).limit(1000).abortSignal(signal));
   if(e5) throw e5;
 
   // Protection anti-écrasement : si des saisies locales sont arrivées PENDANT ces requêtes
@@ -2371,6 +2410,7 @@ function seedWifiDefaults(){
   }
 }
 
+const wifiPersonSaleDlg = document.getElementById('wifiPersonSaleDlg');
 const wifiPersonReceiveDlg = document.getElementById('wifiPersonReceiveDlg');
 const wifiAssociatesListDlg = document.getElementById('wifiAssociatesListDlg');
 const wifiPersonDetailDlg = document.getElementById('wifiPersonDetailDlg');
@@ -2480,7 +2520,7 @@ function renderWifiPersonDetail(){
           </div>
           <div class="wifiVenduBox">
             <button class="wifiStepBtn minus" onclick="wifiPersonSaleStep('${r.id}', -1)" title="Retirer 1 vente">−</button>
-            <div class="wifiVenduCenter" style="cursor:default;">
+            <div class="wifiVenduCenter" onclick="openWifiPersonSale('${r.id}')" title="Vente en quantité">
               <div class="v" style="color:var(--gold);">${vendu}</div>
               <div class="l" title="Quantité vendue, saisie par l'administrateur.">Vendu</div>
             </div>
@@ -2586,6 +2626,60 @@ function wifiPersonSaleStep(rowId, delta){
   renderWifiPersonDetail();
 }
 
+// --- Vente en quantité (saisie directe, ex: "100" au lieu de 100 appuis sur +), scopée à une
+//     personne. Même principe que le dialogue "💵 Vente" global, avec la même limite stricte :
+//     jamais plus que la quantité reçue par CETTE personne sur CETTE désignation. ---
+let wifiPersonSaleRowId = null;
+function openWifiPersonSale(rowId){
+  const r = getWifiRows().find(x => x.id === rowId);
+  if(!r) return;
+  wifiPersonSaleRowId = rowId;
+  document.getElementById('wifiPersonSaleWho').textContent = wifiPersonDetailKey === ADMIN_SELF ? 'Administrateur (moi)' : wifiPersonDetailKey;
+  document.getElementById('wifiPersonSaleRowName').textContent = `${r.designation} — ${Number(r.prix || 0).toLocaleString('fr-FR')} GNF/u`;
+  document.getElementById('wifiPersonSaleQty').value = '';
+  updateWifiPersonSaleMontant();
+  openDialogSafe(wifiPersonSaleDlg);
+  setTimeout(() => document.getElementById('wifiPersonSaleQty').focus(), 50);
+}
+function updateWifiPersonSaleMontant(){
+  const r = getWifiRows().find(x => x.id === wifiPersonSaleRowId);
+  if(!r) return;
+  const rec = getWifiPersonStats().find(s => s.row_id === wifiPersonSaleRowId && s.person === wifiPersonDetailKey) || { ticketRecu:0, vendu:0 };
+  let qty = parseInt(document.getElementById('wifiPersonSaleQty').value);
+  if(isNaN(qty) || qty < 1) qty = 1;
+  const montant = qty * (r.prix || 0);
+  document.getElementById('wifiPersonSaleMontant').value = montant.toLocaleString('fr-FR') + ' GNF';
+  const resteDisponible = (rec.ticketRecu || 0) - (rec.vendu || 0);
+  document.getElementById('wifiPersonSaleWarning').style.display = qty > resteDisponible ? 'block' : 'none';
+}
+function confirmWifiPersonSaleQty(){
+  let qty = parseInt(document.getElementById('wifiPersonSaleQty').value);
+  if(isNaN(qty) || qty < 1) return alert('Entrez une quantité valide (au moins 1).');
+  const rowId = wifiPersonSaleRowId;
+  const person = wifiPersonDetailKey;
+  const r = getWifiRows().find(x => x.id === rowId);
+  if(!r) return alert('Cette désignation est introuvable (a-t-elle été supprimée entre temps ?).');
+  const stats = getWifiPersonStats();
+  let rec = stats.find(s => s.row_id === rowId && s.person === person);
+  if(!rec){ rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 }; stats.push(rec); }
+
+  // Contrôle strict : jamais plus que la quantité reçue par cette personne (même règle que les boutons −/+).
+  const currentVendu = rec.vendu || 0;
+  const disponible = (rec.ticketRecu || 0) - currentVendu;
+  if(qty > disponible){
+    alert(`Impossible de vendre ${qty} ticket(s) : cette personne n'a que ${disponible} disponible(s) (non encore vendu) sur cette désignation (reçu total : ${rec.ticketRecu || 0}).`);
+    return;
+  }
+
+  const montant = qty * (r.prix || 0);
+  rec.vendu = currentVendu + qty;
+  rec.montant = (rec.montant || 0) + montant;
+  saveWifiPersonStats(stats);
+  queueWifiPersonStats(rowId, person, { ticket_recu: rec.ticketRecu, vendu: rec.vendu, montant: rec.montant });
+  wifiPersonSaleDlg.close();
+  renderWifiPersonDetail();
+}
+
 async function loadWifiFromSupabase(){
   migrateWifiLegacyDataIfNeeded();
   if(hasWifiPending()){ await trySyncWifi(); return; }
@@ -2621,16 +2715,16 @@ setInterval(() => { if(hasWifiPending()) trySyncWifi(); }, 15000);
 
 // Chien de garde : quelle que soit la cause exacte, l'application ne doit JAMAIS rester
 // affichée sur "Synchronisation en cours…" indéfiniment. Si l'état reste bloqué sur
-// "syncing" plus de 20 secondes, on force un diagnostic clair et on débloque les boutons.
+// "syncing" plus de 20 secondes, on lance un diagnostic ciblé (pas une hypothèse) et on
+// débloque les boutons.
 setInterval(() => {
   if(currentWifiConnState === 'syncing' && wifiSyncingSince && (Date.now() - wifiSyncingSince > 20000)){
     wifiSyncing = false;
-    const detail = 'La synchronisation est restée bloquée plus de 20 secondes sans réponse du serveur.\n\n'
-      + 'Cause probable : connexion internet instable/trop lente, ou serveur Supabase temporairement injoignable.\n\n'
-      + 'Solution : vérifie ta connexion internet, puis appuie sur le bouton 🔄 pour relancer une synchronisation. '
-      + 'Si le problème persiste après plusieurs essais avec une bonne connexion, les tables Supabase (wifi_person_stats / wifi_person_receipt_log) sont peut-être encore manquantes — exécute le script SQL fourni.';
-    setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-    notifySyncErrorOnce('wifi', detail);
+    setWifiSyncStatus('syncing', 'Diagnostic en cours…');
+    diagnoseSyncFailure().then(detail => {
+      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
+      notifySyncErrorOnce('wifi', detail);
+    });
   }
 }, 5000);
 
