@@ -543,7 +543,6 @@
   <div class="settingsList">
     <button onclick="editWifiTitle()">✏️ Titre : <span id="wifiTitleLabel"></span></button>
     <button onclick="editWifiSubtitle()">✏️ Sous-titre : <span id="wifiSubtitleLabel"></span></button>
-    <button onclick="editWifiAssociatesLabel()">✏️ Nom du bouton Associés : <span id="wifiAssociatesLabelSetting"></span></button>
     <button onclick="openWifiAddRow()">➕ Ajouter une désignation</button>
   </div>
   <div style="font-size:12px; color:var(--muted); margin:12px 0 6px;">Désignations (n° d'ordre auto, éditables) :</div>
@@ -556,72 +555,6 @@
   <button onclick="wifiSettingsDlg.close(); confirmWifiCloture();" style="width:100%; margin-top:14px; padding:12px; border-radius:8px; border:1px solid var(--border); background:#111318; color:var(--orange); font-weight:600; cursor:pointer; font-size:13.5px;">🔒 Clôturer la vente (archiver puis remettre les compteurs à zéro)</button>
   <div class="row">
     <button class="cancel" onclick="wifiSettingsDlg.close()" style="flex:none; width:100%;">Fermer</button>
-  </div>
-</dialog>
-
-<dialog id="wifiPersonSaleDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">💵 Vente — <span id="wifiPersonSaleWho"></span></label>
-  <p id="wifiPersonSaleRowName" style="font-size:13px; color:var(--muted); margin-bottom:12px;"></p>
-  <label>Quantité</label>
-  <input id="wifiPersonSaleQty" type="number" min="1" step="1" inputmode="numeric" oninput="updateWifiPersonSaleMontant()">
-  <label>Montant (automatique)</label>
-  <input id="wifiPersonSaleMontant" type="text" disabled style="opacity:0.85;">
-  <p id="wifiPersonSaleWarning" style="font-size:12px; color:var(--orange); display:none; margin:-8px 0 12px;">⚠ Quantité supérieure à la quantité attribuée à cette personne pour cette désignation.</p>
-  <div class="row">
-    <button class="cancel" onclick="wifiPersonSaleDlg.close()">Annuler</button>
-    <button class="save" onclick="confirmWifiPersonSaleQty()">Valider la vente</button>
-  </div>
-</dialog>
-
-<dialog id="wifiPersonReceiveDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">🎫 Tickets reçus — <span id="wifiPersonReceiveWho"></span></label>
-  <p id="wifiPersonReceiveRowName" style="font-size:13px; color:var(--muted); margin-bottom:4px;"></p>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:4px;">Actuellement reçu par cette personne : <b id="wifiPersonReceiveCurrent" style="color:var(--text);">0</b></p>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Disponible (non attribué) sur cette désignation : <b id="wifiPersonReceiveAvailable" style="color:var(--green);">0</b></p>
-  <label>Quantité (➕ pour attribuer, ➖ pour corriger/retirer)</label>
-  <input id="wifiPersonReceiveQty" type="number" min="1" step="1" placeholder="00" inputmode="numeric">
-  <div class="row">
-    <button class="cancel" onclick="wifiPersonReceiveDlg.close()">Annuler</button>
-    <button class="cancel" onclick="confirmWifiPersonReceiveDelta(-1)" style="color:var(--red); border:1px solid var(--red);">➖ Retirer</button>
-    <button class="save" onclick="confirmWifiPersonReceiveDelta(1)">➕ Ajouter</button>
-  </div>
-</dialog>
-
-<dialog id="wifiDistributeDlg" style="max-height:85vh; overflow-y:auto;">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">📤 Distribuer les tickets</label>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Répartis les tickets reçus entre l'administrateur et les associés — également ou en quantités différentes.</p>
-  <label>Désignation</label>
-  <select id="wifiDistributeRow" onchange="renderWifiDistributeForm()"></select>
-  <p id="wifiDistributeAvailable" style="font-size:12px; color:var(--green); margin:4px 0 12px;"></p>
-  <div style="display:flex; gap:8px; margin-bottom:14px;">
-    <input id="wifiDistributeEqualQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantité totale à répartir également">
-    <button class="cancel" onclick="wifiDistributeEqual()" style="flex:0 0 auto; white-space:nowrap;">Répartir également</button>
-  </div>
-  <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">Ou saisis une quantité différente pour chaque personne :</div>
-  <div id="wifiDistributeForm" style="display:flex; flex-direction:column; gap:8px;"></div>
-  <div class="row" style="margin-top:16px;">
-    <button class="cancel" onclick="wifiDistributeDlg.close()">Annuler</button>
-    <button class="save" onclick="confirmWifiDistribute()">Valider la répartition</button>
-  </div>
-</dialog>
-
-<dialog id="wifiAssociatesListDlg" style="max-height:85vh; overflow-y:auto;">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">👥 <span id="wifiAssociatesListTitle">Associés</span></label>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:14px;">Touchez une personne pour voir/gérer sa répartition de tickets. L'administrateur reçoit tous les tickets puis répartit.</p>
-  <div id="wifiAssociatesListBody" style="display:flex; flex-direction:column; gap:8px;"></div>
-  <button onclick="wifiAddAssociate()" style="width:100%; margin-top:14px; padding:11px; border-radius:8px; border:1px dashed var(--border); background:none; color:var(--blue); font-weight:600; cursor:pointer;">➕ Ajouter un associé</button>
-  <div class="row" style="margin-top:14px;">
-    <button class="cancel" onclick="wifiAssociatesListDlg.close()" style="flex:none; width:100%;">Fermer</button>
-  </div>
-</dialog>
-
-<dialog id="wifiPersonDetailDlg" style="max-height:85vh; overflow-y:auto;">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:2px;">👤 <span id="wifiPersonDetailName"></span></label>
-  <p id="wifiPersonDetailUnassigned" style="font-size:11.5px; color:var(--muted); margin-bottom:12px;"></p>
-  <div id="wifiPersonDetailBody" style="display:flex; flex-direction:column; gap:8px;"></div>
-  <div class="row" style="margin-top:14px;">
-    <button class="cancel" onclick="wifiPersonDetailDlg.close(); openWifiAssociatesList();" style="flex:1;">← Retour</button>
-    <button class="cancel" onclick="wifiPersonDetailDlg.close()" style="flex:1;">Fermer</button>
   </div>
 </dialog>
 
@@ -2038,34 +1971,22 @@ const WIFI_SUBTITLE_KEY = 'stock_lcd_wifi_subtitle';
 const WIFI_ROWS_KEY = 'stock_lcd_wifi_rows';
 const WIFI_TRASH_KEY = 'stock_lcd_wifi_trash';
 const WIFI_HISTORY_KEY = 'stock_lcd_wifi_history';
-const WIFI_PERSON_STATS_KEY = 'stock_lcd_wifi_person_stats';
-const WIFI_PERSON_LOG_KEY = 'stock_lcd_wifi_person_log';
-const WIFI_ASSOCIATES_LABEL_KEY = 'stock_lcd_wifi_associates_label';
-const ADMIN_SELF = 'ADMIN_SELF'; // identifiant technique de l'administrateur (jamais mélangé aux noms d'associés)
 
 /* --- Synchronisation multi-appareils de Vente WiFi -------------------------------------
    Tables Supabase DÉDIÉES (wifi_rows, wifi_history, wifi_meta), séparées de "items" :
    le contenu reste isolé des totaux du stock, seule la synchronisation est ajoutée.
    wifi_rows unifie lignes actives et corbeille via la colonne deleted_at (comme le
    stock principal encode sa corbeille dans "category"), donc aucune duplication de table.
-   Associés : wifi_person_stats (répartition courante par personne, upsert comme wifi_meta)
-   et wifi_person_receipt_log (journal daté, ajout seul, comme wifi_history) — deux tables
-   supplémentaires strictement nécessaires, la liste des associés elle-même est stockée
-   dans wifi_meta (clé 'associates_list'), sans nouvelle table pour ça.
    ------------------------------------------------------------------------------------- */
 const WIFI_TABLE = 'wifi_rows';
 const WIFI_HISTORY_TABLE = 'wifi_history';
 const WIFI_META_TABLE = 'wifi_meta';
-const WIFI_PERSON_STATS_TABLE = 'wifi_person_stats';
-const WIFI_PERSON_LOG_TABLE = 'wifi_person_receipt_log';
 const WIFI_PKEY = 'stock_lcd_wifi_pending';
 const WIFI_MIGRATED_KEY = 'stock_lcd_wifi_migrated_v1';
 
 let wifiPending = JSON.parse(localStorage.getItem(WIFI_PKEY) || 'null') || {
   rows: {inserts:{}, updates:{}, deletes:[]},
   history: {inserts:{}},
-  personStats: {},   // clé "rowId::person" -> {row_id, person, ticket_recu, vendu, montant}
-  personLog: {},     // tempId -> {row_id, person, qty, event_date}
   meta: null
 };
 let wifiSyncing = false;
@@ -2107,8 +2028,6 @@ function hasWifiPending(){
          Object.keys(wifiPending.rows.updates).length > 0 ||
          wifiPending.rows.deletes.length > 0 ||
          Object.keys(wifiPending.history.inserts).length > 0 ||
-         Object.keys(wifiPending.personStats).length > 0 ||
-         Object.keys(wifiPending.personLog).length > 0 ||
          !!wifiPending.meta;
 }
 function isWifiTempId(id){ return typeof id === 'string' && id.startsWith('wtemp-'); }
@@ -2172,36 +2091,6 @@ function queueWifiSeededFlag(){
   cacheWifiPending();
   scheduleWifiSync();
 }
-function queueWifiAssociatesMeta(){
-  wifiPending.meta = {
-    ...(wifiPending.meta||{}), title: getWifiTitle(), subtitle: getWifiSubtitle(),
-    associates_list: JSON.stringify(getWifiAssociates()),
-    associates_label: getWifiAssociatesLabel()
-  };
-  cacheWifiPending();
-  scheduleWifiSync();
-}
-// Répartition courante d'une personne sur une désignation (upsert : même mécanisme que wifi_meta).
-function queueWifiPersonStats(rowId, person, fields){
-  const key = rowId + '::' + person;
-  const existing = getWifiPersonStats().find(p => p.row_id === rowId && p.person === person) || {};
-  wifiPending.personStats[key] = {
-    row_id: rowId, person,
-    ticket_recu: fields.ticket_recu ?? existing.ticketRecu ?? 0,
-    vendu: fields.vendu ?? existing.vendu ?? 0,
-    montant: fields.montant ?? existing.montant ?? 0,
-    updated_at: new Date().toISOString()
-  };
-  cacheWifiPending();
-  scheduleWifiSync();
-}
-// Journal daté, ajout seul : preuve de traçabilité + base de "reçu par date".
-function queueWifiPersonLog(rowId, person, qty, eventDate){
-  const tempId = 'plog-' + Date.now() + '-' + Math.random().toString(36).slice(2,7);
-  wifiPending.personLog[tempId] = { row_id: rowId, person, qty, event_date: eventDate };
-  cacheWifiPending();
-  scheduleWifiSync();
-}
 
 async function trySyncWifi(){
   if(wifiSyncing) return;
@@ -2257,31 +2146,10 @@ async function trySyncWifi(){
         cacheWifiPending();
       }
 
-      for(const key of Object.keys(wifiPending.personStats)){
-        const rec = wifiPending.personStats[key];
-        const { error } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_STATS_TABLE)
-          .upsert(rec, {onConflict:'row_id,person'}).abortSignal(signal));
-        if(error) throw error;
-        if(JSON.stringify(wifiPending.personStats[key]) === JSON.stringify(rec)){
-          delete wifiPending.personStats[key];
-        }
-        cacheWifiPending();
-      }
-
-      for(const tempId of Object.keys(wifiPending.personLog)){
-        const payload = wifiPending.personLog[tempId];
-        const { error } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_LOG_TABLE).insert(payload).abortSignal(signal));
-        if(error) throw error;
-        delete wifiPending.personLog[tempId];
-        cacheWifiPending();
-      }
-
       if(wifiPending.meta){
         const meta = wifiPending.meta;
         const metaRows = [{key:'title', value:meta.title}, {key:'subtitle', value:meta.subtitle}];
         if(meta.seeded !== undefined) metaRows.push({key:'seeded', value:meta.seeded});
-        if(meta.associates_list !== undefined) metaRows.push({key:'associates_list', value:meta.associates_list});
-        if(meta.associates_label !== undefined) metaRows.push({key:'associates_label', value:meta.associates_label});
         const { error } = await withAbortTimeout(signal => sb.from(WIFI_META_TABLE)
           .upsert(metaRows, {onConflict:'key'}).abortSignal(signal));
         if(error) throw error;
@@ -2320,10 +2188,6 @@ async function refreshWifiFromServer(){
   if(e2) throw e2;
   const { data: metaData, error: e3 } = await withAbortTimeout(signal => sb.from(WIFI_META_TABLE).select('*').abortSignal(signal));
   if(e3) throw e3;
-  const { data: statsData, error: e4 } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_STATS_TABLE).select('*').abortSignal(signal));
-  if(e4) throw e4;
-  const { data: logData, error: e5 } = await withAbortTimeout(signal => sb.from(WIFI_PERSON_LOG_TABLE).select('*').order('created_at', {ascending:false}).limit(1000).abortSignal(signal));
-  if(e5) throw e5;
 
   // Protection anti-écrasement : si des saisies locales sont arrivées PENDANT ces requêtes
   // réseau, on ignore entièrement la réponse plutôt que d'écraser une donnée plus récente —
@@ -2342,25 +2206,10 @@ async function refreshWifiFromServer(){
     date: h.date, rows: h.rows || [], totalRecu: h.total_recu ?? 0, totalVendu: h.total_vendu ?? 0, totalMontant: h.total_montant ?? 0
   })));
 
-  saveWifiPersonStats((statsData || []).map(s => ({
-    row_id: s.row_id, person: s.person, ticketRecu: s.ticket_recu ?? 0, vendu: s.vendu ?? 0, montant: s.montant ?? 0
-  })));
-  saveWifiPersonLog((logData || []).map(l => ({
-    row_id: l.row_id, person: l.person, qty: l.qty ?? 0, event_date: l.event_date, created_at: l.created_at
-  })));
-
   const metaMap = {};
   (metaData || []).forEach(m => { metaMap[m.key] = m.value; });
   if(metaMap.title !== undefined) setWifiTitle(metaMap.title);
   if(metaMap.subtitle !== undefined) setWifiSubtitle(metaMap.subtitle);
-  if(metaMap.associates_label !== undefined) setWifiAssociatesLabel(metaMap.associates_label);
-  if(metaMap.associates_list !== undefined){
-    try{ const list = JSON.parse(metaMap.associates_list); if(Array.isArray(list)) saveWifiAssociates(list); }
-    catch(e){
-      console.log('associates_list parse error', e);
-      notifySyncErrorOnce('wifi', 'Liste des associés reçue du serveur corrompue (JSON invalide) : ' + e.message + '\n\nLa liste locale actuelle est conservée en attendant une correction.');
-    }
-  }
   wifiCloudSeeded = metaMap.seeded === 'true';
 
 
@@ -2426,367 +2275,6 @@ function seedWifiDefaults(){
   if(document.getElementById('wifiPage').style.display === 'block'){
     renderWifiList(); renderWifiSettingsRows();
   }
-}
-
-const wifiPersonSaleDlg = document.getElementById('wifiPersonSaleDlg');
-const wifiPersonReceiveDlg = document.getElementById('wifiPersonReceiveDlg');
-const wifiAssociatesListDlg = document.getElementById('wifiAssociatesListDlg');
-const wifiPersonDetailDlg = document.getElementById('wifiPersonDetailDlg');
-
-// ============================================================================
-// ASSOCIÉS : répartition des tickets WiFi par personne (administrateur + associés)
-// Couche entièrement additive : ne modifie JAMAIS wifi_rows (totaux globaux
-// existants), seulement wifi_person_stats / wifi_person_receipt_log.
-// ============================================================================
-
-// --- Distribution : répartir les tickets reçus entre l'administrateur et les associés,
-//     également ou en quantités différentes, en un seul geste (bouton à gauche de Paramètres). ---
-const wifiDistributeDlg = document.getElementById('wifiDistributeDlg');
-function getWifiDistributePeople(){
-  return [{ key: ADMIN_SELF, name: 'Administrateur (moi)' }].concat(getWifiAssociates().map(a => ({ key: a, name: a })));
-}
-function openWifiDistribute(){
-  const rows = getWifiRows();
-  if(rows.length === 0){ alert('Aucune désignation disponible pour le moment.'); return; }
-  const sel = document.getElementById('wifiDistributeRow');
-  sel.innerHTML = rows.map(r => `<option value="${r.id}">${escHtml(r.designation)}</option>`).join('');
-  document.getElementById('wifiDistributeEqualQty').value = '';
-  renderWifiDistributeForm();
-  openDialogSafe(wifiDistributeDlg);
-}
-function renderWifiDistributeForm(){
-  const rowId = document.getElementById('wifiDistributeRow').value;
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return;
-  const stats = getWifiPersonStats().filter(s => s.row_id === rowId);
-  const sumAllPersons = stats.reduce((s, x) => s + (x.ticketRecu || 0), 0);
-  const disponible = (r.ticketRecu || 0) - sumAllPersons;
-  document.getElementById('wifiDistributeAvailable').textContent = `Disponible (non attribué) sur "${r.designation}" : ${disponible} sur ${r.ticketRecu || 0} reçus au total.`;
-
-  const people = getWifiDistributePeople();
-  const form = document.getElementById('wifiDistributeForm');
-  form.innerHTML = people.map(p => {
-    const stat = stats.find(s => s.person === p.key);
-    const current = stat ? (stat.ticketRecu || 0) : 0;
-    return `
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="flex:1; min-width:0; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.key === ADMIN_SELF ? '⭐' : '👤'} ${escHtml(p.name)} <span style="color:var(--muted); font-size:11px;">(actuel : ${current})</span></span>
-        <input type="number" min="0" step="1" inputmode="numeric" class="wifiDistributeInput" data-person="${escHtml(p.key)}" placeholder="0" style="width:76px; flex:0 0 auto;">
-      </div>
-    `;
-  }).join('');
-}
-function wifiDistributeEqual(){
-  const total = parseInt(document.getElementById('wifiDistributeEqualQty').value);
-  if(isNaN(total) || total <= 0) return alert('Entrez une quantité totale valide à répartir également.');
-  const inputs = document.querySelectorAll('#wifiDistributeForm .wifiDistributeInput');
-  const n = inputs.length;
-  if(n === 0) return;
-  const base = Math.floor(total / n);
-  let remainder = total - base * n;
-  inputs.forEach(inp => {
-    let val = base;
-    if(remainder > 0){ val += 1; remainder--; }
-    inp.value = val;
-  });
-  if(total % n !== 0){
-    alert(`${total} n'est pas divisible exactement par ${n} personne(s) : le reste (${total % n}) a été ajouté aux premières personnes de la liste. Ajuste manuellement si besoin.`);
-  }
-}
-function confirmWifiDistribute(){
-  const rowId = document.getElementById('wifiDistributeRow').value;
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return alert('Désignation introuvable.');
-
-  const inputs = document.querySelectorAll('#wifiDistributeForm .wifiDistributeInput');
-  const entries = [];
-  let total = 0;
-  inputs.forEach(inp => {
-    const person = inp.dataset.person;
-    const qty = parseInt(inp.value);
-    if(!isNaN(qty) && qty > 0){ entries.push({ person, qty }); total += qty; }
-  });
-  if(entries.length === 0) return alert('Entre au moins une quantité à distribuer.');
-
-  const stats = getWifiPersonStats().filter(s => s.row_id === rowId);
-  const sumAllPersons = stats.reduce((s, x) => s + (x.ticketRecu || 0), 0);
-  const disponible = (r.ticketRecu || 0) - sumAllPersons;
-  if(total > disponible){
-    alert(`Impossible : cette répartition totalise ${total} ticket(s), mais seulement ${disponible} sont disponibles (non attribués) sur "${r.designation}". Réduis les quantités.`);
-    return;
-  }
-
-  entries.forEach(e => applyPersonReceiveDelta(rowId, e.person, 1, e.qty));
-
-  wifiDistributeDlg.close();
-  alert(`✅ Répartition effectuée : ${total} ticket(s) distribué(s) sur "${r.designation}" entre ${entries.length} personne(s).`);
-  if(wifiPersonDetailDlg.open) renderWifiPersonDetail();
-}
-
-function openWifiAssociatesList(){
-  document.getElementById('wifiAssociatesListTitle').textContent = getWifiAssociatesLabel();
-  renderWifiAssociatesList();
-  openDialogSafe(wifiAssociatesListDlg);
-}
-function renderWifiAssociatesList(){
-  const associates = getWifiAssociates();
-  const el = document.getElementById('wifiAssociatesListBody');
-  const people = [{ name: 'Administrateur (moi)', key: ADMIN_SELF, isAdmin: true }]
-    .concat(associates.map(a => ({ name: a, key: a, isAdmin: false })));
-  el.innerHTML = people.map(p => `
-    <div style="display:flex; align-items:center; gap:6px; background:#111318; border:1px solid var(--border); border-radius:8px; padding:10px;">
-      <button onclick="openWifiPersonDetail('${escJsAttr(p.key)}')" style="flex:1; min-width:0; text-align:left; background:none; border:none; color:var(--text); font-size:13.5px; font-weight:600; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.isAdmin ? '⭐' : '👤'} ${escHtml(p.name)}</button>
-      ${!p.isAdmin ? `
-        <button onclick="wifiEditAssociate('${escJsAttr(p.key)}')" class="wifiMiniBtn edit" title="Modifier">✎</button>
-        <button onclick="wifiRemoveAssociate('${escJsAttr(p.key)}')" class="wifiMiniBtn del" title="Retirer">✕</button>
-      ` : ''}
-    </div>
-  `).join('');
-}
-function wifiAddAssociate(){
-  const v = prompt('Nom du nouvel associé (ex : "M. X-NOM") :', '');
-  if(v === null) return;
-  const t = v.trim();
-  if(!t) return alert('Nom invalide.');
-  const list = getWifiAssociates();
-  if(list.includes(t)) return alert('Cet associé existe déjà.');
-  list.push(t);
-  saveWifiAssociates(list);
-  queueWifiAssociatesMeta();
-  renderWifiAssociatesList();
-}
-function wifiEditAssociate(oldName){
-  if(oldName === ADMIN_SELF) return;
-  const v = prompt('Nouveau nom :', oldName);
-  if(v === null) return;
-  const t = v.trim();
-  if(!t) return alert('Nom invalide.');
-  const list = getWifiAssociates();
-  const idx = list.indexOf(oldName);
-  if(idx === -1) return;
-  if(t !== oldName && list.includes(t)) return alert('Un associé porte déjà ce nom.');
-  list[idx] = t;
-  saveWifiAssociates(list);
-  queueWifiAssociatesMeta();
-  if(t !== oldName){
-    alert('Nom mis à jour.\n\nPar traçabilité, les données déjà enregistrées (reçu/vendu/montant passés) restent historiquement liées à l\'ancien nom. Les nouvelles attributions utiliseront le nouveau nom.');
-  }
-  renderWifiAssociatesList();
-}
-function wifiRemoveAssociate(name){
-  if(name === ADMIN_SELF) return;
-  if(!confirm(`Retirer "${name}" de la liste des associés ?\n\nSes données déjà enregistrées (reçu/vendu/montant) sont conservées pour la traçabilité — il ne sera simplement plus proposé pour de nouvelles attributions.`)) return;
-  const list = getWifiAssociates().filter(a => a !== name);
-  saveWifiAssociates(list);
-  queueWifiAssociatesMeta();
-  renderWifiAssociatesList();
-}
-
-let wifiPersonDetailKey = null;
-function openWifiPersonDetail(personKey){
-  wifiPersonDetailKey = personKey;
-  const displayName = personKey === ADMIN_SELF ? 'Administrateur (moi)' : personKey;
-  document.getElementById('wifiPersonDetailName').textContent = displayName;
-  wifiAssociatesListDlg.close();
-  renderWifiPersonDetail();
-  openDialogSafe(wifiPersonDetailDlg);
-}
-function renderWifiPersonDetail(){
-  const person = wifiPersonDetailKey;
-  const rows = getWifiRows();
-  const stats = getWifiPersonStats();
-  const el = document.getElementById('wifiPersonDetailBody');
-  if(rows.length === 0){ el.innerHTML = '<p style="font-size:12px;color:var(--muted);">Aucune désignation.</p>'; document.getElementById('wifiPersonDetailUnassigned').textContent = ''; return; }
-
-  let anyMismatch = false;
-  el.innerHTML = rows.map(r => {
-    const stat = stats.find(s => s.row_id === r.id && s.person === person) || { ticketRecu: 0, vendu: 0, montant: 0 };
-    const recu = stat.ticketRecu || 0, vendu = stat.vendu || 0, montant = stat.montant || 0;
-    const reste = recu - vendu;
-    const sumAllPersons = stats.filter(s => s.row_id === r.id).reduce((s, x) => s + (x.ticketRecu || 0), 0);
-    const nonAttribue = (r.ticketRecu || 0) - sumAllPersons;
-    if(nonAttribue !== 0) anyMismatch = true;
-    return `
-      <div class="item wifiRowCard">
-        <div class="wifiRowTop">
-          <div class="name" style="font-size:13px; flex:1 1 auto; min-width:0;">${escHtml(r.designation)} <span style="color:var(--muted); font-weight:400;">(${Number(r.prix || 0).toLocaleString('fr-FR')} GNF)</span></div>
-        </div>
-        <div style="display:flex; gap:6px;">
-          <button class="wifiTapBox" onclick="openWifiPersonReceive('${r.id}')">
-            <div class="v">${recu}</div>
-            <div class="l" title="Quantité de tickets remise par l'administrateur.">Reçu (+)</div>
-          </button>
-          <div class="wifiTapBox" style="cursor:default;">
-            <div class="v" style="color:${reste < 0 ? 'var(--red)' : (reste === 0 ? 'var(--orange)' : 'var(--green)')};">${reste}</div>
-            <div class="l" title="Tickets non encore vendus.">Reste</div>
-          </div>
-          <div class="wifiVenduBox">
-            <button class="wifiStepBtn minus" onclick="wifiPersonSaleStep('${r.id}', -1)" title="Retirer 1 vente">−</button>
-            <div class="wifiVenduCenter" onclick="openWifiPersonSale('${r.id}')" title="Vente en quantité">
-              <div class="v" style="color:var(--gold);">${vendu}</div>
-              <div class="l" title="Quantité vendue, saisie par l'administrateur.">Vendu</div>
-            </div>
-            <button class="wifiStepBtn plus" onclick="wifiPersonSaleStep('${r.id}', 1)" title="Ajouter 1 vente">+</button>
-          </div>
-        </div>
-        <div style="font-size:11px; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
-          <span>Montant : <b style="color:var(--gold);">${montant.toLocaleString('fr-FR')} GNF</b></span>
-          ${nonAttribue !== 0 ? `<span style="color:${nonAttribue < 0 ? 'var(--red)' : 'var(--orange)'};">Non attribué (toutes personnes) : ${nonAttribue}</span>` : ''}
-        </div>
-      </div>
-    `;
-  }).join('');
-  document.getElementById('wifiPersonDetailUnassigned').textContent = anyMismatch
-    ? '⚠️ Certaines lignes ont un écart entre le total global et la somme attribuée aux personnes (voir détail par ligne ci-dessous).'
-    : '✅ La répartition correspond exactement aux totaux globaux de chaque désignation.';
-}
-
-// --- Réception de tickets, scopée à une personne (administrateur ou associé) ---
-let wifiPersonReceiveRowId = null;
-function openWifiPersonReceive(rowId){
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return;
-  wifiPersonReceiveRowId = rowId;
-  const stat = getOrCreatePersonStat(rowId, wifiPersonDetailKey);
-  const allStats = getWifiPersonStats().filter(s => s.row_id === rowId);
-  const sumAllPersons = allStats.reduce((s, x) => s + (x.ticketRecu || 0), 0);
-  const disponible = (r.ticketRecu || 0) - sumAllPersons;
-  document.getElementById('wifiPersonReceiveWho').textContent = wifiPersonDetailKey === ADMIN_SELF ? 'Administrateur (moi)' : wifiPersonDetailKey;
-  document.getElementById('wifiPersonReceiveRowName').textContent = r.designation;
-  document.getElementById('wifiPersonReceiveCurrent').textContent = stat.ticketRecu || 0;
-  document.getElementById('wifiPersonReceiveAvailable').textContent = disponible;
-  document.getElementById('wifiPersonReceiveQty').value = '';
-  openDialogSafe(wifiPersonReceiveDlg);
-  setTimeout(() => document.getElementById('wifiPersonReceiveQty').focus(), 50);
-}
-// Logique centrale d'attribution (partagée entre le dialogue "Reçu" par personne et le
-// nouveau bouton "Distribuer") : applique un +/- sur le compteur reçu d'UNE personne pour
-// UNE désignation, journalise le mouvement avec sa date, jamais sous zéro.
-function applyPersonReceiveDelta(rowId, person, sign, qty){
-  const stats = getWifiPersonStats();
-  let rec = stats.find(s => s.row_id === rowId && s.person === person);
-  if(!rec){ rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 }; stats.push(rec); }
-  const current = rec.ticketRecu || 0;
-  let next = current + (sign * qty);
-  if(next < 0) next = 0;
-  rec.ticketRecu = next;
-  saveWifiPersonStats(stats);
-  queueWifiPersonStats(rowId, person, { ticket_recu: rec.ticketRecu, vendu: rec.vendu, montant: rec.montant });
-  const applied = next - current;
-  if(applied !== 0){
-    const eventDate = new Date().toISOString().slice(0,10);
-    const log = getWifiPersonLog();
-    log.unshift({ row_id: rowId, person, qty: applied, event_date: eventDate, created_at: new Date().toISOString() });
-    saveWifiPersonLog(log);
-    queueWifiPersonLog(rowId, person, applied, eventDate);
-  }
-  return rec.ticketRecu;
-}
-
-function confirmWifiPersonReceiveDelta(sign){
-  const qty = parseInt(document.getElementById('wifiPersonReceiveQty').value);
-  if(isNaN(qty) || qty <= 0) return alert('Entrez une quantité valide (nombre entier positif).');
-  const rowId = wifiPersonReceiveRowId;
-  const person = wifiPersonDetailKey;
-
-  if(sign > 0){
-    // Impossible d'attribuer plus que le stock disponible (jamais de double comptage) :
-    // le total déjà attribué à TOUTES les personnes ne peut jamais dépasser le total
-    // global reçu par l'administrateur sur cette désignation.
-    const globalRow = getWifiRows().find(r => r.id === rowId);
-    const globalRecu = globalRow ? (globalRow.ticketRecu || 0) : 0;
-    const sumAllPersons = getWifiPersonStats().filter(s => s.row_id === rowId).reduce((s, x) => s + (x.ticketRecu || 0), 0);
-    const disponible = globalRecu - sumAllPersons;
-    if(qty > disponible){
-      alert(`Impossible d'attribuer ${qty} ticket(s) : seulement ${disponible} disponible(s) sur cette désignation (déjà réparti(s) : ${sumAllPersons} sur ${globalRecu} reçus au total).`);
-      return;
-    }
-  }
-
-  applyPersonReceiveDelta(rowId, person, sign, qty);
-  wifiPersonReceiveDlg.close();
-  renderWifiPersonDetail();
-}
-
-// --- Vente scopée à une personne : mêmes règles que la ligne globale (jamais sous zéro) ---
-function wifiPersonSaleStep(rowId, delta){
-  const person = wifiPersonDetailKey;
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return;
-  const stats = getWifiPersonStats();
-  let rec = stats.find(s => s.row_id === rowId && s.person === person);
-  if(!rec){ rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 }; stats.push(rec); }
-  const currentVendu = rec.vendu || 0;
-  if(delta > 0){
-    // Contrôle : impossible de vendre plus que ce que cette personne a effectivement reçu.
-    if(currentVendu >= (rec.ticketRecu || 0)){
-      alert(`Impossible de vendre plus que la quantité reçue (${rec.ticketRecu || 0}) pour cette personne sur cette désignation.`);
-      return;
-    }
-    rec.vendu = currentVendu + 1;
-    rec.montant = (rec.montant || 0) + (r.prix || 0);
-  } else {
-    if(currentVendu <= 0) return;
-    rec.vendu = currentVendu - 1;
-    rec.montant = Math.max(0, (rec.montant || 0) - (r.prix || 0));
-  }
-  saveWifiPersonStats(stats);
-  queueWifiPersonStats(rowId, person, { ticket_recu: rec.ticketRecu, vendu: rec.vendu, montant: rec.montant });
-  renderWifiPersonDetail();
-}
-
-// --- Vente en quantité (saisie directe, ex: "100" au lieu de 100 appuis sur +), scopée à une
-//     personne. Même principe que le dialogue "💵 Vente" global, avec la même limite stricte :
-//     jamais plus que la quantité reçue par CETTE personne sur CETTE désignation. ---
-let wifiPersonSaleRowId = null;
-function openWifiPersonSale(rowId){
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return;
-  wifiPersonSaleRowId = rowId;
-  document.getElementById('wifiPersonSaleWho').textContent = wifiPersonDetailKey === ADMIN_SELF ? 'Administrateur (moi)' : wifiPersonDetailKey;
-  document.getElementById('wifiPersonSaleRowName').textContent = `${r.designation} — ${Number(r.prix || 0).toLocaleString('fr-FR')} GNF/u`;
-  document.getElementById('wifiPersonSaleQty').value = '';
-  updateWifiPersonSaleMontant();
-  openDialogSafe(wifiPersonSaleDlg);
-  setTimeout(() => document.getElementById('wifiPersonSaleQty').focus(), 50);
-}
-function updateWifiPersonSaleMontant(){
-  const r = getWifiRows().find(x => x.id === wifiPersonSaleRowId);
-  if(!r) return;
-  const rec = getWifiPersonStats().find(s => s.row_id === wifiPersonSaleRowId && s.person === wifiPersonDetailKey) || { ticketRecu:0, vendu:0 };
-  let qty = parseInt(document.getElementById('wifiPersonSaleQty').value);
-  if(isNaN(qty) || qty < 1) qty = 1;
-  const montant = qty * (r.prix || 0);
-  document.getElementById('wifiPersonSaleMontant').value = montant.toLocaleString('fr-FR') + ' GNF';
-  const resteDisponible = (rec.ticketRecu || 0) - (rec.vendu || 0);
-  document.getElementById('wifiPersonSaleWarning').style.display = qty > resteDisponible ? 'block' : 'none';
-}
-function confirmWifiPersonSaleQty(){
-  let qty = parseInt(document.getElementById('wifiPersonSaleQty').value);
-  if(isNaN(qty) || qty < 1) return alert('Entrez une quantité valide (au moins 1).');
-  const rowId = wifiPersonSaleRowId;
-  const person = wifiPersonDetailKey;
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return alert('Cette désignation est introuvable (a-t-elle été supprimée entre temps ?).');
-  const stats = getWifiPersonStats();
-  let rec = stats.find(s => s.row_id === rowId && s.person === person);
-  if(!rec){ rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 }; stats.push(rec); }
-
-  // Contrôle strict : jamais plus que la quantité reçue par cette personne (même règle que les boutons −/+).
-  const currentVendu = rec.vendu || 0;
-  const disponible = (rec.ticketRecu || 0) - currentVendu;
-  if(qty > disponible){
-    alert(`Impossible de vendre ${qty} ticket(s) : cette personne n'a que ${disponible} disponible(s) (non encore vendu) sur cette désignation (reçu total : ${rec.ticketRecu || 0}).`);
-    return;
-  }
-
-  const montant = qty * (r.prix || 0);
-  rec.vendu = currentVendu + qty;
-  rec.montant = (rec.montant || 0) + montant;
-  saveWifiPersonStats(stats);
-  queueWifiPersonStats(rowId, person, { ticket_recu: rec.ticketRecu, vendu: rec.vendu, montant: rec.montant });
-  wifiPersonSaleDlg.close();
-  renderWifiPersonDetail();
 }
 
 async function loadWifiFromSupabase(){
@@ -2868,39 +2356,6 @@ const WIFI_DEFAULT_ROWS = [
   {id:'w-1m',  designation:'1 mois',  prix:70000, ticketRecu:0, vendu:0, montant:0}
 ];
 
-// --- Associés : liste, libellé du bouton, répartition par personne, journal daté ---
-const WIFI_ASSOCIATES_KEY = 'stock_lcd_wifi_associates';
-function getWifiAssociates(){
-  try{ const p = JSON.parse(localStorage.getItem(WIFI_ASSOCIATES_KEY) || 'null'); return Array.isArray(p) ? p : ['M. A-DIALLO', 'M. M-HADY']; }
-  catch(e){ console.log('wifi associates parse error, recovering with defaults', e); return ['M. A-DIALLO', 'M. M-HADY']; }
-}
-function saveWifiAssociates(list){ localStorage.setItem(WIFI_ASSOCIATES_KEY, JSON.stringify(list)); }
-function getWifiAssociatesLabel(){ return localStorage.getItem(WIFI_ASSOCIATES_LABEL_KEY) || 'Associés'; }
-function setWifiAssociatesLabel(v){ localStorage.setItem(WIFI_ASSOCIATES_LABEL_KEY, v); }
-
-function getWifiPersonStats(){
-  try{ const p = JSON.parse(localStorage.getItem(WIFI_PERSON_STATS_KEY) || '[]'); return Array.isArray(p) ? p : []; }
-  catch(e){ console.log('wifi person stats parse error, recovering with empty list', e); return []; }
-}
-function saveWifiPersonStats(list){ localStorage.setItem(WIFI_PERSON_STATS_KEY, JSON.stringify(list)); }
-function getWifiPersonLog(){
-  try{ const p = JSON.parse(localStorage.getItem(WIFI_PERSON_LOG_KEY) || '[]'); return Array.isArray(p) ? p : []; }
-  catch(e){ console.log('wifi person log parse error, recovering with empty list', e); return []; }
-}
-function saveWifiPersonLog(list){ localStorage.setItem(WIFI_PERSON_LOG_KEY, JSON.stringify(list)); }
-
-// Trouve (ou crée localement à zéro) l'enregistrement d'une personne pour une désignation.
-function getOrCreatePersonStat(rowId, person){
-  const stats = getWifiPersonStats();
-  let rec = stats.find(p => p.row_id === rowId && p.person === person);
-  if(!rec){
-    rec = { row_id: rowId, person, ticketRecu: 0, vendu: 0, montant: 0 };
-    stats.push(rec);
-    saveWifiPersonStats(stats);
-  }
-  return rec;
-}
-
 function getWifiTitle(){ return localStorage.getItem(WIFI_TITLE_KEY) || 'VENTE WIFI'; }
 function setWifiTitle(v){ localStorage.setItem(WIFI_TITLE_KEY, v); }
 function getWifiSubtitle(){ return localStorage.getItem(WIFI_SUBTITLE_KEY) || 'Guinée Wifi - Fast - DALEIN'; }
@@ -2962,7 +2417,6 @@ function closeWifiPage(){
 function refreshWifiHeader(){
   document.getElementById('wifiTitleDisplay').textContent = '📶 ' + getWifiTitle();
   document.getElementById('wifiSubtitleDisplay').textContent = getWifiSubtitle();
-  document.getElementById('wifiAssociatesBtnLabel').textContent = getWifiAssociatesLabel();
 }
 
 // --- Rendu de la liste des désignations ---
@@ -3359,17 +2813,8 @@ async function confirmWifiCloture(){
   });
   saveWifiRows(rows);
 
-  // La clôture remet TOUT à zéro, y compris la répartition par personne
-  // (administrateur + chaque associé), pas seulement les totaux globaux.
-  const personStats = getWifiPersonStats();
-  personStats.forEach(s => {
-    s.ticketRecu = 0; s.vendu = 0; s.montant = 0;
-    queueWifiPersonStats(s.row_id, s.person, { ticket_recu: 0, vendu: 0, montant: 0 });
-  });
-  saveWifiPersonStats(personStats);
-
   renderWifiList();
-  alert('Vente WiFi clôturée et archivée dans l\'Historique ✅ Les compteurs sont repartis à zéro (y compris la répartition administrateur/associés).');
+  alert('Vente WiFi clôturée et archivée dans l\'Historique ✅ Les compteurs sont repartis à zéro.');
 }
 
 const wifiHistoryDlg = document.getElementById('wifiHistoryDlg');
@@ -3401,7 +2846,6 @@ const wifiSettingsDlg = document.getElementById('wifiSettingsDlg');
 function openWifiSettings(){
   document.getElementById('wifiTitleLabel').textContent = getWifiTitle();
   document.getElementById('wifiSubtitleLabel').textContent = getWifiSubtitle();
-  document.getElementById('wifiAssociatesLabelSetting').textContent = getWifiAssociatesLabel();
   renderWifiSettingsRows();
   openDialogSafe(wifiSettingsDlg);
 }
@@ -3437,16 +2881,6 @@ function editWifiSubtitle(){
   setWifiSubtitle(v.trim());
   queueWifiMeta();
   refreshWifiHeader();
-  openWifiSettings();
-}
-function editWifiAssociatesLabel(){
-  const v = prompt('Nom du bouton (ex: "Associés", "Équipe"...) :', getWifiAssociatesLabel());
-  if(v === null) return;
-  const t = v.trim();
-  if(!t) return alert('Nom invalide.');
-  setWifiAssociatesLabel(t);
-  queueWifiAssociatesMeta();
-  document.getElementById('wifiAssociatesBtnLabel').textContent = t;
   openWifiSettings();
 }
 
