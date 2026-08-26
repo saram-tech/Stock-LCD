@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stock-lcd-v36';
+const CACHE_NAME = 'stock-lcd-v37';
 const ASSETS = [
   './index.html',
   './manifest.json',
