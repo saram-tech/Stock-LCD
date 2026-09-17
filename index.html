@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stock LCD">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --bg:#0f1115; --card:#1a1d24; --border:#2a2e38;
@@ -25,21 +25,16 @@
     padding:16px; max-width:560px; margin:0 auto;
     padding-bottom:90px;
   }
-  h1{font-size:17px; margin-bottom:0; display:flex; align-items:center; gap:6px;}
-  .summaryRow{display:flex; gap:10px; margin-bottom:8px; align-items:stretch;}
-  .refreshBtn{
-    flex:0 0 auto; width:clamp(34px,9vw,44px); border-radius:12px; border:1px solid var(--border);
-    background:var(--card); color:var(--blue); font-size:clamp(15px,4vw,18px); cursor:pointer;
-  }
-  .refreshBtn:active{transform:scale(0.92);}
+  h1{font-size:20px; margin-bottom:16px; display:flex; align-items:center; gap:8px;}
+  .summaryRow{display:flex; gap:10px; margin-bottom:14px;}
   .summary{
     flex:1; background:linear-gradient(135deg,#1a1d24,#22262f);
-    border:1px solid var(--border); border-radius:12px;
-    padding:clamp(6px,2vw,11px); text-align:center;
+    border:1px solid var(--border); border-radius:14px;
+    padding:16px; text-align:center;
   }
-  .summary .big{font-size:clamp(19px,6vw,26px); font-weight:700; color:var(--green); line-height:1.1;}
-  .summary.value .big{color:var(--gold); font-size:clamp(13px,4vw,16px);}
-  .summary .label{color:var(--muted); font-size:clamp(9px,2.6vw,10.5px); margin-top:clamp(1px,0.6vw,3px);}
+  .summary .big{font-size:36px; font-weight:700; color:var(--green);}
+  .summary.value .big{color:var(--gold); font-size:20px;}
+  .summary .label{color:var(--muted); font-size:12px; margin-top:4px;}
   .orderNum{color:var(--muted); font-size:11px; font-weight:400;}
   .mcAmount{
     display:inline-block; margin-top:4px; padding:3px 10px;
@@ -61,10 +56,9 @@
   .stickyHeader{
     position:sticky; top:0; z-index:15;
     background:var(--bg);
-    margin:0 -16px; padding:8px 16px 2px 16px;
+    margin:0 -16px; padding:10px 16px 4px 16px;
   }
-  .headRow{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;}
-  .tabsBar{display:flex; gap:8px; margin-bottom:10px; overflow-x:auto; padding-bottom:2px;}
+  .tabsBar{display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px;}
   .tabBtn{
     padding:8px 16px; border-radius:20px; border:1px solid var(--border);
     background:var(--card); color:var(--muted); font-size:13px; font-weight:600;
@@ -78,7 +72,6 @@
   }
   .item .info{flex:1; min-width:0;}
   .item .name{font-weight:600; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .item .name.nameWrap{white-space:normal; overflow:visible; text-overflow:clip; line-height:1.3;}
   .item .ref{color:var(--muted); font-size:12px; margin-top:2px;}
   .item .price{color:var(--gold); font-size:11px; margin-top:2px;}
   .item .qty{
@@ -97,7 +90,6 @@
   .btn.plus{background:#1a3a24; color:var(--green);}
   .btn.edit{background:#1f2a3a; color:var(--blue); font-size:15px;}
   .btn.del{background:#2a1a1a; color:var(--muted); font-size:15px;}
-  .btn.menu{background:#2a2e38; color:var(--text); font-size:19px;}
   .toolbar{display:flex; gap:8px; margin-bottom:12px;}
   .toolbar .search{margin-bottom:0; flex:1;}
   .sortBtn{
@@ -106,16 +98,14 @@
     white-space:nowrap; display:flex; align-items:center; gap:4px;
   }
   .sortBtn.active{border-color:var(--blue); color:var(--blue);}
-  .headerBtns{display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
-  .headerBtns .actionBtn{flex:1 1 auto; min-width:110px;}
+  .headerBtns{display:flex; gap:8px; margin-bottom:14px;}
   .actionBtn{
-    flex:1; padding:clamp(6px,1.8vw,11px) clamp(6px,3vw,14px); border-radius:10px; border:1px solid var(--border);
-    background:var(--card); color:var(--text); font-size:clamp(11px,3vw,13px); font-weight:600; cursor:pointer;
+    flex:1; padding:11px; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:13px; font-weight:600; cursor:pointer;
     display:flex; align-items:center; justify-content:center; gap:6px;
   }
   .actionBtn.whatsapp{border-color:#25d366; color:#25d366;}
-  .actionBtn.wifi{border-color:var(--blue); color:var(--blue); width:clamp(34px,9vw,44px); flex:0 0 clamp(34px,9vw,44px); font-size:clamp(15px,4vw,18px);}
-  .actionBtn.settings{width:clamp(34px,9vw,44px); flex:0 0 clamp(34px,9vw,44px); font-size:clamp(15px,4vw,18px);}
+  .actionBtn.settings{width:44px; flex:0 0 44px; font-size:18px;}
   .settingsList{display:flex; flex-direction:column; gap:8px; margin-bottom:6px;}
   .settingsList button{
     width:100%; text-align:left; padding:12px 14px; border-radius:10px; border:1px solid var(--border);
@@ -154,66 +144,56 @@
   .fieldRow{display:flex; gap:10px;}
   .fieldRow > div{flex:1;}
 
-  /* --- Bouton "Totaux globaux" : très visible, valeur générale affichée en bas --- */
-  .actionBtn.globalTotalsBtn{
-    flex-direction:column; gap:1px; flex:1.3; padding-top:clamp(5px,1.4vw,9px); padding-bottom:clamp(5px,1.4vw,9px);
-    background:linear-gradient(135deg,#4a3a08,#6b5410);
-    border:1.5px solid var(--gold); box-shadow:0 0 0 1px rgba(234,179,8,0.15), 0 2px 8px rgba(234,179,8,0.25);
-  }
-  .globalTotalsBtn .gtLabel{font-size:clamp(9.5px,2.6vw,11.5px); font-weight:700; color:var(--gold); display:flex; align-items:center; gap:3px; white-space:nowrap;}
-  .globalTotalsBtn .gtValue{font-size:clamp(10.5px,2.9vw,13.5px); font-weight:800; color:#fff; letter-spacing:0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
+/* ===== Styles Wifi (fusionnés, scopés sous #wifiView) ===== */
 
-  /* --- Page isolée "Vente WiFi" --- */
-  #wifiPage{
-    display:none; position:fixed; inset:0; background:var(--bg); z-index:60;
-    overflow-y:auto; -webkit-overflow-scrolling:touch;
-  }
-  #wifiPage .wifiWrap{max-width:560px; margin:0 auto; padding:16px; padding-bottom:24px;}
-  .wifiBack{
-    background:none; border:none; color:var(--text); font-size:20px; cursor:pointer;
-    padding:4px 10px 4px 0; line-height:1;
-  }
-  .wifiIsoNote{font-size:10.5px; color:var(--muted); text-align:center; margin:-4px 0 12px;}
-  .wifiTapBox{
-    flex:1; background:#111318; border:1px solid var(--border); border-radius:7px;
-    padding:5px; color:var(--text); cursor:pointer; text-align:center; font:inherit;
-  }
-  .wifiTapBox .v{font-size:15px; font-weight:700; line-height:1.1;}
-  .wifiTapBox .l{font-size:9px; color:var(--muted); margin-top:1px;}
-  .wifiVenduBox{
-    flex:1; background:#111318; border:1px solid var(--border); border-radius:7px;
-    padding:4px; display:flex; align-items:stretch; gap:4px;
-  }
-  .wifiVenduCenter{flex:1; text-align:center; cursor:pointer; padding:1px 0;}
-  .wifiVenduCenter .v{font-size:15px; font-weight:700; line-height:1.1;}
-  .wifiVenduCenter .l{font-size:9px; color:var(--muted); margin-top:1px;}
-  .wifiStepBtn{
-    flex:0 0 auto; width:26px; border:none; border-radius:6px; font-size:16px; font-weight:700;
-    cursor:pointer; color:#fff;
-  }
-  .wifiStepBtn.minus{background:#3a1f1f; color:var(--red);}
-  .wifiStepBtn.plus{background:#1a3a24; color:var(--green);}
-  .wifiLastStepBadge{font-size:9px; font-weight:700; color:var(--muted); vertical-align:super;}
-  .wifiRowCard{display:flex; flex-direction:column; align-items:stretch; gap:5px; padding:9px !important; margin-bottom:6px !important;}
-  .wifiRowTop{display:flex; justify-content:space-between; align-items:center; gap:6px;}
-  .wifiMiniBtn{width:28px; height:28px; border-radius:8px; border:none; font-size:12px; cursor:pointer; flex:0 0 auto;}
-  .wifiMiniBtn.edit{background:#1f2a3a; color:var(--blue);}
-  .wifiMiniBtn.del{background:#2a1a1a; color:var(--red);}
-  .wifiSettingsRow{
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
-    background:#111318; border:1px solid var(--border); border-radius:8px; padding:8px 10px;
-  }
+#wifiView{
+  --w-paper:#FAF7EF;
+  --w-paper-line:#E4DCC8;
+  --w-ink:#1B2A4A;
+  --w-ink-soft:#4A5578;
+  --w-card:#FFFFFF;
+  --w-green:#2F6F5E;
+  --w-green-soft:#E4F0EA;
+  --w-amber:#C97A2B;
+  --w-amber-soft:#FBEBD9;
+  --w-red:#B23A34;
+  --w-red-soft:#FBE6E4;
+  --w-line:#DCD3BC;
+  --w-radius:14px;
+  --w-shadow:0 1px 2px rgba(27,42,74,0.06), 0 4px 14px rgba(27,42,74,0.06);
+}#wifiView *{box-sizing:border-box;}#wifiView{margin:0;padding:0;background:var(--w-paper);color:var(--w-ink);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;}#wifiView{padding-bottom:78px;min-height:100vh;}#wifiView .num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}#wifiView ::selection{background:var(--w-green-soft);}#wifiView button{font-family:inherit;}#wifiView a{color:inherit;}#wifiView /* Header */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:var(--w-paper);
+  border-bottom:1px solid var(--w-paper-line);
+  padding:14px 16px 10px;
+}#wifiView .topbar-row{display:flex;align-items:baseline;justify-content:space-between;}#wifiView .brand{font-weight:700;font-size:17px;letter-spacing:-0.01em;}#wifiView .brand small{display:block;font-weight:400;font-size:11.5px;color:var(--w-ink-soft);margin-top:1px;}#wifiView .date-chip{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--w-ink-soft);}#wifiView /* Views */
+.view{display:none;padding:14px 16px 24px;max-width:640px;margin:0 auto;}#wifiView .view.active{display:block;animation:fade .18s ease;}#wifiView h2.section-title{font-size:14px;font-weight:600;color:var(--w-ink-soft);margin:22px 0 10px;text-transform:none;}#wifiView h2.section-title:first-child{margin-top:2px;}#wifiView /* Cards */
+.card{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px;box-shadow:var(--w-shadow);}#wifiView .card + .card{margin-top:10px;}#wifiView /* Dashboard grid */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:11.5px;color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:16px;}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:13px;color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14.5px;}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView /* Alerts */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.4;}#wifiView .alert + .alert{margin-top:8px;}#wifiView .alert.amber{background:var(--w-amber-soft);color:#7A4A17;}#wifiView .alert.red{background:var(--w-red-soft);color:#7A2621;}#wifiView .alert .dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex:none;}#wifiView .alert.amber .dot{background:var(--w-amber);}#wifiView .alert.red .dot{background:var(--w-red);}#wifiView /* Table (ledger style) */
+table.ledger{width:100%;border-collapse:collapse;font-size:12.5px;}#wifiView table.ledger th{text-align:right;font-weight:500;color:var(--w-ink-soft);font-size:10.5px;padding:0 4px 6px;border-bottom:1px solid var(--w-line);}#wifiView table.ledger th:first-child, #wifiView table.ledger td:first-child{text-align:left;}#wifiView table.ledger td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--w-paper-line);font-family:'IBM Plex Mono',monospace;}#wifiView table.ledger tr:last-child td{border-bottom:none;}#wifiView table.ledger tr.total td{font-weight:700;border-top:1px solid var(--w-ink);padding-top:8px;}#wifiView /* People list */
+.person-row{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:600;font-size:14px;}#wifiView .person-sub{font-size:11.5px;color:var(--w-ink-soft);margin-top:2px;}#wifiView .person-right{text-align:right;}#wifiView .chip{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:20px;font-weight:600;}#wifiView .chip.due{background:var(--w-red-soft);color:var(--w-red);}#wifiView .chip.clear{background:var(--w-green-soft);color:var(--w-green);}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
+.hist-row{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--w-paper-line);align-items:flex-start;}#wifiView .hist-row:last-child{border-bottom:none;}#wifiView .hist-badge{flex:none;width:8px;height:8px;border-radius:2px;margin-top:5px;}#wifiView .hist-main{flex:1;min-width:0;}#wifiView .hist-title{font-size:13px;font-weight:600;}#wifiView .hist-sub{font-size:11.5px;color:var(--w-ink-soft);margin-top:1px;}#wifiView .hist-qty{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;white-space:nowrap;}#wifiView /* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600;cursor:pointer;width:100%;}#wifiView .btn-primary{background:var(--w-ink);color:var(--w-paper);}#wifiView .btn-secondary{background:var(--w-card);color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-outline{background:transparent;color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-danger{background:var(--w-red);color:#fff;}#wifiView .btn-row{display:flex;gap:8px;}#wifiView .btn-row .btn{width:auto;flex:1;}#wifiView .btn:active{transform:scale(0.98);}#wifiView .btn:disabled{opacity:0.4;cursor:not-allowed;}#wifiView /* Op-type grid (new operation) */
+.op-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}#wifiView .op-tile{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px 12px;text-align:left;cursor:pointer;}#wifiView .op-tile .op-icon{font-size:19px;}#wifiView .op-tile .op-label{display:block;font-weight:600;font-size:13.5px;margin-top:6px;}#wifiView .op-tile .op-desc{display:block;font-size:11px;color:var(--w-ink-soft);margin-top:2px;}#wifiView /* Bottom nav */
+.bottomnav{position:fixed;bottom:0;left:0;right:0;background:var(--w-card);border-top:1px solid var(--w-line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom);}#wifiView .navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 8px;background:none;border:none;color:var(--w-ink-soft);cursor:pointer;font-size:9.5px;font-weight:600;}#wifiView .navbtn.active{color:var(--w-ink);}#wifiView .navbtn .ic{font-size:18px;}#wifiView .fab{position:relative;top:-16px;width:52px;height:52px;border-radius:50%;background:var(--w-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 14px rgba(47,111,94,0.4);border:4px solid var(--w-paper);flex:none;margin:0 4px;cursor:pointer;}#wifiView /* Sheets/modals */
+.overlay{position:fixed;inset:0;background:rgba(27,42,74,0.42);z-index:50;display:none;align-items:flex-end;}#wifiView .overlay.active{display:flex;}#wifiView .sheet{background:var(--w-paper);width:100%;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));animation:slideup .2s ease;}#wifiView .sheet-handle{width:36px;height:4px;background:var(--w-line);border-radius:3px;margin:0 auto 12px;}#wifiView .sheet-title{font-size:16px;font-weight:700;margin-bottom:4px;}#wifiView .sheet-sub{font-size:12px;color:var(--w-ink-soft);margin-bottom:14px;}#wifiView .sheet-close{position:absolute;right:14px;top:14px;background:none;border:none;font-size:20px;color:var(--w-ink-soft);cursor:pointer;}#wifiView /* Forms */
+.field{margin-bottom:12px;}#wifiView .field label{display:block;font-size:11.5px;font-weight:600;color:var(--w-ink-soft);margin-bottom:5px;}#wifiView .field input, #wifiView .field select, #wifiView .field textarea{width:100%;border:1px solid var(--w-line);background:var(--w-card);border-radius:10px;padding:10px 11px;font-size:14px;font-family:inherit;color:var(--w-ink);}#wifiView .field textarea{resize:vertical;min-height:56px;}#wifiView .field input:focus, #wifiView .field select:focus, #wifiView .field textarea:focus{outline:2px solid var(--w-ink);outline-offset:-1px;}#wifiView .qty-select{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}#wifiView .qty-tile{border:1px solid var(--w-line);background:var(--w-card);border-radius:9px;padding:9px 4px;text-align:center;font-size:11.5px;cursor:pointer;}#wifiView .qty-tile .qty-n{display:block;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;}#wifiView .qty-tile.disabled{opacity:0.35;}#wifiView .qty-tile.selected{border-color:var(--w-ink);background:var(--w-ink);color:#fff;}#wifiView .help-text{font-size:11px;color:var(--w-ink-soft);margin-top:4px;}#wifiView .error-text{font-size:11.5px;color:var(--w-red);margin-top:6px;font-weight:600;}#wifiView .search-bar{display:flex;gap:8px;margin-bottom:10px;}#wifiView .search-bar input{flex:1;}#wifiView .filter-row{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;}#wifiView .filter-pill{flex:none;border:1px solid var(--w-line);background:var(--w-card);border-radius:20px;padding:6px 12px;font-size:11.5px;cursor:pointer;white-space:nowrap;}#wifiView .filter-pill.active{background:var(--w-ink);color:var(--w-paper);border-color:var(--w-ink);}#wifiView .empty{text-align:center;padding:30px 10px;color:var(--w-ink-soft);font-size:13px;}#wifiView .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--w-ink);color:var(--w-paper);padding:10px 18px;border-radius:20px;font-size:12.5px;font-weight:600;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;}#wifiView .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}#wifiView .settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--w-paper-line);}#wifiView .settings-row:last-child{border-bottom:none;}#wifiView .settings-row .st-label{font-size:13.5px;font-weight:500;}#wifiView .settings-row .st-sub{font-size:11px;color:var(--w-ink-soft);margin-top:2px;}#wifiView .settings-row input[type=number]{width:90px;text-align:right;}#wifiView .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--w-ink-soft);background:none;border:none;padding:0 0 12px;cursor:pointer;}
+
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+@keyframes slideup{from{transform:translateY(24px);opacity:0.5;}to{transform:none;opacity:1;}}
+
+
 </style>
 </head>
 <body>
 
 <div class="stickyHeader">
-  <div class="headRow">
-    <h1>📦 Stock LCD</h1>
-    <div id="syncStatus" onclick="showSyncErrorDetail()" style="font-size:11px; color:var(--muted); display:flex; align-items:center; gap:5px; cursor:pointer;">
-      <span id="syncDot" style="width:7px; height:7px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
-      <span id="syncText">Connexion...</span>
-    </div>
+  <h1>📦 Stock <span id="appTitleTab">LCD</span></h1>
+  <div id="syncStatus" style="font-size:12px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+    <span id="syncDot" style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
+    <span id="syncText">Connexion...</span>
   </div>
 
   <div class="summaryRow" id="summaryRow">
@@ -221,7 +201,6 @@
       <div class="big" id="totalQty">0</div>
       <div class="label" id="totalLabel">disponible(s)</div>
     </div>
-    <button class="refreshBtn" id="refreshStockBtn" onclick="forceRefreshStock()" title="Actualiser">🔄</button>
     <div class="summary value">
       <div class="big" id="totalValue">0</div>
       <div class="label" id="totalValueLabel">valeur du stock (GNF)</div>
@@ -229,20 +208,18 @@
   </div>
 
   <div class="headerBtns">
-    <button class="actionBtn globalTotalsBtn" id="globalTotalsBtn" onclick="openGlobalTotalsDlg()">
-      <span class="gtLabel">📊 Totaux globaux</span>
-      <span class="gtValue" id="globalTotalsBtnValue">0 GNF</span>
-    </button>
-    <button class="actionBtn whatsapp" id="orderBtn" onclick="openOrderDlg()">📋 Commande</button>
-    <button class="actionBtn wifi" id="wifiPageBtn" onclick="openWifiPage()" title="Gérer les ventes et quantités WiFi.">📶</button>
+    <button class="actionBtn whatsapp" id="orderBtn" onclick="openOrderDlg()">📋 Commande fournisseur</button>
+    <button class="actionBtn settings" onclick="openWifiApp()">📶 Wifi</button>
     <button class="actionBtn settings" onclick="openSettings()">⚙</button>
     <button class="actionBtn settings" onclick="lockAppNow()" title="Déconnexion">🚪</button>
   </div>
 
+  <div class="globalTotals" id="globalTotals"></div>
+
   <div class="tabsBar" id="tabsBar"></div>
   <div class="toolbar">
     <input class="search" id="search" placeholder="Rechercher un article...">
-    <button class="sortBtn" id="infosBtn" onclick="openInfos()">ℹ️</button>
+    <button class="sortBtn" id="infosBtn" onclick="openInfos()">ℹ️ Infos</button>
     <button class="sortBtn active" id="sortBtn" onclick="toggleSort()">A→Z</button>
   </div>
 </div>
@@ -252,6 +229,136 @@
 <div class="empty" id="emptyMsg" style="display:none;">Aucun article dans cette catégorie. Ajoutez-en un.</div>
 
 <button class="fab" id="fabAdd" onclick="openAdd()">+ Ajouter un article</button>
+
+<div id="wifiOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--w-paper,#FAF7EF); overflow-y:auto;">
+  <button onclick="closeWifiApp()" style="position:fixed; top:10px; right:10px; z-index:200; width:34px; height:34px; border-radius:50%; border:none; background:#1B2A4A; color:#fff; font-size:16px; cursor:pointer;">✕</button>
+  <div id="wifiView">
+
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="brand">Carnet WiFi<small>Suivi des tickets &amp; associés</small></div>
+    <div class="date-chip" id="today-chip">—</div>
+  </div>
+</div>
+
+<!-- ACCUEIL -->
+<div class="view active" id="view-accueil">
+  <h2 class="section-title">Stock disponible (chez moi)</h2>
+  <div class="stat-grid" id="dash-stock"></div>
+
+  <h2 class="section-title">Associés</h2>
+  <div class="card">
+    <div class="money-row"><span class="label">Personnes enregistrées</span><span class="amount" id="dash-people-count">0</span></div>
+    <div class="money-row"><span class="label">Tickets actuellement distribués</span><span class="amount" id="dash-distributed">0</span></div>
+    <div class="money-row"><span class="label">Personnes ayant encore des tickets</span><span class="amount" id="dash-holders">0</span></div>
+  </div>
+
+  <h2 class="section-title">Argent</h2>
+  <div class="card">
+    <div class="money-row"><span class="label">Total des ventes</span><span class="amount" id="dash-sales">0</span></div>
+    <div class="money-row"><span class="label">Total encaissé</span><span class="amount pos" id="dash-paid">0</span></div>
+    <div class="money-row"><span class="label">Reste à percevoir</span><span class="amount neg" id="dash-due">0</span></div>
+  </div>
+
+  <h2 class="section-title">Alertes</h2>
+  <div id="dash-alerts"></div>
+</div>
+
+<!-- STOCK -->
+<div class="view" id="view-stock">
+  <h2 class="section-title">Stock général</h2>
+  <div class="card" style="overflow-x:auto;">
+    <table class="ledger" id="stock-table"></table>
+  </div>
+  <h2 class="section-title">Où sont mes tickets ?</h2>
+  <div class="help-text" style="margin-bottom:8px;">Sélectionnez un type pour voir la répartition complète.</div>
+  <div class="filter-row" id="stock-type-pills"></div>
+  <div class="card" id="stock-breakdown"></div>
+</div>
+
+<!-- PERSONNES -->
+<div class="view" id="view-personnes">
+  <div class="search-bar">
+    <input type="text" id="people-search" placeholder="Rechercher une personne...">
+  </div>
+  <div class="card" id="people-list"></div>
+  <div style="margin-top:12px;">
+    <button class="btn btn-secondary" onclick="UI.openAddPerson()">+ Ajouter une personne</button>
+  </div>
+</div>
+
+<!-- SITUATION (detail person) -->
+<div class="view" id="view-situation">
+  <button class="back-btn" onclick="UI.goto('personnes')">‹ Personnes</button>
+  <div id="situation-content"></div>
+</div>
+
+<!-- HISTORIQUE -->
+<div class="view" id="view-historique">
+  <div class="search-bar">
+    <input type="text" id="hist-search" placeholder="Rechercher (personne, type, commentaire)...">
+  </div>
+  <div class="filter-row" id="hist-filters"></div>
+  <div class="card" id="hist-list"></div>
+</div>
+
+<!-- RAPPORTS -->
+<div class="view" id="view-rapports">
+  <h2 class="section-title">Rapport fournisseur</h2>
+  <div class="help-text" style="margin-bottom:10px;">Justification complète des tickets reçus, type par type.</div>
+  <div id="rapport-content"></div>
+  <div style="margin-top:14px;">
+    <button class="btn btn-secondary" onclick="UI.exportBackup()">⇩ Exporter une sauvegarde (JSON)</button>
+  </div>
+</div>
+
+<!-- PARAMETRES -->
+<div class="view" id="view-parametres">
+  <h2 class="section-title">Prix des tickets</h2>
+  <div class="card" id="settings-prices"></div>
+
+  <h2 class="section-title">Types de tickets</h2>
+  <div class="card" id="settings-types"></div>
+  <div style="margin-top:8px;">
+    <button class="btn btn-outline" onclick="UI.openAddTicketType()">+ Ajouter un type de ticket</button>
+  </div>
+
+  <h2 class="section-title">Sauvegarde</h2>
+  <div class="card">
+    <div class="settings-row">
+      <div><div class="st-label">Exporter les données</div><div class="st-sub">Personnes, stock, ventes, paiements, historique</div></div>
+      <button class="btn btn-outline" style="width:auto;" onclick="UI.exportBackup()">Exporter</button>
+    </div>
+    <div class="settings-row">
+      <div><div class="st-label">Restaurer une sauvegarde</div><div class="st-sub">Non disponible en mode Supabase — chaque opération est déjà enregistrée en temps réel, aucun import global n'est nécessaire</div></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Base de données</h2>
+  <div class="card">
+    <div class="help-text">Cette application est connectée à Supabase (9 tables dédiées : types de tickets, personnes, réceptions, mouvements, ventes, paiements, corrections, journal d'audit). Toutes les opérations sont enregistrées en temps réel et synchronisées entre tous les appareils.</div>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottomnav">
+  <button class="navbtn active" data-view="accueil" onclick="UI.goto('accueil')"><span class="ic">⌂</span>Accueil</button>
+  <button class="navbtn" data-view="stock" onclick="UI.goto('stock')"><span class="ic">▤</span>Stock</button>
+  <button class="fab" onclick="UI.openNewOp()">+</button>
+  <button class="navbtn" data-view="personnes" onclick="UI.goto('personnes')"><span class="ic">☺</span>Personnes</button>
+  <button class="navbtn" data-view="more" onclick="UI.openMore()"><span class="ic">⋯</span>Plus</button>
+</div>
+
+<!-- Overlay / sheets -->
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+  </div>
+</div>
 
 <dialog id="dlg">
   <label id="dlgTitle" style="display:block; font-weight:600; font-size:16px; margin-bottom:12px; color:var(--text);">Ajouter un article</label>
@@ -341,7 +448,6 @@
     <button onclick="forceSync()">🔄 Forcer la synchronisation</button>
     <button onclick="openBackup()">💾 Sauvegarder les données (backup)</button>
     <button onclick="openRestore()">📥 Restaurer depuis une sauvegarde</button>
-    <button onclick="openWifiPage(); settingsDlg.close();">📶 Vente WiFi (page isolée)</button>
     <button onclick="openAbout()">ℹ️ À propos de l'application</button>
   </div>
   <div class="settingsInfo" id="settingsInfo"></div>
@@ -367,16 +473,6 @@
   <div class="row">
     <button class="cancel" onclick="restoreDlg.close()">Annuler</button>
     <button class="save" onclick="doRestore()">Restaurer</button>
-  </div>
-</dialog>
-
-<dialog id="itemActionsDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">Actions</label>
-  <p id="itemActionsName" style="font-size:13px; color:var(--muted); margin-bottom:16px;"></p>
-  <div class="row" style="flex-direction:column; gap:10px;">
-    <button class="cancel" onclick="itemActionsEdit()" style="color:var(--blue); border:1px solid var(--blue); text-align:left; padding-left:16px;">✎ Modifier</button>
-    <button class="cancel" onclick="itemActionsDelete()" style="color:var(--red); border:1px solid var(--red); text-align:left; padding-left:16px;">✕ Supprimer</button>
-    <button class="cancel" onclick="itemActionsDlg.close()">Annuler</button>
   </div>
 </dialog>
 
@@ -417,23 +513,6 @@
   <button class="cancel" onclick="infosDlg.close()" style="width:100%; margin-top:12px;">Fermer</button>
 </dialog>
 
-<dialog id="syncErrorDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:10px; color:var(--red);">⚠️ Détail de l'erreur de synchronisation</label>
-  <pre id="syncErrorDlgContent" style="white-space:pre-wrap; word-break:break-word; font-size:13px; background:#111318; border:1px solid var(--border); border-radius:8px; padding:12px; max-height:50vh; overflow-y:auto;"></pre>
-  <div class="row" style="margin-top:14px; gap:8px;">
-    <button class="cancel" onclick="copySyncErrorDetail()" style="flex:1;">📋 Copier</button>
-    <button class="cancel" onclick="syncErrorDlg.close()" style="flex:1;">Fermer</button>
-  </div>
-</dialog>
-
-<dialog id="globalTotalsDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">📊 Totaux globaux</label>
-  <div class="globalTotals" id="globalTotalsDlgContent" style="flex-direction:column; font-size:13px; gap:12px;"></div>
-  <div class="row" style="margin-top:16px;">
-    <button class="cancel" onclick="globalTotalsDlg.close()" style="flex:none; width:100%;">Fermer</button>
-  </div>
-</dialog>
-
 <dialog id="aboutDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">À propos</label>
   <div class="settingsInfo" style="font-size:14px; line-height:2;">
@@ -447,162 +526,13 @@
   </div>
 </dialog>
 
-<!-- =========================================================================
-     PAGE ISOLÉE : VENTE WIFI
-     Contenu appartenant à un tiers. Stockage séparé du tableau "items" principal
-     (tables Supabase dédiées : wifi_rows / wifi_history / wifi_meta), jamais
-     additionné à aucun total du stock (présent ou futur). Synchronisé en temps
-     réel entre appareils comme le reste de l'app, mais totalement isolé côté calculs.
-     ========================================================================= -->
-<div id="wifiPage">
-  <div class="wifiWrap">
-    <div class="headRow" style="margin-bottom:4px;">
-      <div style="display:flex; align-items:center; gap:2px; min-width:0;">
-        <button class="wifiBack" onclick="closeWifiPage()" title="Retour">←</button>
-        <h1 id="wifiTitleDisplay" style="font-size:16px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📶 VENTE WIFI</h1>
-      </div>
-    </div>
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 12px 28px;">
-      <div id="wifiSubtitleDisplay" style="font-size:12px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
-      <button class="refreshBtn" onclick="forceRefreshWifi()" title="Actualiser Vente WiFi" style="width:30px; height:30px; font-size:14px; flex:0 0 auto;">🔄</button>
-    </div>
-
-    <div class="summaryRow">
-      <div class="summary">
-        <div class="big" id="wifiTotalRecu" style="font-size:22px;">0</div>
-        <div class="label">tickets reçus</div>
-      </div>
-      <div class="summary">
-        <div class="big" id="wifiTotalReste" style="font-size:22px; color:var(--blue);">0</div>
-        <div class="label">reste</div>
-      </div>
-      <div class="summary value">
-        <div class="big" id="wifiTotalMontant" style="font-size:15px;">0</div>
-        <div class="label">montant vendu (GNF)</div>
-      </div>
-    </div>
-    <p class="wifiIsoNote">🔒 Page isolée — aucun montant ici n'est compté dans les totaux du stock</p>
-    <div id="wifiSyncStatus" onclick="showWifiSyncErrorDetail()" style="display:none; font-size:11px; color:var(--orange); align-items:center; justify-content:center; gap:5px; margin:-6px 0 12px; cursor:pointer; font-weight:600;">
-      <span id="wifiSyncDot" style="width:7px; height:7px; border-radius:50%; background:var(--orange); display:inline-block;"></span>
-      <span id="wifiSyncText"></span>
-    </div>
-
-    <div class="headerBtns">
-      <button class="actionBtn" onclick="openWifiSettings()">⚙ Paramètres</button>
-      <button class="actionBtn" onclick="openWifiTrash()">🗑 Corbeille</button>
-      <button class="actionBtn" onclick="openWifiHistory()">🕘 Historique</button>
-    </div>
-
-    <div id="wifiList"></div>
-  </div>
-</div>
-
-<dialog id="wifiReceiveDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">🎫 Tickets reçus</label>
-  <p id="wifiReceiveRowName" style="font-size:13px; color:var(--muted); margin-bottom:4px;"></p>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Actuellement reçu : <b id="wifiReceiveCurrent" style="color:var(--text);">0</b></p>
-  <label>Quantité (➕ pour ajouter, ➖ pour corriger/retirer)</label>
-  <input id="wifiReceiveQty" type="number" min="1" step="1" placeholder="00" inputmode="numeric">
-  <div class="row">
-    <button class="cancel" onclick="wifiReceiveDlg.close()">Annuler</button>
-    <button class="cancel" onclick="confirmWifiReceiveDelta(-1)" style="color:var(--red); border:1px solid var(--red);">➖ Retirer</button>
-    <button class="save" onclick="confirmWifiReceiveDelta(1)">➕ Ajouter</button>
-  </div>
-</dialog>
-
-<dialog id="wifiSaleDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:4px;">💵 Vente</label>
-  <p id="wifiSaleRowName" style="font-size:13px; color:var(--muted); margin-bottom:12px;"></p>
-  <label>Quantité</label>
-  <input id="wifiSaleQty" type="number" min="1" step="1" value="1" inputmode="numeric" oninput="updateWifiSaleMontant()">
-  <label>Montant (automatique)</label>
-  <input id="wifiSaleMontant" type="text" disabled style="opacity:0.85;">
-  <p id="wifiSaleWarning" style="font-size:12px; color:var(--orange); display:none; margin:-8px 0 12px;">⚠ Quantité supérieure au reste disponible pour cette désignation.</p>
-  <div class="row">
-    <button class="cancel" onclick="wifiSaleDlg.close()">Annuler</button>
-    <button class="save" onclick="confirmWifiSale()">Valider la vente</button>
-  </div>
-  <button onclick="confirmWifiSaleRemove()" style="width:100%; margin-top:10px; padding:11px; border-radius:8px; border:1px solid #3a1f22; background:#1a1315; color:var(--red); font-weight:600; cursor:pointer; font-size:13px;">↩ Retirer cette quantité (vente insérée par erreur)</button>
-  <p style="font-size:10.5px; color:var(--muted); margin-top:8px; text-align:center; line-height:1.4;">Retire la quantité ci-dessus du compteur "Vendu" de cette désignation (le "Reste" remonte automatiquement). La correction utilise le prix unitaire actuel.</p>
-</dialog>
-
-<dialog id="wifiRowDlg">
-  <label id="wifiRowDlgTitle" style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">Ajouter une désignation</label>
-  <label>Désignation</label>
-  <input id="wifiRowName" placeholder="ex: 5H, 24H, 7 jours, 1 mois...">
-  <label>Prix unitaire (GNF)</label>
-  <input id="wifiRowPrix" type="number" min="0" step="any" placeholder="ex: 3000" inputmode="numeric">
-  <div class="row">
-    <button class="cancel" onclick="wifiRowDlg.close()">Annuler</button>
-    <button class="save" onclick="saveWifiRow()">Enregistrer</button>
-  </div>
-</dialog>
-
-<dialog id="wifiSettingsDlg" style="max-height:85vh; overflow-y:auto;">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">⚙ Paramètres — Vente WiFi</label>
-  <div class="settingsList">
-    <button onclick="editWifiTitle()">✏️ Titre : <span id="wifiTitleLabel"></span></button>
-    <button onclick="editWifiSubtitle()">✏️ Sous-titre : <span id="wifiSubtitleLabel"></span></button>
-    <button onclick="openWifiAddRow()">➕ Ajouter une désignation</button>
-  </div>
-  <div style="font-size:12px; color:var(--muted); margin:12px 0 6px;">Désignations (n° d'ordre auto, éditables) :</div>
-  <div id="wifiSettingsRowsList" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;"></div>
-  <div class="settingsList" style="margin-top:10px;">
-    <button onclick="openWifiBackup()">💾 Sauvegarder les données (backup)</button>
-    <button onclick="openWifiRestore()">📥 Restaurer depuis une sauvegarde</button>
-  </div>
-  <p class="settingsInfo">Ces données sont isolées : jamais additionnées aux totaux ou catégories du stock (présentes ou futures). Elles sont désormais synchronisées entre tous les appareils connectés — pense quand même à faire une sauvegarde régulière en complément.</p>
-  <button onclick="wifiSettingsDlg.close(); confirmWifiCloture();" style="width:100%; margin-top:14px; padding:12px; border-radius:8px; border:1px solid var(--border); background:#111318; color:var(--orange); font-weight:600; cursor:pointer; font-size:13.5px;">🔒 Clôturer la vente (archiver puis remettre les compteurs à zéro)</button>
-  <div class="row">
-    <button class="cancel" onclick="wifiSettingsDlg.close()" style="flex:none; width:100%;">Fermer</button>
-  </div>
-</dialog>
-
-<dialog id="wifiTrashDlg" style="max-height:80vh; overflow-y:auto;">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:6px;">🗑 Corbeille — Vente WiFi</label>
-  <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">Affiche uniquement les désignations supprimées de cette page. N'affecte rien d'autre dans l'application.</p>
-  <div id="wifiTrashList"></div>
-  <div class="row" style="margin-top:10px;">
-    <button class="cancel" onclick="wifiTrashDlg.close()" style="flex:none; width:100%;">Fermer</button>
-  </div>
-</dialog>
-
-<dialog id="wifiHistoryDlg" style="max-height:80vh; overflow-y:auto;">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:6px;">🕘 Historique des clôtures</label>
-  <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">Rapport des périodes de vente précédentes (entrées, sorties, montants, avec date).</p>
-  <div id="wifiHistoryList"></div>
-  <div class="row" style="margin-top:10px;">
-    <button class="cancel" onclick="wifiHistoryDlg.close()" style="flex:none; width:100%;">Fermer</button>
-  </div>
-</dialog>
-
-<dialog id="wifiBackupDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">💾 Sauvegarde — Vente WiFi</label>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Copie ce texte et colle-le dans une note pour le garder en sécurité. Il contient uniquement les données de cette page.</p>
-  <textarea id="wifiBackupText" class="backupArea" readonly></textarea>
-  <div class="row">
-    <button class="cancel" onclick="wifiBackupDlg.close()">Fermer</button>
-    <button class="save" onclick="copyWifiBackupText()">📋 Copier</button>
-  </div>
-</dialog>
-
-<dialog id="wifiRestoreDlg">
-  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">📥 Restaurer — Vente WiFi</label>
-  <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Colle ici une sauvegarde Vente WiFi copiée précédemment. Elle remplacera les données actuelles de cette page uniquement.</p>
-  <textarea id="wifiRestoreText" class="backupArea" placeholder="Colle la sauvegarde ici..."></textarea>
-  <div class="row">
-    <button class="cancel" onclick="wifiRestoreDlg.close()">Annuler</button>
-    <button class="save" onclick="doWifiRestore()">Restaurer</button>
-  </div>
-</dialog>
-
 <script>
 const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '3.4';
-const APP_UPDATED = '19/08/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '4.0';
+const APP_UPDATED = '17/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -701,32 +631,6 @@ let defaultThreshold = parseInt(localStorage.getItem('stock_lcd_default_threshol
 let activeCategory = localStorage.getItem('stock_lcd_active_tab') || DEFAULT_CATEGORY;
 let sortDir = 'asc'; // Tri A→Z activé par défaut
 const dlg = document.getElementById('dlg');
-const syncErrorDlg = document.getElementById('syncErrorDlg');
-
-// Ouvre un <dialog> en toute sécurité : showModal() lève une erreur si la boîte est déjà
-// ouverte (ex: on rouvre les Paramètres après un prompt() sans jamais l'avoir fermée).
-// On l'utilise partout pour que ces réouvertures ne génèrent plus d'erreur silencieuse.
-function openDialogSafe(d){
-  if(d && !d.open) d.showModal();
-}
-
-// Échappe les caractères HTML avant insertion via innerHTML, pour qu'une désignation ou
-// un nom contenant <, >, &, ", ' ne casse jamais l'affichage (Vente WiFi notamment,
-// puisque son contenu peut être saisi par un tiers).
-function escHtml(s){
-  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-// Échappe une valeur pour l'utiliser comme argument JS littéral à l'intérieur d'un attribut
-// onclick="...('...')". Nécessaire partout où une chaîne modifiable par l'utilisateur (et donc
-// potentiellement synchronisée vers d'autres appareils via Supabase) sert d'identifiant — par
-// exemple le NOM d'une catégorie, qui n'a pas d'UUID séparé. Sans ça, un nom de catégorie
-// contenant une apostrophe pourrait sortir de l'attribut onclick et exécuter du code arbitraire
-// (XSS stocké) sur tout appareil affichant cette catégorie.
-function escJsAttr(s){
-  const jsEscaped = String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  return escHtml(jsEscaped);
-}
 
 // --- Utilitaire : première lettre toujours en majuscule, quel que soit le texte saisi ---
 function cap(str){
@@ -749,67 +653,19 @@ function attachAutoCap(el){
 
 // Anti-rebond : regroupe les taps rapprochés (+/-) en un seul envoi réseau,
 // au lieu d'envoyer une requête à chaque frappe.
-function scheduleSync(delay = 50){
+function scheduleSync(delay = 600){
   clearTimeout(syncTimer);
-  setStatus('pending','En attente de synchronisation');
   syncTimer = setTimeout(trySync, delay);
 }
 
 let currentConnState = 'offline'; // reflète le dernier état RÉEL constaté (résultat de requête), pas navigator.onLine seul
-let lastSyncErrorDetail = null;   // texte exact de la dernière erreur de synchro (stock principal)
-let lastSyncErrorSignature = null; // sert à ne notifier qu'UNE fois par erreur distincte, jamais à chaque nouvelle tentative
-let syncingSince = null; // horodatage du dernier passage à l'état "syncing" : sert au chien de garde.
-function setStatus(state, text, detail){
+function setStatus(state, text){
   currentConnState = state;
-  syncingSince = (state === 'syncing') ? Date.now() : null;
   const dot = document.getElementById('syncDot');
   const txt = document.getElementById('syncText');
-  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)', error:'var(--red)', pending:'var(--muted)'};
+  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)'};
   dot.style.background = colors[state] || 'var(--muted)';
   txt.textContent = text;
-  lastSyncErrorDetail = detail || null;
-}
-
-// Transforme une erreur Supabase/PostgREST (ou réseau) en message EXACT et compréhensible,
-// jamais un simple "erreur de synchronisation" vague. Utilisé partout (stock ET Vente WiFi).
-function formatSyncError(e){
-  if(!e) return 'Erreur inconnue (aucun détail fourni par le serveur).';
-  const lines = [];
-  if(e.message) lines.push(`Message : ${e.message}`);
-  if(e.code) lines.push(`Code : ${e.code}`);
-  if(e.details) lines.push(`Détails : ${e.details}`);
-  if(e.hint) lines.push(`Piste de résolution : ${e.hint}`);
-  if(lines.length === 0) lines.push(String(e.toString ? e.toString() : e));
-  // Cas fréquent et bloquant : la table Supabase n'existe pas encore.
-  if(e.code === '42P01' || (e.message && /relation .* does not exist/i.test(e.message))){
-    lines.push('→ Cause certaine : une table Supabase requise est introuvable. Exécute le script SQL de création des tables dans Supabase (SQL Editor), puis réessaie.');
-  }
-  if(e.code === '42501' || (e.message && /permission denied/i.test(e.message))){
-    lines.push("→ Cause certaine : la politique de sécurité (RLS) de Supabase bloque cette action. Vérifie les policies de la table concernée.");
-  }
-  return lines.join('\n');
-}
-
-function notifySyncErrorOnce(scope, detail){
-  const sig = scope + '::' + detail;
-  if(scope === 'stock'){
-    if(lastSyncErrorSignature === sig) return;
-    lastSyncErrorSignature = sig;
-  } else {
-    if(lastWifiSyncErrorSignature === sig) return;
-    lastWifiSyncErrorSignature = sig;
-  }
-  alert(`❌ Erreur de synchronisation ${scope === 'wifi' ? '(Vente WiFi) ' : ''}:\n\n${detail}`);
-}
-
-function showSyncErrorDetail(){
-  if(!lastSyncErrorDetail){ alert('Aucune erreur de synchronisation en cours. Tout fonctionne normalement.'); return; }
-  document.getElementById('syncErrorDlgContent').textContent = lastSyncErrorDetail;
-  openDialogSafe(syncErrorDlg);
-}
-async function copySyncErrorDetail(){
-  const ok = await copyToClipboard(document.getElementById('syncErrorDlgContent').textContent);
-  alert(ok ? 'Détail copié.' : 'Impossible de copier automatiquement — sélectionne le texte manuellement.');
 }
 
 // navigator.onLine n'est pas fiable partout (WebView Android, portails captifs...).
@@ -819,42 +675,7 @@ function isNetworkError(e){
   if(!navigator.onLine) return true;
   if(e instanceof TypeError) return true; // fetch échoue avec TypeError en cas de coupure réseau
   const msg = (e && e.message) ? String(e.message).toLowerCase() : '';
-  return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch') || msg.includes('délai') || msg.includes('timeout') || msg.includes('abort');
-}
-
-// Annule RÉELLEMENT la requête réseau sous-jacente au bout de 10s (pas une simple course de
-// promesses qui laisse la requête tourner en arrière-plan) : buildQuery reçoit le signal
-// d'annulation à passer à .abortSignal(signal). Donne un message précis à l'échec.
-function withAbortTimeout(buildQuery, ms = 10000){
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
-  return buildQuery(controller.signal).then(
-    (result) => { clearTimeout(timer); return result; },
-    (err) => {
-      clearTimeout(timer);
-      if(controller.signal.aborted){
-        throw new Error(`Aucune réponse du serveur Supabase après ${ms/1000}s (requête annulée).`);
-      }
-      throw err;
-    }
-  );
-}
-
-// Diagnostic ciblé : distingue avec certitude "pas d'accès internet du tout" de
-// "internet fonctionne mais Supabase précisément est injoignable", au lieu de deviner.
-async function diagnoseSyncFailure(){
-  if(!navigator.onLine){
-    return 'Cause certaine : cet appareil n\'a AUCUN accès internet actif en ce moment (mode avion, pas de réseau, ou WiFi/données mobiles coupées).\n\nSolution : active le WiFi ou les données mobiles, puis appuie sur 🔄.';
-  }
-  try{
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 6000);
-    const resp = await fetch(SUPABASE_URL + '/rest/v1/', { method: 'HEAD', signal: controller.signal, headers: { apikey: SUPABASE_ANON_KEY } });
-    clearTimeout(timer);
-    return `Cause certaine : cet appareil A accès à internet (le serveur Supabase répond, code ${resp.status}), mais une requête précise vers les tables Vente WiFi échoue quand même.\n\nSolution : vérifie que le script SQL des tables (wifi_rows, wifi_history, wifi_meta, wifi_person_stats, wifi_person_receipt_log) a bien été exécuté intégralement dans Supabase → SQL Editor, sans erreur.`;
-  }catch(e){
-    return 'Cause certaine : cet appareil a une connexion réseau (WiFi/4G) MAIS n\'arrive PAS à joindre le serveur Supabase précisément (adresse bloquée, pare-feu, DNS, ou serveur Supabase en panne).\n\nSolution : essaie avec une autre connexion (WiFi ↔ données mobiles), ou réessaie dans quelques minutes si Supabase est temporairement indisponible.';
-  }
+  return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch');
 }
 
 function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
@@ -1046,7 +867,7 @@ async function trySync(){
     let pass = 0;
     do{
       pass++;
-      setStatus('syncing','Synchronisation en cours…');
+      setStatus('syncing','Synchronisation...');
 
       for(const tempId of Object.keys(pending.inserts)){
         const payload = pending.inserts[tempId];
@@ -1105,17 +926,15 @@ async function trySync(){
       await refreshFromServer();
       setStatus('online','Synchronisé');
     } else {
-      setStatus('pending','En attente de synchronisation');
+      setStatus('syncing','Synchronisation...');
       scheduleSync(500);
     }
   }catch(e){
     console.log('sync error', e);
     if(isNetworkError(e)){
-      setStatus('offline','Hors connexion');
+      setStatus('offline','Hors ligne — sera synchronisé');
     } else {
-      const detail = formatSyncError(e);
-      setStatus('error','Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('stock', detail);
+      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
       scheduleSync(3000);
     }
   }finally{
@@ -1127,19 +946,7 @@ async function refreshFromServer(){
   if(hasPending()) return;
   const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
   if(error) throw error;
-  // Protection anti-écrasement : si des saisies locales sont arrivées PENDANT cette requête
-  // réseau (round-trip), on ignore la réponse (potentiellement déjà périmée) plutôt que
-  // d'écraser une donnée plus récente — la synchro planifiée s'en chargera juste après.
-  if(hasPending()) return;
-  items = data.map(it => ({
-    ...it,
-    name: it.name || '',
-    ref: it.ref || '',
-    qty: it.qty ?? 0,
-    price: it.price ?? 0,
-    category: it.category || DEFAULT_CATEGORY,
-    threshold: (it.threshold ?? defaultThreshold)
-  }));
+  items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold)}));
   cacheLocal();
   renderTabs(); render();
 }
@@ -1147,43 +954,16 @@ async function refreshFromServer(){
 async function loadFromSupabase(){
   renderTabs(); render();
   if(hasPending()){ await trySync(); return; }
-  setStatus('syncing','Synchronisation en cours…');
+  setStatus('syncing','Synchronisation...');
   try{
     await refreshFromServer();
     setStatus('online','Synchronisé');
   }catch(e){
-    console.log('initial sync error', e);
     if(isNetworkError(e)){
-      setStatus('offline','Hors connexion');
+      setStatus('offline','Hors ligne — données locales');
     } else {
-      const detail = formatSyncError(e);
-      setStatus('error','Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('stock', detail);
+      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
       scheduleSync(3000);
-    }
-  }
-}
-
-// Bouton d'actualisation de secours : vérifie réellement Supabase (pas de simple reload),
-// synchronise les changements en attente, récupère les dernières données, actualise l'UI.
-async function forceRefreshStock(){
-  if(syncing){ setStatus('syncing','Synchronisation en cours…'); return; }
-  setStatus('syncing','Synchronisation en cours…');
-  if(hasPending()){
-    await trySync();
-    return;
-  }
-  try{
-    await refreshFromServer();
-    setStatus('online','Synchronisé');
-  }catch(e){
-    console.log('force refresh error', e);
-    if(isNetworkError(e)){
-      setStatus('offline','Hors connexion');
-    } else {
-      const detail = formatSyncError(e);
-      setStatus('error','Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('stock', detail);
     }
   }
 }
@@ -1215,6 +995,7 @@ function render(){
 
   document.getElementById('emptyMsg').style.display = filtered.length === 0 ? 'block' : 'none';
   const activeLabel = categoryLabel(activeCategory);
+  document.getElementById('appTitleTab').textContent = activeLabel;
   document.getElementById('totalLabel').textContent = `${activeLabel.toLowerCase()} disponible(s)`;
 
   // Le montant affiché est celui du type d'article (onglet) sélectionné, pas un total global.
@@ -1236,8 +1017,7 @@ function render(){
   // La Corbeille n'affiche QUE ses articles : pas d'ajout, pas de commande, pas de cartes de résumé.
   const inTrash = activeCategory === CORBEILLE_KEY;
   document.getElementById('summaryRow').style.display = inTrash ? 'none' : '';
-  document.getElementById('globalTotalsBtn').style.display = inTrash ? 'none' : '';
-  document.getElementById('wifiPageBtn').style.display = inTrash ? 'none' : '';
+  document.getElementById('globalTotals').style.display = inTrash ? 'none' : '';
   document.getElementById('orderBtn').style.display = inTrash ? 'none' : '';
   document.getElementById('fabAdd').style.display = inTrash ? 'none' : '';
 
@@ -1253,11 +1033,10 @@ function render(){
   const grandTotal3 = items
     .filter(it => !isTrashCategory(displayCategory(it)))
     .reduce((s,it) => s + (it.price ? it.qty * it.price : 0), 0);
-  document.getElementById('globalTotalsBtnValue').textContent = `${grandTotal3.toLocaleString('fr-FR')} GNF`;
-  document.getElementById('globalTotalsDlgContent').innerHTML =
+  document.getElementById('globalTotals').innerHTML =
     `<span>Valeur totale du stock (hors ${getPersonalLabel().toLowerCase()} et hors ${getMonCompteLabel().toLowerCase()}) : <b>${grandTotal1.toLocaleString('fr-FR')} GNF</b></span>` +
     `<span>Valeur totale du stock (toutes catégories, hors ${getMonCompteLabel().toLowerCase()}) : <b>${grandTotal2.toLocaleString('fr-FR')} GNF</b></span>` +
-    `<span>Valeur générale (${getMonCompteLabel().toLowerCase()} inclus) : <b style="color:var(--gold);">${grandTotal3.toLocaleString('fr-FR')} GNF</b></span>`;
+    `<span>Valeur générale (${getMonCompteLabel().toLowerCase()} inclus) : <b>${grandTotal3.toLocaleString('fr-FR')} GNF</b></span>`;
 
   filtered.forEach((it) => {
     const div = document.createElement('div');
@@ -1267,8 +1046,8 @@ function render(){
       const origin = categoryLabel(trashOriginCategory(it.category));
       div.innerHTML = `
         <div class="info">
-          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${escHtml(it.name)}</div>
-          <div class="ref">Origine : ${escHtml(origin)}${it.price ? ` · ${Number(it.price).toLocaleString('fr-FR')} GNF` : ''}</div>
+          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
+          <div class="ref">Origine : ${origin}${it.price ? ` · ${Number(it.price).toLocaleString('fr-FR')} GNF` : ''}</div>
         </div>
         <div class="controls spaced">
           <button class="btn edit" onclick="restoreFromTrash('${it.id}')" title="Restaurer">♻️</button>
@@ -1278,8 +1057,8 @@ function render(){
     } else if(isMonCompteCategory(activeCategory)){
       div.innerHTML = `
         <div class="info">
-          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${escHtml(it.name)}</div>
-          ${it.ref ? `<div class="mcPhone">${escHtml(it.ref)}</div>` : ''}
+          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
+          ${it.ref ? `<div class="mcPhone">${it.ref}</div>` : ''}
           <div class="mcAmount">${it.price ? Number(it.price).toLocaleString('fr-FR') : 0} GNF</div>
         </div>
         <div class="controls spaced">
@@ -1292,14 +1071,15 @@ function render(){
       const cls = it.qty === 0 ? 'out' : (it.qty <= threshold ? 'low' : 'ok');
       div.innerHTML = `
         <div class="info">
-          <div class="name nameWrap"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${escHtml(it.name)}</div>
-          <div class="ref">${escHtml(it.ref || '')}</div>
+          <div class="name"><span class="orderNum">${alphaRank.get(it.id)}.</span> ${it.name}</div>
+          <div class="ref">${it.ref || ''}</div>
           ${it.price ? `<div class="price">${Number(it.price).toLocaleString('fr-FR')} GNF/u</div>` : ''}
         </div>
         <div class="qty ${cls}">${it.qty}</div>
         <div class="controls">
+          <button class="btn del" onclick="delItem('${it.id}')">✕</button>
+          <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
           <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
-          <button class="btn menu" onclick="openItemActions('${it.id}')" title="Actions">⋮</button>
           <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
         </div>
       `;
@@ -1322,7 +1102,7 @@ function openAdd(){
   document.getElementById('fQty').value = 0;
   document.getElementById('fThreshold').value = defaultThreshold;
   document.getElementById('fPrice').value = '';
-  openDialogSafe(dlg);
+  dlg.showModal();
 }
 
 function openEdit(id){
@@ -1337,20 +1117,16 @@ function openEdit(id){
   document.getElementById('fQty').value = it.qty;
   document.getElementById('fThreshold').value = it.threshold ?? defaultThreshold;
   document.getElementById('fPrice').value = it.price || '';
-  openDialogSafe(dlg);
+  dlg.showModal();
 }
 
 function saveItem(){
   const name = cap(document.getElementById('fName').value.trim());
   let ref = document.getElementById('fRef').value.trim();
-  // Math.max(0, ...) : bloque toute quantité négative saisie manuellement malgré min="0"
-  // (le champ number HTML n'empêche pas la frappe d'un signe moins sur mobile).
-  let qty = Math.max(0, parseInt(document.getElementById('fQty').value) || 0);
-  let threshold = parseInt(document.getElementById('fThreshold').value);
-  threshold = isNaN(threshold) ? defaultThreshold : Math.max(0, threshold);
+  let qty = parseInt(document.getElementById('fQty').value) || 0;
+  const threshold = parseInt(document.getElementById('fThreshold').value);
   const priceRaw = document.getElementById('fPrice').value;
   const price = priceRaw !== '' ? parseFloat(priceRaw) : null;
-  if(price !== null && (isNaN(price) || price < 0)) return alert('Entrez un prix valide (positif).');
 
   const sel = document.getElementById('fCategory');
   let category;
@@ -1391,9 +1167,9 @@ function saveItem(){
   dlg.close();
 
   if(editingId){
-    updateItemLocal(editingId, name, ref, qty, category, threshold, price);
+    updateItemLocal(editingId, name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price);
   } else {
-    addItemLocal(name, ref, qty, category, threshold, price);
+    addItemLocal(name, ref, qty, category, isNaN(threshold)?defaultThreshold:threshold, price);
   }
   editingId = null;
   activeCategory = category;
@@ -1410,18 +1186,6 @@ window.addEventListener('online', () => { setStatus('syncing','Reconnexion...');
 window.addEventListener('offline', () => setStatus('offline','Hors ligne — données locales'));
 
 setInterval(() => { if(hasPending()) trySync(); }, 15000);
-
-// Chien de garde (stock principal) : même protection que Vente WiFi, même diagnostic ciblé.
-setInterval(() => {
-  if(currentConnState === 'syncing' && syncingSince && (Date.now() - syncingSince > 20000)){
-    syncing = false;
-    setStatus('syncing', 'Diagnostic en cours…');
-    diagnoseSyncFailure().then(detail => {
-      setStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('stock', detail);
-    });
-  }
-}, 5000);
 
 // --- Commande fournisseur (format tableau WhatsApp, une seule ligne par article) ---
 
@@ -1491,7 +1255,7 @@ function buildOrderText(){
 
 function openOrderDlg(){
   buildOrderText();
-  openDialogSafe(orderDlg);
+  orderDlg.showModal();
 }
 
 async function copyToClipboard(text){
@@ -1535,7 +1299,7 @@ function openSettings(){
     `Articles (toutes catégories) : ${items.length} · Total : ${total}<br>` +
     `En attente de synchronisation : ${pendingCount}<br>` +
     `Connexion : ${currentConnState === 'offline' ? 'hors ligne' : 'en ligne'}`;
-  openDialogSafe(settingsDlg);
+  settingsDlg.showModal();
 }
 
 function editDefaultThreshold(){
@@ -1576,11 +1340,6 @@ async function forceSync(){
   openSettings();
 }
 
-const globalTotalsDlg = document.getElementById('globalTotalsDlg');
-function openGlobalTotalsDlg(){
-  openDialogSafe(globalTotalsDlg);
-}
-
 const aboutDlg = document.getElementById('aboutDlg');
 const infosDlg = document.getElementById('infosDlg');
 function openInfos(){
@@ -1591,10 +1350,10 @@ function openInfos(){
   container.innerHTML = ordered.map((cat, idx) => `
     <div style="margin-bottom:14px; padding-bottom:14px; ${idx < ordered.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <b style="font-size:14px;">${idx + 1}. ${cat === DEFAULT_CATEGORY ? '🖥️' : (isMonCompteCategory(cat) ? 'ℹ️' : (cat === CORBEILLE_KEY ? '🗑' : '📦'))} ${escHtml(categoryLabel(cat))}</b>
-        <button onclick="editCategoryDescription('${escJsAttr(cat)}')" style="background:none; border:none; color:var(--blue); font-size:14px; cursor:pointer;">✎</button>
+        <b style="font-size:14px;">${idx + 1}. ${cat === DEFAULT_CATEGORY ? '🖥️' : (isMonCompteCategory(cat) ? 'ℹ️' : (cat === CORBEILLE_KEY ? '🗑' : '📦'))} ${categoryLabel(cat)}</b>
+        <button onclick="editCategoryDescription('${cat}')" style="background:none; border:none; color:var(--blue); font-size:14px; cursor:pointer;">✎</button>
       </div>
-      <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0;">${escHtml(getCategoryDescription(cat))}</p>
+      <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0;">${getCategoryDescription(cat)}</p>
     </div>
   `).join('') + `
     <div>
@@ -1602,7 +1361,7 @@ function openInfos(){
       <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0;">Application de gestion de stock — à titre personnel de BAH Ousmane.</p>
     </div>
   `;
-  openDialogSafe(infosDlg);
+  infosDlg.showModal();
 }
 
 function editCategoryDescription(cat){
@@ -1617,7 +1376,7 @@ function openAbout(){
   document.getElementById('aboutVersion').textContent = APP_VERSION;
   document.getElementById('aboutUpdated').textContent = APP_UPDATED;
   settingsDlg.close();
-  openDialogSafe(aboutDlg);
+  aboutDlg.showModal();
 }
 
 // --- Sauvegarde / restauration ---
@@ -1629,7 +1388,7 @@ function openBackup(){
   const data = items.map(it => ({name: it.name, ref: it.ref || '', qty: it.qty, category: it.category || DEFAULT_CATEGORY, threshold: it.threshold ?? defaultThreshold, price: it.price || null}));
   document.getElementById('backupText').value = JSON.stringify(data);
   settingsDlg.close();
-  openDialogSafe(backupDlg);
+  backupDlg.showModal();
 }
 
 async function copyBackupText(){
@@ -1640,30 +1399,28 @@ async function copyBackupText(){
 function openRestore(){
   document.getElementById('restoreText').value = '';
   settingsDlg.close();
-  openDialogSafe(restoreDlg);
+  restoreDlg.showModal();
 }
 
 function doRestore(){
   const raw = document.getElementById('restoreText').value.trim();
   if(!raw) return alert('Colle d\'abord le texte de sauvegarde.');
   let data;
-  try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide : ce n\'est pas un texte JSON correctement formé.\n\nCause exacte : ' + e.message); }
-  if(!Array.isArray(data)) return alert('Texte de sauvegarde invalide : le contenu attendu est une liste d\'articles, mais ce texte contient autre chose (format inattendu).');
+  try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide.'); }
+  if(!Array.isArray(data)) return alert('Texte de sauvegarde invalide.');
   if(!confirm(`Restaurer ${data.length} article(s) depuis cette sauvegarde ?\n(Les articles déjà existants seront fusionnés — quantités additionnées, aucun doublon créé.)`)) return;
   let added = 0, merged = 0;
   data.forEach(it => {
     if(!it || !it.name) return;
     const name = cap(String(it.name));
     const category = cap(String(it.category || DEFAULT_CATEGORY));
-    const qty = Math.max(0, parseInt(it.qty) || 0);
-    const threshold = Math.max(0, parseInt(it.threshold) || defaultThreshold);
-    const price = (it.price !== undefined && it.price !== null && !isNaN(parseFloat(it.price)) && parseFloat(it.price) >= 0) ? parseFloat(it.price) : null;
+    const qty = parseInt(it.qty) || 0;
     const dup = findDuplicate(name, category, null);
     if(dup){
       changeQty(dup.id, qty);
       merged++;
     } else {
-      addItemLocal(name, String(it.ref||''), qty, category, threshold, price);
+      addItemLocal(name, String(it.ref||''), qty, category, parseInt(it.threshold)||defaultThreshold, it.price ? parseFloat(it.price) : null);
       added++;
     }
   });
@@ -1726,7 +1483,7 @@ function openMcEdit(id){
   document.getElementById('mcName').value = it.name;
   document.getElementById('mcPhone').value = it.ref || '+224 ';
   document.getElementById('mcCurrentAmount').textContent = (it.price || 0).toLocaleString('fr-FR');
-  openDialogSafe(mcEditDlg);
+  mcEditDlg.showModal();
 }
 
 function saveMcName(){
@@ -1752,26 +1509,6 @@ function adjustMcAmount(sign){
   document.getElementById('mcCurrentAmount').textContent = newAmount.toLocaleString('fr-FR');
 }
 
-const itemActionsDlg = document.getElementById('itemActionsDlg');
-let itemActionsId = null;
-function openItemActions(id){
-  const it = items.find(x => x.id === id);
-  if(!it) return;
-  itemActionsId = id;
-  document.getElementById('itemActionsName').textContent = it.name;
-  openDialogSafe(itemActionsDlg);
-}
-function itemActionsEdit(){
-  const id = itemActionsId;
-  itemActionsDlg.close();
-  if(id) openEdit(id);
-}
-function itemActionsDelete(){
-  const id = itemActionsId;
-  itemActionsDlg.close();
-  if(id) delItem(id);
-}
-
 const catDelDlg = document.getElementById('catDelDlg');
 function openCatDelDlg(){
   const sel = document.getElementById('catDelSelect');
@@ -1789,7 +1526,7 @@ function openCatDelDlg(){
     sel.appendChild(opt);
   });
   settingsDlg.close();
-  openDialogSafe(catDelDlg);
+  catDelDlg.showModal();
 }
 
 async function confirmDeleteCategory(){
@@ -1833,7 +1570,7 @@ function askPin(message){
     document.getElementById('pinMsg').textContent = message;
     const input = document.getElementById('pinInput');
     input.value = '';
-    openDialogSafe(pinDlg);
+    pinDlg.showModal();
     setTimeout(() => input.focus(), 50);
     const okBtn = document.getElementById('pinOkBtn');
     const cancelBtn = document.getElementById('pinCancelBtn');
@@ -1884,13 +1621,13 @@ async function editPin(){
 }
 
 // --- Verrouillage plein écran de l'application ---
-const SESSION_UNLOCKED_KEY = 'stock_lcd_unlocked_persist'; // localStorage (PAS sessionStorage) : reste déverrouillé après un simple rafraîchissement, uniquement remis à zéro par "🚪 Déconnexion".
+const SESSION_UNLOCKED_KEY = 'stock_lcd_unlocked_session';
 const lockDlg = document.getElementById('lockDlg');
 lockDlg.addEventListener('cancel', e => e.preventDefault()); // empêche la fermeture via Échap
 document.getElementById('lockOkBtn').onclick = async () => {
   const input = document.getElementById('lockPinInput');
   if(await verifyPin(input.value.trim())){
-    localStorage.setItem(SESSION_UNLOCKED_KEY, '1');
+    sessionStorage.setItem(SESSION_UNLOCKED_KEY, '1');
     lockDlg.close(); input.value='';
   }
   else { alert('Code PIN incorrect.'); input.value=''; input.focus(); }
@@ -1901,14 +1638,22 @@ document.getElementById('lockPinInput').addEventListener('keydown', e => {
 
 function showLock(){
   document.getElementById('lockPinInput').value = '';
-  openDialogSafe(lockDlg);
+  lockDlg.showModal();
   setTimeout(() => document.getElementById('lockPinInput').focus(), 50);
+}
+
+// Ouvre la page Wifi (fusionnée dans ce même fichier — initialisation différée au premier accès).
+function openWifiApp(){
+  if(typeof window.initWifiApp === 'function') window.initWifiApp();
+  document.getElementById('wifiOverlay').style.display = 'block';
+}
+function closeWifiApp(){
+  document.getElementById('wifiOverlay').style.display = 'none';
 }
 
 function lockAppNow(){
   if(!hasPin()){ alert('Définis d\'abord un code PIN (bouton "🔑 Définir / modifier le code PIN") pour pouvoir verrouiller l\'application.'); return; }
   settingsDlg.close();
-  localStorage.removeItem(SESSION_UNLOCKED_KEY);
   showLock();
 }
 
@@ -1926,7 +1671,7 @@ async function forgotPin(){
   lockDlg.close();
   alert('Code de secours valide ✅ Choisis immédiatement un nouveau code PIN.');
   if(await promptSetNewPin()){
-    localStorage.setItem(SESSION_UNLOCKED_KEY, '1');
+    sessionStorage.setItem(SESSION_UNLOCKED_KEY, '1');
   } else {
     // Pas de nouveau PIN défini : l'app reste verrouillée par sécurité (ancien PIN toujours actif).
     showLock();
@@ -1937,1006 +1682,953 @@ renderTabs();
 render();
 loadFromSupabase();
 
-// Verrouillage automatique uniquement si l'app n'a jamais été déverrouillée sur CET appareil, ou
-// après un "🚪 Déconnexion" explicite. Un simple rafraîchissement ne reverrouille plus jamais l'app.
-if(hasPin() && !localStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
+// Verrouillage automatique uniquement à l'ouverture RÉELLE de l'app (nouvel onglet/nouvelle session).
+// Un simple rafraîchissement ou une synchronisation dans la même session ne reverrouille plus l'app.
+if(hasPin() && !sessionStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => {
-      console.log('SW error:', err);
-      alert('⚠️ Le mode hors-ligne n\'a pas pu être activé sur cet appareil.\n\nCause exacte : ' + (err && err.message ? err.message : String(err)) + '\n\nL\'application reste utilisable normalement avec une connexion internet.');
-    });
+    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
   });
 }
 
-/* =====================================================================================
-   PAGE ISOLÉE : VENTE WIFI
-   ---------------------------------------------------------------------------------------
-   Règles strictes (demandées) :
-   - Contenu qui n'appartient pas à l'auteur de l'app -> tout doit rester ISOLÉ ici.
-   - Stockage 100% séparé (clés localStorage dédiées, préfixe stock_lcd_wifi_...),
-     jamais dans le tableau "items", jamais envoyé à Supabase.
-   - Aucun montant d'ici n'entre dans les totaux du stock, la commande fournisseur,
-     ou toute catégorie présente ou future de l'application principale.
-   - "Clôturer" archive dans un historique daté puis remet seulement les compteurs à
-     zéro : les désignations, prix, historique et corbeille de cette page NE SONT
-     JAMAIS supprimés par une clôture.
-   - Chaque case "Ticket reçu" / "Vendu" ouvre une boîte de dialogue dont le calcul ne
-     concerne QUE la ligne (désignation) touchée.
-   ===================================================================================== */
 
-const WIFI_TITLE_KEY = 'stock_lcd_wifi_title';
-const WIFI_SUBTITLE_KEY = 'stock_lcd_wifi_subtitle';
-const WIFI_ROWS_KEY = 'stock_lcd_wifi_rows';
-const WIFI_TRASH_KEY = 'stock_lcd_wifi_trash';
-const WIFI_HISTORY_KEY = 'stock_lcd_wifi_history';
+/* ============================================================
+   MODULE WIFI — fusionné (anciennement carnet-tickets-wifi.html)
+   Isolé fonctionnellement : tables Supabase dédiées, jamais mêlé
+   aux items/catégories de Stock LCD. Partage seulement sb/SUPABASE_*.
+   ============================================================ */
 
-/* --- Synchronisation multi-appareils de Vente WiFi -------------------------------------
-   Tables Supabase DÉDIÉES (wifi_rows, wifi_history, wifi_meta), séparées de "items" :
-   le contenu reste isolé des totaux du stock, seule la synchronisation est ajoutée.
-   wifi_rows unifie lignes actives et corbeille via la colonne deleted_at (comme le
-   stock principal encode sa corbeille dans "category"), donc aucune duplication de table.
-   ------------------------------------------------------------------------------------- */
-const WIFI_TABLE = 'wifi_rows';
-const WIFI_HISTORY_TABLE = 'wifi_history';
-const WIFI_META_TABLE = 'wifi_meta';
-const WIFI_PKEY = 'stock_lcd_wifi_pending';
-const WIFI_MIGRATED_KEY = 'stock_lcd_wifi_migrated_v1';
+/* ============================================================
+   DATA LAYER — connecté à Supabase (même projet que Stock LCD, tables dédiées)
+   Réutilise sb / SUPABASE_URL / SUPABASE_ANON_KEY déjà déclarés par Stock LCD
+   (même script, même page — fusion complète, plus de fichier séparé).
+   ============================================================ */
 
-let wifiPending = JSON.parse(localStorage.getItem(WIFI_PKEY) || 'null') || {
-  rows: {inserts:{}, updates:{}, deletes:[]},
-  history: {inserts:{}},
-  meta: null
+const DEFAULT_DATA = {
+  ticketTypes: [],
+  people: [],
+  operations: [],
+  meta: { initialized:false }
 };
-let wifiSyncing = false;
-let wifiSyncTimer = null;
-let wifiCloudSeeded = false; // reflète le drapeau "seeded" du cloud (wifi_meta) : empêche toute recréation des désignations par défaut sur un nouvel appareil.
-const wifiStepCooldown = {}; // { rowId: timestamp jusqu'auquel les boutons −/+ sont verrouillés (2 min) }
-const wifiLastStep = {};     // { rowId: {delta, time} } dernière correction ±1, affichée tant qu'elle a moins d'une minute
-let lastWifiSyncErrorDetail = null;
-let lastWifiSyncErrorSignature = null;
-let currentWifiConnState = 'offline';
 
-let wifiSyncingSince = null; // horodatage du dernier passage à l'état "syncing" : sert au chien de garde ci-dessous.
-function setWifiSyncStatus(state, text, detail){
-  currentWifiConnState = state;
-  wifiSyncingSince = (state === 'syncing') ? Date.now() : null;
-  const box = document.getElementById('wifiSyncStatus');
-  const dot = document.getElementById('wifiSyncDot');
-  const txt = document.getElementById('wifiSyncText');
-  lastWifiSyncErrorDetail = detail || null;
-  if(state === 'ok'){
-    box.style.display = 'none';
-    return;
-  }
-  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)', error:'var(--red)', pending:'var(--muted)'};
-  box.style.display = 'flex';
-  dot.style.background = colors[state] || 'var(--orange)';
-  box.style.color = colors[state] || 'var(--orange)';
-  txt.textContent = text;
-}
-function showWifiSyncErrorDetail(){
-  if(!lastWifiSyncErrorDetail){ alert('Aucune erreur de synchronisation Vente WiFi en cours.'); return; }
-  document.getElementById('syncErrorDlgContent').textContent = lastWifiSyncErrorDetail;
-  openDialogSafe(syncErrorDlg);
-}
+let DB = null; // copie de travail en mémoire, reconstruite depuis Supabase à chaque chargement
 
-function cacheWifiPending(){ localStorage.setItem(WIFI_PKEY, JSON.stringify(wifiPending)); }
-function hasWifiPending(){
-  return Object.keys(wifiPending.rows.inserts).length > 0 ||
-         Object.keys(wifiPending.rows.updates).length > 0 ||
-         wifiPending.rows.deletes.length > 0 ||
-         Object.keys(wifiPending.history.inserts).length > 0 ||
-         !!wifiPending.meta;
-}
-function isWifiTempId(id){ return typeof id === 'string' && id.startsWith('wtemp-'); }
-function looksLikeUuid(id){ return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id); }
-function wifiNewTempId(){ return 'wtemp-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
-function wifiRowToDb(r){
-  return {
-    designation: r.designation,
-    prix: r.prix || 0,
-    ticket_recu: r.ticketRecu || 0,
-    vendu: r.vendu || 0,
-    montant: r.montant || 0,
-    deleted_at: r.deletedAt || null
+// Convertit chaque table Supabase en entrées "operations" unifiées (même forme qu'avant),
+// pour que TOUTE la logique de calcul existante (typeAggregate, personTypeStats, etc.)
+// continue de fonctionner sans aucune modification.
+function mapReceipt(r){ return {id:r.id, ts:r.received_at, personId:null, typeId:r.ticket_type_id, opType:'RECEPTION', qty:r.quantity, unitPrice:null, amount:null, comment:r.comment, correctsOpId:null, reason:null}; }
+function mapMovement(m){ return {id:m.id, ts:m.occurred_at, personId:m.person_id, typeId:m.ticket_type_id, opType:m.movement_type, qty:m.quantity, unitPrice:null, amount:null, comment:m.comment, correctsOpId:null, reason:m.reason}; }
+function mapSale(s){ return {id:s.id, ts:s.sold_at, personId:s.person_id, typeId:s.ticket_type_id, opType:'VENTE', qty:s.quantity, unitPrice:s.unit_price, amount:s.amount, comment:s.comment, correctsOpId:null, reason:null}; }
+function mapPayment(p){ return {id:p.id, ts:p.paid_at, personId:p.person_id, typeId:null, opType:'PAIEMENT', qty:null, unitPrice:null, amount:p.amount, comment:p.comment, correctsOpId:null, reason:null}; }
+function mapCorrection(c){ return {id:c.id, ts:c.corrected_at, personId:null, typeId:null, opType:'CORRECTION', qty:c.delta_quantity, unitPrice:null, amount:c.delta_amount, comment:null, correctsOpId:c.target_id, reason:c.reason}; }
+
+async function loadData(){
+  const [tt, pe, rc, mv, sa, pa, co] = await Promise.all([
+    sb.from('ticket_types').select('*').order('created_at', {ascending:true}),
+    sb.from('people').select('*').order('created_at', {ascending:true}),
+    sb.from('stock_receipts').select('*'),
+    sb.from('stock_movements').select('*'),
+    sb.from('sales').select('*'),
+    sb.from('payments').select('*'),
+    sb.from('corrections').select('*'),
+  ]);
+  const firstError = [tt,pe,rc,mv,sa,pa,co].find(r => r.error);
+  if(firstError && firstError.error) throw firstError.error;
+
+  const ops = [
+    ...(rc.data||[]).map(mapReceipt),
+    ...(mv.data||[]).map(mapMovement),
+    ...(sa.data||[]).map(mapSale),
+    ...(pa.data||[]).map(mapPayment),
+    ...(co.data||[]).map(mapCorrection),
+  ].sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+  ops.forEach((o,i) => o.num = i+1); // numérotation d'affichage recalculée (pas de compteur partagé multi-appareils)
+
+  DB = {
+    ticketTypes: (tt.data||[]).map(t => ({id:t.id, name:t.name, price:Number(t.price), active:t.active})),
+    people: (pe.data||[]).map(p => ({id:p.id, name:p.name, active:p.active, createdAt:p.created_at})),
+    operations: ops,
+    meta: {initialized:true}
   };
 }
-function scheduleWifiSync(delay = 50){
-  clearTimeout(wifiSyncTimer);
-  setWifiSyncStatus('pending','En attente de synchronisation');
-  wifiSyncTimer = setTimeout(trySyncWifi, delay);
+
+// Insère une ligne dans la table Supabase concernée puis l'ajoute localement, en la
+// convertissant immédiatement au format "operation" unifié (pas de rechargement complet nécessaire).
+async function insertOp(table, payload, mapper){
+  const { data, error } = await sb.from(table).insert(payload).select();
+  if(error) throw error;
+  const op = mapper(data[0]);
+  DB.operations.push(op);
+  DB.operations.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+  DB.operations.forEach((o,i) => o.num = i+1);
+  return op;
 }
 
-// Programme l'envoi au serveur d'une modification touchant UNE SEULE ligne (reçu, vente,
-// correction, édition, suppression/restauration) — jamais les autres lignes ni le reste de l'app.
-function queueWifiRowUpdate(id, fields){
-  if(isWifiTempId(id)){
-    if(wifiPending.rows.inserts[id]) Object.assign(wifiPending.rows.inserts[id], fields);
-  } else {
-    wifiPending.rows.updates[id] = {...(wifiPending.rows.updates[id]||{}), ...fields};
-  }
-  cacheWifiPending();
-  scheduleWifiSync();
-}
-function queueWifiRowInsert(tempId, payload){
-  wifiPending.rows.inserts[tempId] = payload;
-  cacheWifiPending();
-  scheduleWifiSync();
-}
-function queueWifiRowDelete(id){
-  if(isWifiTempId(id)){
-    delete wifiPending.rows.inserts[id];
-  } else {
-    delete wifiPending.rows.updates[id];
-    if(!wifiPending.rows.deletes.includes(id)) wifiPending.rows.deletes.push(id);
-  }
-  cacheWifiPending();
-  scheduleWifiSync();
-}
-function queueWifiHistoryInsert(payload){
-  const tempId = 'whtemp-' + Date.now() + '-' + Math.random().toString(36).slice(2,7) + Math.random().toString(36).slice(2,4);
-  wifiPending.history.inserts[tempId] = payload;
-  cacheWifiPending();
-  scheduleWifiSync();
-}
-function queueWifiMeta(){
-  wifiPending.meta = {...(wifiPending.meta||{}), title: getWifiTitle(), subtitle: getWifiSubtitle()};
-  cacheWifiPending();
-  scheduleWifiSync();
-}
-function queueWifiSeededFlag(){
-  wifiPending.meta = {...(wifiPending.meta||{}), title: getWifiTitle(), subtitle: getWifiSubtitle(), seeded: 'true'};
-  cacheWifiPending();
-  scheduleWifiSync();
-}
+/* ============================================================
+   COMPUTATION HELPERS (ledger is source of truth)
+   ============================================================ */
 
-async function trySyncWifi(){
-  if(wifiSyncing) return;
-  wifiSyncing = true;
-  try{
-    let pass = 0;
-    do{
-      pass++;
-      setWifiSyncStatus('syncing','Synchronisation en cours…');
+function ticketType(id){ return DB.ticketTypes.find(t=>t.id===id); }
+function person(id){ return DB.people.find(p=>p.id===id); }
 
-      for(const tempId of Object.keys(wifiPending.rows.inserts)){
-        const payload = wifiPending.rows.inserts[tempId];
-        const { data, error } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).insert(payload).select().abortSignal(signal));
-        if(error) throw error;
-        const newId = data[0].id;
-        const rows = getWifiRows(); const trash = getWifiTrash();
-        const ar = rows.find(x => x.id === tempId); if(ar) ar.id = newId;
-        const tr = trash.find(x => x.id === tempId); if(tr) tr.id = newId;
-        saveWifiRows(rows); saveWifiTrash(trash);
-        if(JSON.stringify(wifiPending.rows.inserts[tempId]) === JSON.stringify(payload)){
-          delete wifiPending.rows.inserts[tempId];
-        } else {
-          const latest = wifiPending.rows.inserts[tempId];
-          delete wifiPending.rows.inserts[tempId];
-          wifiPending.rows.updates[newId] = {...(wifiPending.rows.updates[newId]||{}), ...latest};
-        }
-        cacheWifiPending();
+// Aggregate quantities for a type across all people + me (personId=null)
+function typeAggregate(typeId){
+  let received=0, remitted=0, soldDirect=0, soldByPeople=0, returned=0, lost=0, cancelled=0;
+  DB.operations.forEach(op=>{
+    if(op.typeId!==typeId) return;
+    const q = op.qty||0;
+    if(op.opType==='RECEPTION') received += q;
+    else if(op.opType==='REMISE') remitted += q;
+    else if(op.opType==='VENTE'){ if(op.personId) soldByPeople+=q; else soldDirect+=q; }
+    else if(op.opType==='RETOUR') returned += q;
+    else if(op.opType==='PERTE') lost += q;
+    else if(op.opType==='ANNULATION') cancelled += q;
+    else if(op.opType==='CORRECTION'){
+      // correction stores signed delta against the corrected op's type
+      const target = DB.operations.find(o=>o.id===op.correctsOpId);
+      if(target){
+        if(target.opType==='RECEPTION') received += q;
+        else if(target.opType==='REMISE') remitted += q;
+        else if(target.opType==='VENTE'){ if(target.personId) soldByPeople+=q; else soldDirect+=q; }
+        else if(target.opType==='RETOUR') returned += q;
+        else if(target.opType==='PERTE') lost += q;
+        else if(target.opType==='ANNULATION') cancelled += q;
       }
-
-      for(const id of Object.keys(wifiPending.rows.updates)){
-        const payload = wifiPending.rows.updates[id];
-        const { error } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).update(payload).eq('id', id).abortSignal(signal));
-        if(error) throw error;
-        if(JSON.stringify(wifiPending.rows.updates[id]) === JSON.stringify(payload)){
-          delete wifiPending.rows.updates[id];
-        }
-        cacheWifiPending();
-      }
-
-      for(const id of [...wifiPending.rows.deletes]){
-        const { error } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).delete().eq('id', id).abortSignal(signal));
-        if(error) throw error;
-        wifiPending.rows.deletes = wifiPending.rows.deletes.filter(x => x !== id);
-        delete wifiPending.rows.updates[id];
-        cacheWifiPending();
-      }
-
-      for(const tempId of Object.keys(wifiPending.history.inserts)){
-        const payload = wifiPending.history.inserts[tempId];
-        const { error } = await withAbortTimeout(signal => sb.from(WIFI_HISTORY_TABLE).insert(payload).abortSignal(signal));
-        if(error) throw error;
-        delete wifiPending.history.inserts[tempId];
-        cacheWifiPending();
-      }
-
-      if(wifiPending.meta){
-        const meta = wifiPending.meta;
-        const metaRows = [{key:'title', value:meta.title}, {key:'subtitle', value:meta.subtitle}];
-        if(meta.seeded !== undefined) metaRows.push({key:'seeded', value:meta.seeded});
-        const { error } = await withAbortTimeout(signal => sb.from(WIFI_META_TABLE)
-          .upsert(metaRows, {onConflict:'key'}).abortSignal(signal));
-        if(error) throw error;
-        wifiPending.meta = null;
-        cacheWifiPending();
-      }
-    } while(hasWifiPending() && pass < 5);
-
-
-    if(!hasWifiPending()){
-      await refreshWifiFromServer();
-      setWifiSyncStatus('ok', '');
-    } else {
-      scheduleWifiSync(500);
-    }
-  }catch(e){
-    console.log('wifi sync error', e);
-    if(isNetworkError(e)){
-      setWifiSyncStatus('offline', 'Hors connexion — sera synchronisé');
-    } else {
-      const detail = formatSyncError(e);
-      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('wifi', detail);
-      scheduleWifiSync(3000);
-    }
-  }finally{
-    wifiSyncing = false;
-  }
-}
-
-async function refreshWifiFromServer(){
-  if(hasWifiPending()) return;
-  const { data: rowsData, error: e1 } = await withAbortTimeout(signal => sb.from(WIFI_TABLE).select('*').order('created_at', {ascending:true}).abortSignal(signal));
-  if(e1) throw e1;
-  const { data: histData, error: e2 } = await withAbortTimeout(signal => sb.from(WIFI_HISTORY_TABLE).select('*').order('date', {ascending:true}).abortSignal(signal));
-  if(e2) throw e2;
-  const { data: metaData, error: e3 } = await withAbortTimeout(signal => sb.from(WIFI_META_TABLE).select('*').abortSignal(signal));
-  if(e3) throw e3;
-
-  // Protection anti-écrasement : si des saisies locales sont arrivées PENDANT ces requêtes
-  // réseau, on ignore entièrement la réponse plutôt que d'écraser une donnée plus récente —
-  // la synchro planifiée s'en chargera juste après.
-  if(hasWifiPending()) return;
-
-  const active = [], trashed = [];
-  (rowsData || []).forEach(row => {
-    const r = { id: row.id, designation: row.designation || '', prix: row.prix ?? 0, ticketRecu: row.ticket_recu ?? 0, vendu: row.vendu ?? 0, montant: row.montant ?? 0 };
-    if(row.deleted_at){ r.deletedAt = row.deleted_at; trashed.push(r); } else active.push(r);
-  });
-  saveWifiRows(active);
-  saveWifiTrash(trashed);
-
-  saveWifiHistory((histData || []).map(h => ({
-    date: h.date, rows: h.rows || [], totalRecu: h.total_recu ?? 0, totalVendu: h.total_vendu ?? 0, totalMontant: h.total_montant ?? 0
-  })));
-
-  const metaMap = {};
-  (metaData || []).forEach(m => { metaMap[m.key] = m.value; });
-  if(metaMap.title !== undefined) setWifiTitle(metaMap.title);
-  if(metaMap.subtitle !== undefined) setWifiSubtitle(metaMap.subtitle);
-  wifiCloudSeeded = metaMap.seeded === 'true';
-
-
-  if(document.getElementById('wifiPage').style.display === 'block'){
-    refreshWifiHeader(); renderWifiList();
-  }
-}
-
-// Migration ponctuelle (une seule fois par appareil) : envoie vers Supabase les données Vente
-// WiFi déjà présentes localement AVANT l'activation de la synchronisation, sans jamais rien
-// effacer. Si plusieurs appareils avaient chacun leurs propres désignations avant cette mise à
-// jour, elles se retrouveront TOUTES dans la liste commune après migration (pas de perte, mais
-// doublons possibles à fusionner manuellement une fois — via Corbeille — si besoin).
-// Un appareil sans aucune donnée locale (nouvel appareil) ne migre et n'envoie RIEN : ça évite
-// d'écraser le titre/sous-titre déjà partagé par les autres appareils avec des valeurs par défaut.
-function migrateWifiLegacyDataIfNeeded(){
-  if(localStorage.getItem(WIFI_MIGRATED_KEY) === 'true') return;
-  localStorage.setItem(WIFI_MIGRATED_KEY, 'true');
-  const rows = getWifiRows();
-  const trash = getWifiTrash();
-  const history = getWifiHistory();
-  if(rows.length === 0 && trash.length === 0 && history.length === 0) return; // rien à migrer ici
-
-  rows.forEach(r => {
-    if(!isWifiTempId(r.id)){
-      const newId = wifiNewTempId();
-      wifiPending.rows.inserts[newId] = wifiRowToDb(r);
-      r.id = newId;
     }
   });
-  trash.forEach(r => {
-    if(!isWifiTempId(r.id)){
-      const newId = wifiNewTempId();
-      wifiPending.rows.inserts[newId] = wifiRowToDb(r);
-      r.id = newId;
-    }
-  });
-  history.forEach(h => {
-    const tempId = 'whtemp-' + Date.now() + '-' + Math.random().toString(36).slice(2,7) + Math.random().toString(36).slice(2,4);
-    wifiPending.history.inserts[tempId] = {
-      date: h.date, rows: h.rows || [], total_recu: h.totalRecu || 0, total_vendu: h.totalVendu || 0, total_montant: h.totalMontant || 0
+  const withMe = received - remitted + returned - soldDirect - lost - cancelled;
+  const withPeople = remitted - returned - soldByPeople - lostWithPeopleFor(typeId);
+  return {received, remitted, soldDirect, soldByPeople, returned, lost, cancelled, withMe};
+}
+function lostWithPeopleFor(typeId){
+  // portion of "lost"/"cancelled" already counted globally; kept simple: perte/annulation always reduce person holding when personId set
+  return 0; // included via person-level calc separately; global withMe/withPeople reconciled in stockSummary()
+}
+
+function stockSummary(){
+  return DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+    const agg = typeAggregate(tt.id);
+    // disponible chez moi = reçus - remis + retours - vendu direct - pertes(moi) - annulations(moi)
+    let lostMe=0, cancelMe=0, lostPeople=0, cancelPeople=0;
+    DB.operations.forEach(op=>{
+      if(op.typeId!==tt.id) return;
+      const q=op.qty||0;
+      if(op.opType==='PERTE'){ if(op.personId) lostPeople+=q; else lostMe+=q; }
+      if(op.opType==='ANNULATION'){ if(op.personId) cancelPeople+=q; else cancelMe+=q; }
+      if(op.opType==='CORRECTION'){
+        const target = DB.operations.find(o=>o.id===op.correctsOpId);
+        if(target && target.opType==='PERTE'){ if(target.personId) lostPeople+=q; else lostMe+=q; }
+        if(target && target.opType==='ANNULATION'){ if(target.personId) cancelPeople+=q; else cancelMe+=q; }
+      }
+    });
+    const disponible = agg.received - agg.remitted + agg.returned - agg.soldDirect - lostMe - cancelMe;
+    const chezPersonnes = agg.remitted - agg.returned - agg.soldByPeople - lostPeople - cancelPeople;
+    return {
+      type: tt, initial: initialReceived(tt.id), remis: agg.remitted, venduDirect: agg.soldDirect,
+      venduPersonnes: agg.soldByPeople, retours: agg.returned, pertes: lostMe+lostPeople,
+      annulations: cancelMe+cancelPeople, disponible, chezPersonnes
     };
   });
-  wifiPending.meta = {...(wifiPending.meta||{}), title: getWifiTitle(), subtitle: getWifiSubtitle()};
-
-  saveWifiRows(rows);
-  saveWifiTrash(trash);
-  cacheWifiPending();
+}
+function initialReceived(typeId){
+  let sum=0;
+  DB.operations.forEach(op=>{ if(op.typeId===typeId && op.opType==='RECEPTION') sum+=(op.qty||0); });
+  return sum;
 }
 
-// Crée les désignations par défaut (5H/24H/7 jours/1 mois) UNE SEULE FOIS pour l'ensemble des
-// appareils : déclenché uniquement quand le cloud confirme qu'aucun appareil ne les a jamais
-// créées (drapeau "seeded" partagé), jamais simplement parce que CET appareil est vide.
-function seedWifiDefaults(){
-  const initial = JSON.parse(JSON.stringify(WIFI_DEFAULT_ROWS));
-  initial.forEach(r => {
-    const tempId = wifiNewTempId();
-    r.id = tempId;
-    queueWifiRowInsert(tempId, wifiRowToDb(r));
-  });
-  saveWifiRows(initial);
-  queueWifiSeededFlag();
-  if(document.getElementById('wifiPage').style.display === 'block'){
-    renderWifiList(); renderWifiSettingsRows();
-  }
-}
-
-async function loadWifiFromSupabase(){
-  migrateWifiLegacyDataIfNeeded();
-  if(hasWifiPending()){ await trySyncWifi(); return; }
-  setWifiSyncStatus('syncing','Synchronisation en cours…');
-  try{
-    await refreshWifiFromServer();
-    setWifiSyncStatus('ok', '');
-    // Corrige une bonne fois pour toutes une éventuelle faute "Fasto" déjà synchronisée
-    // (ancien texte par défaut), et propage la correction à tous les appareils.
-    if(getWifiSubtitle().includes('Fasto')){
-      setWifiSubtitle(getWifiSubtitle().replace(/Fasto/g, 'Fast'));
-      queueWifiMeta();
-      refreshWifiHeader();
-    }
-  }catch(e){
-    console.log('wifi initial sync error', e);
-    if(isNetworkError(e)){
-      setWifiSyncStatus('offline', 'Hors connexion — données locales affichées');
-    } else {
-      const detail = formatSyncError(e);
-      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('wifi', detail);
-      scheduleWifiSync(3000);
-    }
-    return;
-  }
-  if(!hasWifiPending() && !wifiCloudSeeded && getWifiRows().length === 0 && getWifiTrash().length === 0){
-    seedWifiDefaults();
-  }
-}
-window.addEventListener('online', () => trySyncWifi());
-setInterval(() => { if(hasWifiPending()) trySyncWifi(); }, 15000);
-
-// Chien de garde : quelle que soit la cause exacte, l'application ne doit JAMAIS rester
-// affichée sur "Synchronisation en cours…" indéfiniment. Si l'état reste bloqué sur
-// "syncing" plus de 20 secondes, on lance un diagnostic ciblé (pas une hypothèse) et on
-// débloque les boutons.
-setInterval(() => {
-  if(currentWifiConnState === 'syncing' && wifiSyncingSince && (Date.now() - wifiSyncingSince > 20000)){
-    wifiSyncing = false;
-    setWifiSyncStatus('syncing', 'Diagnostic en cours…');
-    diagnoseSyncFailure().then(detail => {
-      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('wifi', detail);
-    });
-  }
-}, 5000);
-
-// Bouton d'actualisation de secours (Vente WiFi) : vérifie réellement Supabase, synchronise
-// les changements en attente, récupère les dernières données, actualise l'UI. Jamais un simple reload.
-async function forceRefreshWifi(){
-  if(wifiSyncing){ setWifiSyncStatus('syncing','Synchronisation en cours…'); return; }
-  setWifiSyncStatus('syncing','Synchronisation en cours…');
-  if(hasWifiPending()){
-    await trySyncWifi();
-    return;
-  }
-  try{
-    await refreshWifiFromServer();
-    setWifiSyncStatus('ok', '');
-  }catch(e){
-    console.log('force refresh wifi error', e);
-    if(isNetworkError(e)){
-      setWifiSyncStatus('offline', 'Hors connexion — données locales affichées');
-    } else {
-      const detail = formatSyncError(e);
-      setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-      notifySyncErrorOnce('wifi', detail);
-    }
-  }
-}
-
-const WIFI_DEFAULT_ROWS = [
-  {id:'w-5h',  designation:'5H',      prix:3000,  ticketRecu:0, vendu:0, montant:0},
-  {id:'w-24h', designation:'24H',     prix:5000,  ticketRecu:0, vendu:0, montant:0},
-  {id:'w-7j',  designation:'7 jours', prix:20000, ticketRecu:0, vendu:0, montant:0},
-  {id:'w-1m',  designation:'1 mois',  prix:70000, ticketRecu:0, vendu:0, montant:0}
-];
-
-function getWifiTitle(){ return localStorage.getItem(WIFI_TITLE_KEY) || 'VENTE WIFI'; }
-function setWifiTitle(v){ localStorage.setItem(WIFI_TITLE_KEY, v); }
-function getWifiSubtitle(){ return localStorage.getItem(WIFI_SUBTITLE_KEY) || 'Guinée Wifi - Fast - DALEIN'; }
-function setWifiSubtitle(v){ localStorage.setItem(WIFI_SUBTITLE_KEY, v); }
-
-function getWifiRows(){
-  try{
-    const parsed = JSON.parse(localStorage.getItem(WIFI_ROWS_KEY) || '[]');
-    return Array.isArray(parsed) ? parsed : [];
-  }catch(e){
-    console.log('wifi rows parse error, recovering with empty list to avoid crashing the page', e);
-    return [];
-  }
-}
-function saveWifiRows(rows){
-  try{ localStorage.setItem(WIFI_ROWS_KEY, JSON.stringify(rows)); }
-  catch(e){ console.log('wifi rows save error', e); alert("Erreur de sauvegarde locale (Vente WiFi). Vérifie l'espace disponible sur l'appareil."); }
-}
-
-function getWifiTrash(){
-  try{ const p = JSON.parse(localStorage.getItem(WIFI_TRASH_KEY) || '[]'); return Array.isArray(p) ? p : []; }
-  catch(e){ console.log('wifi trash parse error, recovering with empty list', e); return []; }
-}
-function saveWifiTrash(t){ localStorage.setItem(WIFI_TRASH_KEY, JSON.stringify(t)); }
-
-function getWifiHistory(){
-  try{ const p = JSON.parse(localStorage.getItem(WIFI_HISTORY_KEY) || '[]'); return Array.isArray(p) ? p : []; }
-  catch(e){ console.log('wifi history parse error, recovering with empty list', e); return []; }
-}
-function saveWifiHistory(h){ localStorage.setItem(WIFI_HISTORY_KEY, JSON.stringify(h)); }
-
-// --- Ouverture / fermeture de la page ---
-
-function openWifiPage(){
-  document.getElementById('wifiPage').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  localStorage.setItem('stock_lcd_current_page', 'wifi');
-  refreshWifiHeader();
-  renderWifiList();
-  if(!hasWifiPending()){
-    setWifiSyncStatus('syncing','Synchronisation en cours…');
-    refreshWifiFromServer().then(() => setWifiSyncStatus('ok','')).catch(e => {
-      console.log('wifi refresh error', e);
-      if(isNetworkError(e)){
-        setWifiSyncStatus('offline', 'Hors connexion — données locales affichées');
-      } else {
-        const detail = formatSyncError(e);
-        setWifiSyncStatus('error', 'Échec de synchronisation — appuyer pour détail', detail);
-        notifySyncErrorOnce('wifi', detail);
+// Per-person, per-type situation
+function personTypeStats(personId, typeId){
+  let pris=0, vendu=0, retour=0, perte=0, annule=0, montantVentes=0;
+  DB.operations.forEach(op=>{
+    if(op.personId!==personId || op.typeId!==typeId) return;
+    const q=op.qty||0;
+    if(op.opType==='REMISE') pris+=q;
+    else if(op.opType==='VENTE'){ vendu+=q; montantVentes += (op.amount||0); }
+    else if(op.opType==='RETOUR') retour+=q;
+    else if(op.opType==='PERTE') perte+=q;
+    else if(op.opType==='ANNULATION') annule+=q;
+    else if(op.opType==='CORRECTION'){
+      const target = DB.operations.find(o=>o.id===op.correctsOpId);
+      if(target && target.personId===personId && target.typeId===typeId){
+        if(target.opType==='REMISE') pris+=q;
+        else if(target.opType==='VENTE'){ vendu+=q; montantVentes += (op.amount||0); }
+        else if(target.opType==='RETOUR') retour+=q;
+        else if(target.opType==='PERTE') perte+=q;
+        else if(target.opType==='ANNULATION') annule+=q;
       }
-    });
-  }
+    }
+  });
+  const restant = pris - vendu - retour - perte - annule;
+  return {pris, vendu, retour, perte, annule, restant, montantVentes};
 }
-function closeWifiPage(){
-  document.getElementById('wifiPage').style.display = 'none';
-  document.body.style.overflow = '';
-  localStorage.setItem('stock_lcd_current_page', 'stock');
+function personMoney(personId){
+  let du=0, paye=0;
+  DB.ticketTypes.forEach(tt=>{ du += personTypeStats(personId, tt.id).montantVentes; });
+  DB.operations.forEach(op=>{
+    if(op.opType==='PAIEMENT' && op.personId===personId) paye += (op.amount||0);
+    if(op.opType==='CORRECTION'){
+      const target = DB.operations.find(o=>o.id===op.correctsOpId);
+      if(target && target.opType==='PAIEMENT' && target.personId===personId) paye += (op.amount||0);
+    }
+  });
+  return {du, paye, reste: du-paye};
 }
-function refreshWifiHeader(){
-  document.getElementById('wifiTitleDisplay').textContent = '📶 ' + getWifiTitle();
-  document.getElementById('wifiSubtitleDisplay').textContent = getWifiSubtitle();
+function personTotalRestant(personId){
+  let sum=0; DB.ticketTypes.forEach(tt=>{ sum += personTypeStats(personId, tt.id).restant; }); return sum;
 }
-
-// --- Rendu de la liste des désignations ---
-
-// Convertit une désignation ("5H", "24H", "1 Semaine", "1 Mois", "7 jours"...) en durée
-// exprimée en minutes, pour pouvoir trier automatiquement du plus court au plus long.
-// Une désignation sans durée reconnaissable est classée à la toute fin (jamais d'erreur).
-function wifiDurationMinutes(designation){
-  try{
-    const s = String(designation || '').toLowerCase();
-    const m = s.match(/(\d+(?:[.,]\d+)?)\s*(minutes?|min|heures?|h|semaines?|jours?|j|mois|ann[ée]es?|ans?)/i);
-    if(!m) return Infinity;
-    const n = parseFloat(m[1].replace(',', '.'));
-    if(isNaN(n)) return Infinity;
-    const unit = m[2];
-    if(unit.startsWith('min')) return n;
-    if(unit.startsWith('h')) return n * 60;
-    if(unit.startsWith('sem')) return n * 60 * 24 * 7;
-    if(unit.startsWith('j')) return n * 60 * 24;
-    if(unit.startsWith('moi')) return n * 60 * 24 * 30;
-    if(unit.startsWith('an')) return n * 60 * 24 * 365;
-    return Infinity;
-  }catch(e){ return Infinity; }
+function moneyTotals(){
+  let ventes=0, paye=0;
+  DB.people.forEach(p=>{ const m=personMoney(p.id); ventes+=m.du; paye+=m.paye; });
+  return {ventes, paye, reste: ventes-paye};
 }
-function sortWifiRowsByDuration(rows){
-  return rows.slice().sort((a,b) => wifiDurationMinutes(a.designation) - wifiDurationMinutes(b.designation));
-}
+function fmt(n){ return (n||0).toLocaleString('fr-FR'); }
+function fmtGNF(n){ return fmt(n) + ' GNF'; }
 
-function renderWifiList(){
-  const rows = sortWifiRowsByDuration(getWifiRows());
-  const list = document.getElementById('wifiList');
-  list.innerHTML = '';
+/* ============================================================
+   UI CONTROLLER
+   ============================================================ */
+const UI = {
+  currentView: 'accueil',
+  histFilter: 'all',
+  stockPillType: null,
 
-  let totalRecu = 0, totalVendu = 0, totalMontant = 0;
+  async init(){
+    try{
+      await loadData();
+    }catch(e){
+      document.body.innerHTML = `<div class="empty" style="padding:60px 20px;">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
+      return;
+    }
+    document.getElementById('today-chip').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short'});
+    document.getElementById('people-search').addEventListener('input', ()=>this.renderPeople());
+    document.getElementById('hist-search').addEventListener('input', ()=>this.renderHistory());
+    this.renderAll();
+  },
 
-  if(rows.length === 0){
-    list.innerHTML = '<div class="empty">Aucune désignation. Ajoute "5H", "24H", "7 jours"...</div>';
-  }
+  goto(view){
+    if(['accueil','stock','personnes','historique','rapports','parametres'].includes(view)){
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById('view-'+view).classList.add('active');
+      document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
+      const btn = document.querySelector('.navbtn[data-view="'+view+'"]');
+      if(btn) btn.classList.add('active');
+      this.currentView = view;
+      this.closeSheet();
+      if(view==='stock') this.renderStock();
+      if(view==='personnes') this.renderPeople();
+      if(view==='historique') this.renderHistory();
+      if(view==='rapports') this.renderRapports();
+      if(view==='parametres') this.renderParametres();
+      if(view==='accueil') this.renderDashboard();
+      window.scrollTo(0,0);
+    }
+  },
 
-  rows.forEach((r, idx) => {
-    const recu = r.ticketRecu || 0;
-    const vendu = r.vendu || 0;
-    const montant = r.montant || 0;
-    const reste = recu - vendu;
-    totalRecu += recu; totalVendu += vendu; totalMontant += montant;
-
-    const now = Date.now();
-    const inCooldown = (wifiStepCooldown[r.id] || 0) > now;
-    const lastStep = wifiLastStep[r.id];
-    const lastStepBadge = (lastStep && (now - lastStep.time < 60000))
-      ? ` <span class="wifiLastStepBadge">${lastStep.delta > 0 ? '+1' : '−1'}</span>`
-      : '';
-
-    const div = document.createElement('div');
-    div.className = 'item wifiRowCard';
-    div.innerHTML = `
-      <div class="wifiRowTop">
-        <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1 1 auto;">
-          <div class="name" style="font-size:13px; flex:1 1 auto; min-width:0;">${idx + 1}. ${escHtml(r.designation)} <span style="color:var(--muted); font-weight:400;">(${Number(r.prix || 0).toLocaleString('fr-FR')} GNF)</span></div>
-          <button class="wifiMiniBtn edit" onclick="openWifiEditRow('${r.id}')" title="Modifier" style="flex:0 0 auto;">✎</button>
-        </div>
-        <div style="font-size:12px; color:var(--gold); font-weight:700; white-space:nowrap; flex:0 0 auto;">${montant.toLocaleString('fr-FR')}</div>
-        <button class="wifiMiniBtn del" onclick="wifiDeleteRow('${r.id}')" title="Supprimer" style="flex:0 0 auto;">✕</button>
+  openMore(){
+    this.openSheet(`
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Plus</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+        <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('historique')">📜 Historique</button>
+        <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('rapports')">📊 Rapports</button>
+        <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('parametres')">⚙ Paramètres</button>
       </div>
-      <div style="display:flex; gap:6px;">
-        <button class="wifiTapBox" onclick="openWifiReceive('${r.id}')">
-          <div class="v">${recu}</div>
-          <div class="l" title="Quantité de tickets remise par l'administrateur.">Reçu (+)</div>
-        </button>
-        <div class="wifiTapBox" style="cursor:default;">
-          <div class="v" style="color:${reste < 0 ? 'var(--red)' : (reste === 0 ? 'var(--orange)' : 'var(--green)')};">${reste}</div>
-          <div class="l" title="Tickets non encore vendus.">Reste</div>
-        </div>
-        <div class="wifiVenduBox">
-          <button class="wifiStepBtn minus" onclick="wifiSaleStep('${r.id}', -1)" title="Retirer 1 vente" style="opacity:${inCooldown ? '0.4' : '1'};">−</button>
-          <div class="wifiVenduCenter" onclick="openWifiSale('${r.id}')" title="Vente en quantité">
-            <div class="v" style="color:var(--gold);">${vendu}${lastStepBadge}</div>
-            <div class="l" title="Quantité vendue, saisie par l'administrateur.">Vendu</div>
+    `);
+  },
+
+  renderAll(){
+    this.renderDashboard();
+    this.renderStock();
+    this.renderPeople();
+    this.renderHistory();
+    this.renderRapports();
+    this.renderParametres();
+  },
+
+  /* ---------- DASHBOARD ---------- */
+  renderDashboard(){
+    const summary = stockSummary();
+    const grid = document.getElementById('dash-stock');
+    grid.innerHTML = summary.map(s=>`
+      <div class="stat">
+        <div class="label">${s.type.name}</div>
+        <div class="value">${fmt(s.disponible)}</div>
+      </div>`).join('');
+
+    document.getElementById('dash-people-count').textContent = DB.people.length;
+    const distributed = summary.reduce((a,s)=>a+s.chezPersonnes,0);
+    document.getElementById('dash-distributed').textContent = fmt(distributed);
+    const holders = DB.people.filter(p=>personTotalRestant(p.id)>0).length;
+    document.getElementById('dash-holders').textContent = holders;
+
+    const mt = moneyTotals();
+    document.getElementById('dash-sales').textContent = fmtGNF(mt.ventes);
+    document.getElementById('dash-paid').textContent = fmtGNF(mt.paye);
+    document.getElementById('dash-due').textContent = fmtGNF(mt.reste);
+
+    // Alerts
+    const alerts = [];
+    DB.people.forEach(p=>{
+      const m = personMoney(p.id);
+      if(m.reste>0) alerts.push({level:'amber', text:`${p.name} doit encore ${fmtGNF(m.reste)}`});
+    });
+    summary.forEach(s=>{
+      if(s.disponible < s.initial*0.1 && s.initial>0) alerts.push({level:'red', text:`Stock faible : ${s.type.name} — ${fmt(s.disponible)} restants chez vous`});
+      const explained = s.disponible + s.chezPersonnes + s.venduDirect + s.venduPersonnes + s.pertes + s.annulations;
+      if(explained !== s.initial) alerts.push({level:'red', text:`Écart détecté sur ${s.type.name} : ${fmt(s.initial)} reçus mais ${fmt(explained)} justifiés`});
+    });
+    const alertsEl = document.getElementById('dash-alerts');
+    if(alerts.length===0){
+      alertsEl.innerHTML = `<div class="empty">Aucune alerte — tout est en ordre.</div>`;
+    } else {
+      alertsEl.innerHTML = alerts.slice(0,8).map(a=>`
+        <div class="alert ${a.level}"><span class="dot"></span><span>${a.text}</span></div>
+      `).join('');
+    }
+  },
+
+  /* ---------- STOCK ---------- */
+  renderStock(){
+    const summary = stockSummary();
+    const tbl = document.getElementById('stock-table');
+    tbl.innerHTML = `
+      <tr><th>Type</th><th>Initial</th><th>Remis</th><th>Vendu direct</th><th>Retours</th><th>Pertes</th><th>Disponible</th></tr>
+      ${summary.map(s=>`
+        <tr>
+          <td>${s.type.name}</td>
+          <td>${fmt(s.initial)}</td>
+          <td>${fmt(s.remis)}</td>
+          <td>${fmt(s.venduDirect)}</td>
+          <td>${fmt(s.retours)}</td>
+          <td>${fmt(s.pertes)}</td>
+          <td><strong>${fmt(s.disponible)}</strong></td>
+        </tr>`).join('')}
+    `;
+
+    if(!this.stockPillType && summary.length) this.stockPillType = summary[0].type.id;
+    const pills = document.getElementById('stock-type-pills');
+    pills.innerHTML = summary.map(s=>`
+      <button class="filter-pill ${this.stockPillType===s.type.id?'active':''}" onclick="UI.setStockPill('${s.type.id}')">${s.type.name}</button>
+    `).join('');
+    this.renderStockBreakdown();
+  },
+  setStockPill(id){ this.stockPillType=id; this.renderStock(); },
+  renderStockBreakdown(){
+    const el = document.getElementById('stock-breakdown');
+    const s = stockSummary().find(x=>x.type.id===this.stockPillType);
+    if(!s){ el.innerHTML = `<div class="empty">Aucun type de ticket.</div>`; return; }
+    const perPerson = DB.people.map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
+      .filter(x=>x.restant>0).sort((a,b)=>b.restant-a.restant);
+    el.innerHTML = `
+      <div class="money-row"><span class="label">Chez moi</span><span class="amount">${fmt(s.disponible)}</span></div>
+      ${perPerson.map(x=>`<div class="money-row"><span class="label">${x.p.name}</span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}
+      <div class="money-row"><span class="label">Vendus (total)</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
+      <div class="money-row"><span class="label">Retournés</span><span class="amount">${fmt(s.retours)}</span></div>
+      <div class="money-row"><span class="label">Perdus</span><span class="amount">${fmt(s.pertes)}</span></div>
+      <div class="money-row"><span class="label">Annulés</span><span class="amount">${fmt(s.annulations)}</span></div>
+      <div class="money-row total" style="border-top:1px solid var(--ink);margin-top:4px;padding-top:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes+s.pertes+s.annulations)}</span></div>
+    `;
+  },
+
+  /* ---------- PERSONNES ---------- */
+  renderPeople(){
+    const q = (document.getElementById('people-search').value||'').toLowerCase();
+    const list = document.getElementById('people-list');
+    const people = DB.people.filter(p=>p.name.toLowerCase().includes(q));
+    if(people.length===0){
+      list.innerHTML = `<div class="empty">Aucune personne enregistrée.</div>`;
+      return;
+    }
+    list.innerHTML = people.map(p=>{
+      const m = personMoney(p.id);
+      const restant = personTotalRestant(p.id);
+      return `
+        <div class="person-row" onclick="UI.openSituation('${p.id}')">
+          <div>
+            <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
+            <div class="person-sub">${fmt(restant)} tickets en main</div>
           </div>
-          <button class="wifiStepBtn plus" onclick="wifiSaleStep('${r.id}', 1)" title="Ajouter 1 vente" style="opacity:${inCooldown ? '0.4' : '1'};">+</button>
+          <div class="person-right">
+            ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
+          </div>
+        </div>`;
+    }).join('');
+  },
+
+  openAddPerson(){
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Ajouter une personne</div>
+      <div class="field"><label>Nom</label><input type="text" id="np-name" placeholder="Ex. M. A-DIALLO"></div>
+      <div id="np-error"></div>
+      <button class="btn btn-primary" onclick="UI.savePerson()">Enregistrer</button>
+    `);
+    setTimeout(()=>document.getElementById('np-name').focus(),150);
+  },
+  async savePerson(){
+    const name = document.getElementById('np-name').value.trim();
+    if(!name){ document.getElementById('np-error').innerHTML = `<div class="error-text">Le nom est requis.</div>`; return; }
+    try{
+      const { data, error } = await sb.from('people').insert({name, active:true}).select();
+      if(error) throw error;
+      DB.people.push({id:data[0].id, name:data[0].name, active:data[0].active, createdAt:data[0].created_at});
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    this.closeSheet(); this.renderPeople(); this.renderDashboard();
+    toast('Personne ajoutée');
+  },
+
+  openSituation(personId){
+    this.pIdView = personId;
+    this.goto('situation');
+    this.renderSituation();
+  },
+  renderSituation(){
+    const p = person(this.pIdView);
+    if(!p){ document.getElementById('situation-content').innerHTML=`<div class="empty">Personne introuvable.</div>`; return; }
+    const m = personMoney(p.id);
+    const rows = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+      const s = personTypeStats(p.id, tt.id);
+      return `<tr><td>${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.retour)}</td><td>${fmt(s.perte)}</td><td><strong>${fmt(s.restant)}</strong></td></tr>`;
+    }).join('');
+    const totalRestant = personTotalRestant(p.id);
+
+    const recentOps = DB.operations.filter(o=>o.personId===p.id).sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,8);
+
+    document.getElementById('situation-content').innerHTML = `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="person-name" style="font-size:17px;">${p.name}</div>
+            <div class="person-sub">${p.active===false?'Inactif':'Actif'}</div>
+          </div>
+          <div class="btn-row" style="width:auto;">
+            <button class="btn btn-outline" style="width:auto;padding:8px 12px;" onclick="UI.openEditPerson('${p.id}')">Modifier</button>
+          </div>
         </div>
+      </div>
+
+      <h2 class="section-title">Stock</h2>
+      <div class="card" style="overflow-x:auto;">
+        <table class="ledger">
+          <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Retour</th><th>Perte</th><th>Restant</th></tr>
+          ${rows}
+          <tr class="total"><td>TOTAL</td><td></td><td></td><td></td><td></td><td>${fmt(totalRestant)}</td></tr>
+        </table>
+      </div>
+
+      <h2 class="section-title">Argent</h2>
+      <div class="card">
+        <div class="money-row"><span class="label">Montant des ventes</span><span class="amount">${fmtGNF(m.du)}</span></div>
+        <div class="money-row"><span class="label">Déjà payé</span><span class="amount pos">${fmtGNF(m.paye)}</span></div>
+        <div class="money-row"><span class="label">Reste à payer</span><span class="amount ${m.reste>0?'neg':'pos'}">${fmtGNF(m.reste)}</span></div>
+      </div>
+
+      <h2 class="section-title">Dernières opérations</h2>
+      <div class="card">
+        ${recentOps.length? recentOps.map(op=>this.histRowHtml(op)).join('') : '<div class="empty">Aucune opération.</div>'}
+      </div>
+
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-secondary" onclick="UI.openNewOp('${p.id}')">+ Nouvelle opération pour ${p.name.split(' ')[0]}</button>
       </div>
     `;
-    list.appendChild(div);
-  });
-
-  document.getElementById('wifiTotalRecu').textContent = totalRecu;
-  document.getElementById('wifiTotalReste').textContent = totalRecu - totalVendu;
-  document.getElementById('wifiTotalMontant').textContent = totalMontant.toLocaleString('fr-FR');
-}
-
-// --- Dialogue "Ticket reçu" : le calcul ne concerne que la ligne touchée ---
-
-let wifiActiveRowId = null;
-const wifiReceiveDlg = document.getElementById('wifiReceiveDlg');
-
-function openWifiReceive(rowId){
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return;
-  wifiActiveRowId = rowId;
-  document.getElementById('wifiReceiveRowName').textContent = r.designation;
-  document.getElementById('wifiReceiveCurrent').textContent = r.ticketRecu || 0;
-  document.getElementById('wifiReceiveQty').value = '';
-  openDialogSafe(wifiReceiveDlg);
-  setTimeout(() => document.getElementById('wifiReceiveQty').focus(), 50);
-}
-function confirmWifiReceiveDelta(sign){
-  const qty = parseInt(document.getElementById('wifiReceiveQty').value);
-  if(isNaN(qty) || qty <= 0) return alert('Entrez une quantité valide (nombre entier positif).');
-  const rows = getWifiRows();
-  const r = rows.find(x => x.id === wifiActiveRowId);
-  if(!r) return alert('Cette désignation est introuvable (a-t-elle été supprimée entre temps ?).');
-  const current = r.ticketRecu || 0;
-  let next = current + (sign * qty);
-  if(next < 0) next = 0; // ne descend jamais sous zéro, quelle que soit la correction demandée
-  r.ticketRecu = next;
-  saveWifiRows(rows);
-  queueWifiRowUpdate(r.id, {ticket_recu: r.ticketRecu});
-  wifiReceiveDlg.close();
-  renderWifiList();
-}
-
-// --- Dialogue "Vente" : Quantité (défaut 1) + Montant automatique, calcul isolé à la ligne ---
-
-const wifiSaleDlg = document.getElementById('wifiSaleDlg');
-
-// Ajustement rapide ±1 depuis la ligne elle-même (boutons − / + de la case "Vendu"),
-// sans ouvrir de boîte de dialogue. Même calcul que confirmWifiSale/confirmWifiSaleRemove :
-// montant = quantité × prix unitaire. N'affecte que cette ligne, jamais sous zéro.
-function wifiSaleStep(rowId, delta){
-  const now = Date.now();
-  const lockedUntil = wifiStepCooldown[rowId] || 0;
-  if(now < lockedUntil){
-    const remainingSec = Math.max(1, Math.ceil((lockedUntil - now) / 1000));
-    alert(`✅ Votre frappe précédente a bien été enregistrée avec succès.\n\nPar sécurité (anti-double-frappe), patiente encore ${remainingSec}s avant la prochaine correction sur cette ligne.`);
-    return;
-  }
-  const rows = getWifiRows();
-  const r = rows.find(x => x.id === rowId);
-  if(!r) return;
-  const currentVendu = r.vendu || 0;
-  if(delta > 0){
-    r.vendu = currentVendu + 1;
-    r.montant = (r.montant || 0) + (r.prix || 0);
-  } else {
-    if(currentVendu <= 0) return; // déjà à zéro, rien à retirer
-    r.vendu = currentVendu - 1;
-    r.montant = Math.max(0, (r.montant || 0) - (r.prix || 0));
-  }
-  saveWifiRows(rows);
-  queueWifiRowUpdate(r.id, {vendu: r.vendu, montant: r.montant});
-  wifiStepCooldown[rowId] = now + 2 * 60 * 1000; // verrouille cette ligne 2 minutes
-  wifiLastStep[rowId] = { delta, time: now };
-  renderWifiList();
-}
-
-function openWifiSale(rowId){
-  const r = getWifiRows().find(x => x.id === rowId);
-  if(!r) return;
-  wifiActiveRowId = rowId;
-  document.getElementById('wifiSaleRowName').textContent = `${r.designation} — ${Number(r.prix || 0).toLocaleString('fr-FR')} GNF/u`;
-  document.getElementById('wifiSaleQty').value = '';
-  updateWifiSaleMontant();
-  openDialogSafe(wifiSaleDlg);
-  setTimeout(() => document.getElementById('wifiSaleQty').focus(), 50);
-}
-function updateWifiSaleMontant(){
-  const r = getWifiRows().find(x => x.id === wifiActiveRowId);
-  if(!r) return;
-  let qty = parseInt(document.getElementById('wifiSaleQty').value);
-  if(isNaN(qty) || qty < 1) qty = 1;
-  const montant = qty * (r.prix || 0);
-  document.getElementById('wifiSaleMontant').value = montant.toLocaleString('fr-FR') + ' GNF';
-  const reste = (r.ticketRecu || 0) - (r.vendu || 0);
-  document.getElementById('wifiSaleWarning').style.display = qty > reste ? 'block' : 'none';
-}
-function confirmWifiSale(){
-  let qty = parseInt(document.getElementById('wifiSaleQty').value);
-  if(isNaN(qty) || qty < 1) return alert('Entrez une quantité valide (au moins 1).');
-  const rows = getWifiRows();
-  const r = rows.find(x => x.id === wifiActiveRowId);
-  if(!r) return alert('Cette désignation est introuvable (a-t-elle été supprimée entre temps ?).');
-  const montant = qty * (r.prix || 0);
-  r.vendu = (r.vendu || 0) + qty;       // n'affecte que cette ligne
-  r.montant = (r.montant || 0) + montant; // n'affecte que cette ligne
-  saveWifiRows(rows);
-  queueWifiRowUpdate(r.id, {vendu: r.vendu, montant: r.montant});
-  wifiSaleDlg.close();
-  renderWifiList();
-}
-
-// Corrige une vente insérée par erreur : retire la quantité du compteur "Vendu"
-// (et le montant correspondant) pour CETTE ligne uniquement. Le "Reste" remonte
-// automatiquement puisqu'il est recalculé (ticketRecu - vendu). Rien d'autre n'est touché.
-function confirmWifiSaleRemove(){
-  let qty = parseInt(document.getElementById('wifiSaleQty').value);
-  if(isNaN(qty) || qty < 1) return alert('Entrez une quantité valide (au moins 1) à retirer.');
-  const rows = getWifiRows();
-  const r = rows.find(x => x.id === wifiActiveRowId);
-  if(!r) return alert('Cette désignation est introuvable (a-t-elle été supprimée entre temps ?).');
-
-  const currentVendu = r.vendu || 0;
-  if(currentVendu <= 0) return alert(`Aucune vente enregistrée pour "${r.designation}" — rien à retirer.`);
-
-  if(qty > currentVendu){
-    const ok = confirm(`Seulement ${currentVendu} vente(s) enregistrée(s) pour "${r.designation}".\nRetirer quand même : le compteur sera ramené à 0 (au lieu de ${qty}) ?`);
-    if(!ok) return;
-    qty = currentVendu;
-  }
-
-  const montant = qty * (r.prix || 0);
-  if(!confirm(`Retirer ${qty} vente(s) de "${r.designation}" ?\nMontant déduit : ${montant.toLocaleString('fr-FR')} GNF.`)) return;
-
-  r.vendu = Math.max(0, currentVendu - qty);           // n'affecte que cette ligne
-  r.montant = Math.max(0, (r.montant || 0) - montant); // n'affecte que cette ligne
-  saveWifiRows(rows);
-  queueWifiRowUpdate(r.id, {vendu: r.vendu, montant: r.montant});
-  wifiSaleDlg.close();
-  renderWifiList();
-}
-
-// --- Ajouter / modifier une désignation ---
-
-let wifiEditingRowId = null;
-const wifiRowDlg = document.getElementById('wifiRowDlg');
-
-function openWifiAddRow(){
-  wifiEditingRowId = null;
-  document.getElementById('wifiRowDlgTitle').textContent = 'Ajouter une désignation';
-  document.getElementById('wifiRowName').value = '';
-  document.getElementById('wifiRowPrix').value = '';
-  openDialogSafe(wifiRowDlg);
-}
-function openWifiEditRow(id){
-  const r = getWifiRows().find(x => x.id === id);
-  if(!r) return;
-  wifiEditingRowId = id;
-  document.getElementById('wifiRowDlgTitle').textContent = 'Modifier la désignation';
-  document.getElementById('wifiRowName').value = r.designation;
-  document.getElementById('wifiRowPrix').value = r.prix || '';
-  openDialogSafe(wifiRowDlg);
-}
-function saveWifiRow(){
-  const name = cap(document.getElementById('wifiRowName').value.trim());
-  const prixRaw = document.getElementById('wifiRowPrix').value;
-  const prix = prixRaw !== '' ? parseFloat(prixRaw) : 0;
-  if(!name) return alert('Entrez une désignation (ex: 5H, 24H, 7 jours...).');
-  if(isNaN(prix) || prix < 0) return alert('Entrez un prix unitaire valide.');
-
-  const rows = getWifiRows();
-  if(wifiEditingRowId){
-    const r = rows.find(x => x.id === wifiEditingRowId);
-    if(!r) return alert('Cette désignation est introuvable.');
-    r.designation = name; r.prix = prix;
-    saveWifiRows(rows);
-    queueWifiRowUpdate(r.id, {designation: name, prix: prix});
-  } else {
-    const tempId = wifiNewTempId();
-    const newRow = {id: tempId, designation:name, prix, ticketRecu:0, vendu:0, montant:0};
-    rows.push(newRow);
-    saveWifiRows(rows);
-    queueWifiRowInsert(tempId, wifiRowToDb(newRow));
-  }
-  wifiRowDlg.close();
-  renderWifiList();
-  renderWifiSettingsRows();
-}
-
-// --- Suppression = déplacement vers la corbeille dédiée (réversible, rien n'est perdu) ---
-
-function wifiDeleteRow(id){
-  try{
-    const rows = getWifiRows();
-    const idx = rows.findIndex(x => x.id === id);
-    if(idx === -1){ alert("Cette désignation n'existe plus (déjà supprimée ailleurs)."); renderWifiList(); return; }
-    const r = rows[idx];
-    if(!confirm(`Envoyer "${r.designation}" à la corbeille Vente WiFi ?\n(Restaurable à tout moment, ses données ne sont pas perdues.)`)) return;
-    rows.splice(idx, 1);
-    saveWifiRows(rows);
-    const deletedAt = new Date().toISOString();
-    const trash = getWifiTrash();
-    trash.push({...r, deletedAt});
-    saveWifiTrash(trash);
-    queueWifiRowUpdate(r.id, {deleted_at: deletedAt});
-    renderWifiList();
-    renderWifiSettingsRows();
-  }catch(e){
-    console.log('wifiDeleteRow error', e);
-    alert('❌ Erreur lors de la suppression :\n\n' + formatSyncError(e));
-  }
-}
-
-const wifiTrashDlg = document.getElementById('wifiTrashDlg');
-function openWifiTrash(){
-  renderWifiTrash();
-  openDialogSafe(wifiTrashDlg);
-}
-function renderWifiTrash(){
-  const trash = getWifiTrash();
-  const el = document.getElementById('wifiTrashList');
-  if(trash.length === 0){ el.innerHTML = '<p class="empty">Corbeille Vente WiFi vide.</p>'; return; }
-  el.innerHTML = trash.map(r => `
-    <div class="item wifiRowCard">
-      <div class="wifiRowTop">
-        <div class="name" style="flex:1 1 auto; min-width:0;">${escHtml(r.designation)}</div>
-        <div style="display:flex; gap:6px; flex:0 0 auto;">
-          <button class="wifiMiniBtn edit" onclick="wifiRestoreRow('${r.id}')" title="Restaurer">♻️</button>
-          <button class="wifiMiniBtn del" onclick="wifiPermanentDelete('${r.id}')" title="Supprimer définitivement">🗑</button>
-        </div>
+  },
+  openEditPerson(id){
+    const p = person(id);
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Modifier ${p.name}</div>
+      <div class="field"><label>Nom</label><input type="text" id="ep-name" value="${p.name.replace(/"/g,'&quot;')}"></div>
+      <div class="field">
+        <label>Statut</label>
+        <select id="ep-active"><option value="true" ${p.active!==false?'selected':''}>Actif</option><option value="false" ${p.active===false?'selected':''}>Inactif</option></select>
       </div>
-      <div class="ref">Prix ${Number(r.prix || 0).toLocaleString('fr-FR')} GNF · Reçu ${r.ticketRecu || 0} · Vendu ${r.vendu || 0} · Montant ${Number(r.montant || 0).toLocaleString('fr-FR')} GNF</div>
-    </div>
-  `).join('');
-}
-function wifiRestoreRow(id){
-  const trash = getWifiTrash();
-  const idx = trash.findIndex(x => x.id === id);
-  if(idx === -1) return;
-  const [restored] = trash.splice(idx, 1);
-  delete restored.deletedAt;
-  saveWifiTrash(trash);
-  const rows = getWifiRows();
-  rows.push(restored);
-  saveWifiRows(rows);
-  queueWifiRowUpdate(restored.id, {deleted_at: null});
-  renderWifiTrash();
-  renderWifiList();
-  renderWifiSettingsRows();
-}
-async function wifiPermanentDelete(id){
-  const trash = getWifiTrash();
-  const r = trash.find(x => x.id === id);
-  if(!r) return;
-  const step1 = confirm(`⚠️ Supprimer définitivement "${r.designation}" de la corbeille Vente WiFi ?\n\nAction IRRÉVERSIBLE.`);
-  if(!step1) return;
-  const step2 = confirm(`Confirme une seconde fois la suppression définitive de "${r.designation}".`);
-  if(!step2) return;
-  if(hasPin()){
-    const ok = await askPin(`Code PIN requis pour supprimer définitivement "${r.designation}" (Vente WiFi) :`);
-    if(!ok) return;
-  }
-  saveWifiTrash(trash.filter(x => x.id !== id));
-  queueWifiRowDelete(id);
-  renderWifiTrash();
-}
+      <button class="btn btn-primary" onclick="UI.saveEditPerson('${p.id}')">Enregistrer</button>
+      <div class="help-text" style="margin-top:10px;">Une personne ayant des opérations enregistrées ne peut pas être supprimée — seulement désactivée.</div>
+    `);
+  },
+  async saveEditPerson(id){
+    const p = person(id);
+    const name = document.getElementById('ep-name').value.trim();
+    if(!name) return;
+    const active = document.getElementById('ep-active').value==='true';
+    try{
+      const { error } = await sb.from('people').update({name, active}).eq('id', id);
+      if(error) throw error;
+      p.name = name;
+      p.active = active;
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    this.closeSheet(); this.renderSituation(); this.renderPeople();
+    toast('Personne mise à jour');
+  },
 
-// --- Clôture de vente : archive dans l'historique daté, remet seulement les compteurs à zéro ---
-// Désignations, prix, historique et corbeille ne sont JAMAIS effacés par une clôture.
+  /* ---------- HISTORIQUE ---------- */
+  histRowHtml(op){
+    const meta = OP_META[op.opType];
+    const p = op.personId ? person(op.personId) : null;
+    const tt = op.typeId ? ticketType(op.typeId) : null;
+    const d = new Date(op.ts);
+    const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    let title = meta.label;
+    if(op.opType==='CORRECTION'){
+      const target = DB.operations.find(o=>o.id===op.correctsOpId);
+      title = `Correction — ${target?OP_META[target.opType].label:'?'}`;
+    }
+    let sub = [p?p.name:'Moi', tt?tt.name:null, dateStr].filter(Boolean).join(' · ');
+    let qtyStr = op.opType==='PAIEMENT' ? fmtGNF(op.amount) : (op.qty!=null ? (op.qty>=0?'+':'') + fmt(op.qty) : '');
+    if(op.opType==='VENTE') qtyStr = `${op.qty} · ${fmtGNF(op.amount)}`;
+    return `
+      <div class="hist-row">
+        <div class="hist-badge" style="background:${meta.color}"></div>
+        <div class="hist-main">
+          <div class="hist-title">${title}</div>
+          <div class="hist-sub">${sub}${op.comment?' · '+op.comment:''}</div>
+        </div>
+        <div class="hist-qty">${qtyStr}</div>
+      </div>`;
+  },
+  renderHistory(){
+    const q = (document.getElementById('hist-search').value||'').toLowerCase();
+    const filters = document.getElementById('hist-filters');
+    const filterDefs = [
+      {id:'all', label:'Tout'},
+      {id:'today', label:"Aujourd'hui"},
+      {id:'week', label:'Cette semaine'},
+      {id:'month', label:'Ce mois'},
+    ];
+    filters.innerHTML = filterDefs.map(f=>`<button class="filter-pill ${this.histFilter===f.id?'active':''}" onclick="UI.setHistFilter('${f.id}')">${f.label}</button>`).join('');
 
-async function confirmWifiCloture(){
-  const rows = getWifiRows();
-  const totalRecu = rows.reduce((s,r) => s + (r.ticketRecu||0), 0);
-  const totalVendu = rows.reduce((s,r) => s + (r.vendu||0), 0);
-  const totalMontant = rows.reduce((s,r) => s + (r.montant||0), 0);
+    let ops = [...DB.operations].sort((a,b)=>b.ts.localeCompare(a.ts));
+    const now = new Date();
+    ops = ops.filter(op=>{
+      const d = new Date(op.ts);
+      if(this.histFilter==='today') return d.toDateString()===now.toDateString();
+      if(this.histFilter==='week'){ const diff=(now-d)/86400000; return diff<=7; }
+      if(this.histFilter==='month') return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+      return true;
+    });
+    if(q){
+      ops = ops.filter(op=>{
+        const p = op.personId?person(op.personId):null;
+        const tt = op.typeId?ticketType(op.typeId):null;
+        const hay = [p?p.name:'', tt?tt.name:'', op.comment||'', OP_META[op.opType].label].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    const list = document.getElementById('hist-list');
+    list.innerHTML = ops.length ? ops.slice(0,150).map(op=>this.histRowHtml(op)).join('') : `<div class="empty">Aucune opération trouvée.</div>`;
+  },
+  setHistFilter(id){ this.histFilter=id; this.renderHistory(); },
 
-  if(rows.length === 0){
-    alert('Aucune désignation à clôturer.');
-    return;
-  }
-  if(totalRecu === 0 && totalVendu === 0 && totalMontant === 0){
-    alert("Rien à clôturer pour l'instant : aucune donnée n'a encore été enregistrée sur cette période.");
-    return;
-  }
-
-  const step1 = confirm(
-    `Clôturer la vente WiFi ?\n\n` +
-    `Total reçu : ${totalRecu}\nTotal vendu : ${totalVendu}\nMontant : ${totalMontant.toLocaleString('fr-FR')} GNF\n\n` +
-    `Cette période sera archivée dans l'Historique (avec la date), puis les compteurs (reçu / vendu / montant) seront remis à zéro pour repartir sur une nouvelle période.\n` +
-    `Les désignations et les prix restent inchangés — rien n'est supprimé.`
-  );
-  if(!step1) return;
-
-  if(hasPin()){
-    const ok = await askPin('Code PIN requis pour clôturer la vente WiFi :');
-    if(!ok) return;
-  }
-
-  const history = getWifiHistory();
-  const historyEntry = {
-    date: new Date().toISOString(),
-    rows: rows.map(r => ({designation:r.designation, prix:r.prix||0, ticketRecu:r.ticketRecu||0, vendu:r.vendu||0, montant:r.montant||0})),
-    totalRecu, totalVendu, totalMontant
-  };
-  history.push(historyEntry);
-  saveWifiHistory(history);
-  queueWifiHistoryInsert({
-    date: historyEntry.date, rows: historyEntry.rows,
-    total_recu: totalRecu, total_vendu: totalVendu, total_montant: totalMontant
-  });
-
-  rows.forEach(r => {
-    r.ticketRecu = 0; r.vendu = 0; r.montant = 0;
-    queueWifiRowUpdate(r.id, {ticket_recu: 0, vendu: 0, montant: 0});
-  });
-  saveWifiRows(rows);
-
-  renderWifiList();
-  alert('Vente WiFi clôturée et archivée dans l\'Historique ✅ Les compteurs sont repartis à zéro.');
-}
-
-const wifiHistoryDlg = document.getElementById('wifiHistoryDlg');
-function openWifiHistory(){
-  const history = getWifiHistory().slice().reverse();
-  const el = document.getElementById('wifiHistoryList');
-  if(history.length === 0){
-    el.innerHTML = '<p class="empty">Aucune clôture enregistrée pour le moment.</p>';
-  } else {
-    el.innerHTML = history.map(h => {
-      const d = new Date(h.date).toLocaleString('fr-FR');
-      const lines = h.rows.map(r => `${escHtml(r.designation)} : reçu ${r.ticketRecu}, vendu ${r.vendu}, ${Number(r.montant).toLocaleString('fr-FR')} GNF`).join('<br>');
+  /* ---------- RAPPORTS ---------- */
+  renderRapports(){
+    const summary = stockSummary();
+    const el = document.getElementById('rapport-content');
+    el.innerHTML = summary.map(s=>{
+      const perPerson = DB.people.map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant})).filter(x=>x.restant>0);
+      const explained = s.disponible + perPerson.reduce((a,x)=>a+x.restant,0) + s.venduDirect + s.venduPersonnes + s.pertes + s.annulations;
+      const ok = explained === s.initial;
       return `
-        <div class="item wifiRowCard">
-          <div class="name">${d}</div>
-          <div class="ref">${lines}</div>
-          <div class="price" style="font-weight:700;">Total période : ${h.totalVendu} vendu(s) · ${Number(h.totalMontant).toLocaleString('fr-FR')} GNF</div>
-        </div>
-      `;
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <strong>${s.type.name}</strong>
+            <span class="chip ${ok?'clear':'due'}">${ok?'Cohérent':'Écart : '+(s.initial-explained)}</span>
+          </div>
+          <div class="money-row"><span class="label">Reçus du fournisseur</span><span class="amount">${fmt(s.initial)}</span></div>
+          <div class="money-row"><span class="label">Chez moi</span><span class="amount">${fmt(s.disponible)}</span></div>
+          ${perPerson.map(x=>`<div class="money-row"><span class="label">Chez ${x.p.name}</span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}
+          <div class="money-row"><span class="label">Vendus</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
+          <div class="money-row"><span class="label">Retournés</span><span class="amount">${fmt(s.retours)}</span></div>
+          <div class="money-row"><span class="label">Perdus</span><span class="amount">${fmt(s.pertes)}</span></div>
+          <div class="money-row"><span class="label">Annulés</span><span class="amount">${fmt(s.annulations)}</span></div>
+        </div>`;
     }).join('');
-  }
-  openDialogSafe(wifiHistoryDlg);
-}
+  },
 
-// --- Paramètres de la page (isolés : titre, sous-titre, désignations, backup) ---
+  exportBackup(){
+    const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date().toISOString().slice(0,10);
+    a.href = url; a.download = `carnet-wifi-sauvegarde-${d}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    toast('Sauvegarde exportée');
+  },
 
-const wifiSettingsDlg = document.getElementById('wifiSettingsDlg');
-
-function openWifiSettings(){
-  document.getElementById('wifiTitleLabel').textContent = getWifiTitle();
-  document.getElementById('wifiSubtitleLabel').textContent = getWifiSubtitle();
-  renderWifiSettingsRows();
-  openDialogSafe(wifiSettingsDlg);
-}
-function renderWifiSettingsRows(){
-  const rows = getWifiRows();
-  const el = document.getElementById('wifiSettingsRowsList');
-  if(!el) return;
-  if(rows.length === 0){ el.innerHTML = '<p style="font-size:12px; color:var(--muted);">Aucune désignation.</p>'; return; }
-  el.innerHTML = rows.map((r, idx) => `
-    <div class="wifiSettingsRow">
-      <span style="font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 1 auto; min-width:0;">${idx + 1}. ${escHtml(r.designation)} <span style="color:var(--muted); font-size:11px;">(${Number(r.prix||0).toLocaleString('fr-FR')} GNF)</span></span>
-      <div style="display:flex; gap:8px; flex-shrink:0;">
-        <button onclick="openWifiEditRow('${r.id}')" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:14px;">✎</button>
-        <button onclick="wifiDeleteRow('${r.id}')" style="background:none; border:none; color:var(--red); cursor:pointer; font-size:14px;">✕</button>
+  /* ---------- PARAMETRES ---------- */
+  renderParametres(){
+    const prices = document.getElementById('settings-prices');
+    prices.innerHTML = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>`
+      <div class="settings-row">
+        <div><div class="st-label">${tt.name}</div><div class="st-sub">Prix appliqué aux nouvelles ventes</div></div>
+        <input type="number" value="${tt.price}" min="0" onchange="UI.updatePrice('${tt.id}', this.value)">
       </div>
-    </div>
-  `).join('');
+    `).join('');
+
+    const types = document.getElementById('settings-types');
+    types.innerHTML = DB.ticketTypes.map(tt=>`
+      <div class="settings-row">
+        <div><div class="st-label">${tt.name}</div><div class="st-sub">${tt.active!==false?'Actif':'Désactivé'}</div></div>
+        <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;" onclick="UI.toggleType('${tt.id}')">${tt.active!==false?'Désactiver':'Activer'}</button>
+      </div>
+    `).join('');
+  },
+  async updatePrice(id, val){
+    const tt = ticketType(id);
+    const price = Math.max(0, parseInt(val)||0);
+    try{
+      const { error } = await sb.from('ticket_types').update({price}).eq('id', id);
+      if(error) throw error;
+      tt.price = price;
+      toast('Prix mis à jour — les anciennes ventes sont conservées');
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); }
+  },
+  async toggleType(id){
+    const tt = ticketType(id);
+    const active = tt.active===false ? true : false;
+    try{
+      const { error } = await sb.from('ticket_types').update({active}).eq('id', id);
+      if(error) throw error;
+      tt.active = active;
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    this.renderParametres(); this.renderDashboard(); this.renderStock();
+  },
+  openAddTicketType(){
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Nouveau type de ticket</div>
+      <div class="field"><label>Nom</label><input type="text" id="tt-name" placeholder="Ex. 15 jours"></div>
+      <div class="field"><label>Prix (GNF)</label><input type="number" id="tt-price" min="0" placeholder="0"></div>
+      <div class="field"><label>Stock initial (optionnel)</label><input type="number" id="tt-initial" min="0" placeholder="0"></div>
+      <div id="tt-error"></div>
+      <button class="btn btn-primary" onclick="UI.saveTicketType()">Créer</button>
+    `);
+  },
+  async saveTicketType(){
+    const name = document.getElementById('tt-name').value.trim();
+    const price = Math.max(0, parseInt(document.getElementById('tt-price').value)||0);
+    const initial = Math.max(0, parseInt(document.getElementById('tt-initial').value)||0);
+    const errEl = document.getElementById('tt-error');
+    if(!name){ toast('Nom requis'); return; }
+    const code = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').slice(0,30) + '-' + Date.now().toString(36).slice(-5);
+    try{
+      const { data, error } = await sb.from('ticket_types').insert({code, name, price, active:true}).select();
+      if(error) throw error;
+      DB.ticketTypes.push({id:data[0].id, name:data[0].name, price:Number(data[0].price), active:data[0].active});
+      if(initial>0){
+        await insertOp('stock_receipts', {ticket_type_id: data[0].id, quantity: initial, comment:'Stock initial'}, mapReceipt);
+      }
+    }catch(e){
+      errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
+      return;
+    }
+    this.closeSheet(); this.renderParametres(); this.renderStock(); this.renderDashboard();
+    toast('Type de ticket créé');
+  },
+
+  /* ---------- SHEETS ---------- */
+  openSheet(html){
+    document.getElementById('sheet').innerHTML = html;
+    document.getElementById('overlay').classList.add('active');
+  },
+  closeSheet(){
+    document.getElementById('overlay').classList.remove('active');
+  },
+
+  /* ---------- NEW OPERATION FLOW ---------- */
+  openNewOp(prefPersonId){
+    this.newOp = {personId: prefPersonId||null};
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Nouvelle opération</div>
+      <div class="op-grid">
+        <button class="op-tile" onclick="UI.opStep1('REMISE')"><span class="op-icon">📦</span><span class="op-label">Remise</span><span class="op-desc">Donner des tickets</span></button>
+        <button class="op-tile" onclick="UI.opStep1('VENTE')"><span class="op-icon">💳</span><span class="op-label">Vente</span><span class="op-desc">Enregistrer une vente</span></button>
+        <button class="op-tile" onclick="UI.opStep1('RETOUR')"><span class="op-icon">↩</span><span class="op-label">Retour</span><span class="op-desc">Tickets rendus</span></button>
+        <button class="op-tile" onclick="UI.opStep1('PERTE')"><span class="op-icon">⚠</span><span class="op-label">Perte</span><span class="op-desc">Tickets perdus</span></button>
+        <button class="op-tile" onclick="UI.opStep1('ANNULATION')"><span class="op-icon">✕</span><span class="op-label">Annulation</span><span class="op-desc">Tickets inutilisables</span></button>
+        <button class="op-tile" onclick="UI.opStep1('PAIEMENT')"><span class="op-icon">💰</span><span class="op-label">Paiement</span><span class="op-desc">Argent versé</span></button>
+        <button class="op-tile" onclick="UI.opStep1('RECEPTION')"><span class="op-icon">🚚</span><span class="op-label">Réception</span><span class="op-desc">Du fournisseur</span></button>
+        <button class="op-tile" onclick="UI.openCorrection()"><span class="op-icon">✎</span><span class="op-label">Correction</span><span class="op-desc">Corriger une opération</span></button>
+      </div>
+    `);
+  },
+
+  opStep1(opType){
+    this.newOp.opType = opType;
+    const needsPerson = opType!=='RECEPTION';
+    if(needsPerson){
+      this.renderPersonPicker(opType);
+    } else {
+      this.renderTypePicker(opType);
+    }
+  },
+  renderPersonPicker(opType){
+    const activePeople = DB.people.filter(p=>p.active!==false);
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${OP_META[opType].label} — Choisir la personne</div>
+      ${opType==='VENTE' ? `<button class="btn btn-outline" style="margin-bottom:10px;" onclick="UI.selectPerson(null)">Vente directe (moi-même)</button>` : ''}
+      <div class="field"><input type="text" id="pp-search" placeholder="Rechercher..." oninput="UI.filterPersonPicker(this.value)"></div>
+      <div id="pp-list" style="max-height:38vh;overflow-y:auto;">
+        ${activePeople.map(p=>`<div class="person-row" onclick="UI.selectPerson('${p.id}')"><div class="person-name">${p.name}</div></div>`).join('') || '<div class="empty">Aucune personne. Ajoutez-en une avant de continuer.</div>'}
+      </div>
+    `);
+  },
+  filterPersonPicker(q){
+    q=q.toLowerCase();
+    const activePeople = DB.people.filter(p=>p.active!==false && p.name.toLowerCase().includes(q));
+    document.getElementById('pp-list').innerHTML = activePeople.map(p=>`<div class="person-row" onclick="UI.selectPerson('${p.id}')"><div class="person-name">${p.name}</div></div>`).join('') || '<div class="empty">Aucun résultat.</div>';
+  },
+  selectPerson(personId){
+    this.newOp.personId = personId;
+    if(this.newOp.opType==='PAIEMENT'){ this.renderPaymentForm(); }
+    else { this.renderTypePicker(this.newOp.opType); }
+  },
+
+  renderTypePicker(opType){
+    const types = DB.ticketTypes.filter(t=>t.active!==false);
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${OP_META[opType].label} — Type de ticket</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${types.map(tt=>`<button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="UI.selectType('${tt.id}')">${tt.name} <span style="margin-left:auto;color:var(--ink-soft);font-size:12px;">${tt.price?fmtGNF(tt.price):''}</span></button>`).join('')}
+      </div>
+    `);
+  },
+  selectType(typeId){
+    this.newOp.typeId = typeId;
+    this.renderQtyForm();
+  },
+
+  renderQtyForm(){
+    const op = this.newOp;
+    const tt = ticketType(op.typeId);
+    const p = op.personId ? person(op.personId) : null;
+    let maxAvail = null;
+    if(op.opType==='VENTE' && p){ maxAvail = personTypeStats(p.id, tt.id).restant; }
+    if(op.opType==='RETOUR' && p){ maxAvail = personTypeStats(p.id, tt.id).restant; }
+    if(op.opType==='PERTE' && p){ maxAvail = personTypeStats(p.id, tt.id).restant; }
+
+    const context = p ? p.name : 'Moi';
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${OP_META[op.opType].label} — ${tt.name}</div>
+      <div class="sheet-sub">${context}${maxAvail!=null ? ' · disponible : '+fmt(maxAvail) : ''}</div>
+      <div class="field">
+        <label>Quantité</label>
+        <input type="number" id="op-qty" min="1" ${maxAvail!=null?'max="'+maxAvail+'"':''} placeholder="0" oninput="UI.updateQtyPreview()">
+      </div>
+      ${op.opType==='VENTE' ? `<div class="field"><label>Prix unitaire (GNF)</label><input type="number" id="op-price" min="0" value="${tt.price}"></div>` : ''}
+      ${(op.opType==='PERTE'||op.opType==='ANNULATION') ? `<div class="field"><label>Raison</label><input type="text" id="op-reason" placeholder="Ex. carte endommagée"></div>` : ''}
+      <div class="field"><label>Commentaire (optionnel)</label><textarea id="op-comment"></textarea></div>
+      <div id="op-preview" class="help-text"></div>
+      <div id="op-error"></div>
+      <button class="btn btn-primary" style="margin-top:6px;" onclick="UI.submitOp()">Enregistrer</button>
+    `);
+    setTimeout(()=>document.getElementById('op-qty').focus(),150);
+  },
+  updateQtyPreview(){
+    const op=this.newOp; const tt=ticketType(op.typeId);
+    const qty = parseInt(document.getElementById('op-qty').value)||0;
+    if(op.opType==='VENTE'){
+      const price = parseInt(document.getElementById('op-price')?.value)||tt.price;
+      document.getElementById('op-preview').textContent = qty>0 ? `Total : ${fmtGNF(qty*price)}` : '';
+    }
+  },
+  async submitOp(){
+    const op = this.newOp;
+    const tt = ticketType(op.typeId);
+    const qty = parseInt(document.getElementById('op-qty').value)||0;
+    const comment = document.getElementById('op-comment')?.value.trim() || null;
+    const reason = document.getElementById('op-reason')?.value.trim() || null;
+    const errEl = document.getElementById('op-error');
+    errEl.innerHTML='';
+
+    if(qty<=0){ errEl.innerHTML = `<div class="error-text">La quantité doit être supérieure à zéro.</div>`; return; }
+
+    if(op.personId && ['VENTE','RETOUR','PERTE'].includes(op.opType)){
+      const avail = personTypeStats(op.personId, op.typeId).restant;
+      if(qty>avail){ errEl.innerHTML = `<div class="error-text">Impossible : seulement ${fmt(avail)} tickets disponibles chez cette personne.</div>`; return; }
+    }
+    if(op.opType==='RECEPTION' === false && op.personId===null && op.opType==='VENTE'){
+      // vente directe: check my stock
+      const s = stockSummary().find(x=>x.type.id===op.typeId);
+      if(qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s.disponible)} disponibles).</div>`; return; }
+    }
+    if(op.opType==='REMISE'){
+      const s = stockSummary().find(x=>x.type.id===op.typeId);
+      if(qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s.disponible)} disponibles).</div>`; return; }
+    }
+
+    let amount=null, unitPrice=null;
+    if(op.opType==='VENTE'){
+      unitPrice = parseInt(document.getElementById('op-price').value)||tt.price;
+      amount = qty*unitPrice;
+    }
+
+    try{
+      if(op.opType==='RECEPTION'){
+        await insertOp('stock_receipts', {ticket_type_id: op.typeId, quantity: qty, comment}, mapReceipt);
+      } else if(op.opType==='VENTE'){
+        await insertOp('sales', {person_id: op.personId||null, ticket_type_id: op.typeId, quantity: qty, unit_price: unitPrice, comment}, mapSale);
+      } else {
+        // REMISE / RETOUR / PERTE / ANNULATION
+        await insertOp('stock_movements', {movement_type: op.opType, ticket_type_id: op.typeId, person_id: op.personId||null, quantity: qty, comment, reason}, mapMovement);
+      }
+    }catch(e){
+      errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
+      return;
+    }
+    this.closeSheet();
+    this.renderAll();
+    if(this.currentView==='situation') this.renderSituation();
+    toast(`${OP_META[op.opType].label} enregistrée`);
+  },
+
+  renderPaymentForm(){
+    const p = person(this.newOp.personId);
+    const m = personMoney(p.id);
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Paiement — ${p.name}</div>
+      <div class="sheet-sub">Reste à payer : ${fmtGNF(m.reste)}</div>
+      <div class="field"><label>Montant versé (GNF)</label><input type="number" id="pay-amount" min="1" placeholder="0"></div>
+      <div class="field"><label>Commentaire (optionnel)</label><textarea id="pay-comment"></textarea></div>
+      <div id="pay-error"></div>
+      <button class="btn btn-primary" onclick="UI.submitPayment('${p.id}')">Enregistrer le paiement</button>
+    `);
+  },
+  async submitPayment(personId){
+    const amount = parseInt(document.getElementById('pay-amount').value)||0;
+    const comment = document.getElementById('pay-comment').value.trim()||null;
+    const errEl = document.getElementById('pay-error');
+    if(amount<=0){ errEl.innerHTML=`<div class="error-text">Montant invalide.</div>`; return; }
+    try{
+      await insertOp('payments', {person_id: personId, amount, comment}, mapPayment);
+    }catch(e){
+      errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
+      return;
+    }
+    this.closeSheet(); this.renderAll();
+    if(this.currentView==='situation') this.renderSituation();
+    toast('Paiement enregistré');
+  },
+
+  /* ---------- CORRECTION ---------- */
+  openCorrection(){
+    const recent = [...DB.operations].filter(o=>o.opType!=='CORRECTION').sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,30);
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Corriger une opération</div>
+      <div class="field"><input type="text" id="cor-search" placeholder="Rechercher l'opération à corriger..." oninput="UI.filterCorrectionList(this.value)"></div>
+      <div id="cor-list" style="max-height:44vh;overflow-y:auto;">
+        ${recent.map(op=>this.correctionRowHtml(op)).join('')}
+      </div>
+    `);
+  },
+  correctionRowHtml(op){
+    return `<div class="hist-row" style="cursor:pointer;" onclick="UI.selectOpToCorrect('${op.id}')">${this.histRowHtml(op)}</div>`.replace('<div class="hist-row">','<div>');
+  },
+  filterCorrectionList(q){
+    q=q.toLowerCase();
+    const matches = DB.operations.filter(o=>o.opType!=='CORRECTION').filter(op=>{
+      const p = op.personId?person(op.personId):null;
+      const tt = op.typeId?ticketType(op.typeId):null;
+      const hay=[p?p.name:'',tt?tt.name:'',op.comment||'',OP_META[op.opType].label].join(' ').toLowerCase();
+      return hay.includes(q);
+    }).sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,40);
+    document.getElementById('cor-list').innerHTML = matches.map(op=>this.correctionRowHtml(op)).join('') || '<div class="empty">Aucun résultat.</div>';
+  },
+  selectOpToCorrect(opId){
+    const target = DB.operations.find(o=>o.id===opId);
+    const meta = OP_META[target.opType];
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Correction — ${meta.label}</div>
+      <div class="sheet-sub">Opération d'origine : ${target.qty!=null?fmt(target.qty)+' unités':fmtGNF(target.amount)} · ${new Date(target.ts).toLocaleString('fr-FR')}</div>
+      <div class="field">
+        <label>Ajustement ${target.opType==='PAIEMENT'?'(GNF, + ou -)':'(quantité, + ou -)'}</label>
+        <input type="number" id="cor-delta" placeholder="Ex. -2 ou +2">
+      </div>
+      <div class="field"><label>Raison de la correction</label><input type="text" id="cor-reason" placeholder="Obligatoire"></div>
+      <div id="cor-error"></div>
+      <button class="btn btn-primary" onclick="UI.submitCorrection('${target.id}')">Valider la correction</button>
+    `);
+  },
+  async submitCorrection(targetId){
+    const target = DB.operations.find(o=>o.id===targetId);
+    const delta = parseInt(document.getElementById('cor-delta').value);
+    const reason = document.getElementById('cor-reason').value.trim();
+    const errEl = document.getElementById('cor-error');
+    if(!delta){ errEl.innerHTML = `<div class="error-text">Indiquez un ajustement différent de zéro.</div>`; return; }
+    if(!reason){ errEl.innerHTML = `<div class="error-text">La raison est obligatoire.</div>`; return; }
+
+    const targetTableByOpType = {
+      RECEPTION:'stock_receipts', REMISE:'stock_movements', RETOUR:'stock_movements',
+      PERTE:'stock_movements', ANNULATION:'stock_movements', VENTE:'sales', PAIEMENT:'payments'
+    };
+    const targetTable = targetTableByOpType[target.opType];
+    const deltaQuantity = target.opType==='PAIEMENT' ? null : delta;
+    const deltaAmount = target.opType==='PAIEMENT' ? delta : (target.opType==='VENTE' ? delta*(target.unitPrice||0) : null);
+
+    try{
+      await insertOp('corrections', {
+        target_table: targetTable, target_id: target.id,
+        delta_quantity: deltaQuantity, delta_amount: deltaAmount, reason
+      }, mapCorrection);
+    }catch(e){
+      errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
+      return;
+    }
+    this.closeSheet(); this.renderAll();
+    if(this.currentView==='situation') this.renderSituation();
+    toast('Correction enregistrée');
+  },
+};
+
+const OP_META = {
+  RECEPTION:  {label:'Réception', color:'#2F6F5E'},
+  REMISE:     {label:'Remise', color:'#1B2A4A'},
+  VENTE:      {label:'Vente', color:'#C97A2B'},
+  RETOUR:     {label:'Retour', color:'#5B7DB1'},
+  PERTE:      {label:'Perte', color:'#B23A34'},
+  ANNULATION: {label:'Annulation', color:'#8A8A8A'},
+  CORRECTION: {label:'Correction', color:'#7A4EAB'},
+  PAIEMENT:   {label:'Paiement', color:'#2F6F5E'},
+};
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-function editWifiTitle(){
-  const v = prompt('Titre de la page Vente WiFi :', getWifiTitle());
-  if(v === null) return;
-  const t = v.trim();
-  if(!t) return alert('Titre invalide.');
-  setWifiTitle(t);
-  queueWifiMeta();
-  refreshWifiHeader();
-  openWifiSettings();
-}
-function editWifiSubtitle(){
-  const v = prompt('Sous-titre (ex: nom du fournisseur / réseau) :', getWifiSubtitle());
-  if(v === null) return;
-  setWifiSubtitle(v.trim());
-  queueWifiMeta();
-  refreshWifiHeader();
-  openWifiSettings();
-}
+document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') UI.closeSheet(); });
 
-// --- Sauvegarde / restauration dédiées à Vente WiFi (isolées du backup principal) ---
+// Initialisation différée : déclenchée par openWifiApp() lors du premier accès à cette section,
+// pas au chargement de Stock LCD (évite un appel Supabase inutile si la section n'est jamais ouverte).
+window.__wifiInitialized = false;
+window.initWifiApp = function(){
+  if(window.__wifiInitialized) return;
+  window.__wifiInitialized = true;
+  UI.init();
+};
 
-const wifiBackupDlg = document.getElementById('wifiBackupDlg');
-const wifiRestoreDlg = document.getElementById('wifiRestoreDlg');
-
-function openWifiBackup(){
-  const data = {
-    title: getWifiTitle(),
-    subtitle: getWifiSubtitle(),
-    rows: getWifiRows(),
-    trash: getWifiTrash(),
-    history: getWifiHistory()
-  };
-  document.getElementById('wifiBackupText').value = JSON.stringify(data);
-  wifiSettingsDlg.close();
-  openDialogSafe(wifiBackupDlg);
-}
-async function copyWifiBackupText(){
-  const ok = await copyToClipboard(document.getElementById('wifiBackupText').value);
-  alert(ok ? 'Sauvegarde Vente WiFi copiée !' : "Impossible de copier automatiquement — sélectionne le texte et copie-le manuellement.");
-}
-function openWifiRestore(){
-  document.getElementById('wifiRestoreText').value = '';
-  wifiSettingsDlg.close();
-  openDialogSafe(wifiRestoreDlg);
-}
-function doWifiRestore(){
-  const raw = document.getElementById('wifiRestoreText').value.trim();
-  if(!raw) return alert('Colle d\'abord le texte de sauvegarde Vente WiFi.');
-  let data;
-  try{ data = JSON.parse(raw); }catch(e){ return alert('Texte de sauvegarde invalide : ce n\'est pas un texte JSON correctement formé.\n\nCause exacte : ' + e.message); }
-  if(!data || !Array.isArray(data.rows)) return alert('Texte de sauvegarde invalide : le champ "rows" (désignations) est absent ou mal formé dans ce texte.');
-  if(!confirm('Remplacer les données actuelles de Vente WiFi (désignations, corbeille, historique) par cette sauvegarde ?\nCette action ne touche à rien d\'autre dans l\'application.')) return;
-
-  if(data.title) setWifiTitle(String(data.title));
-  if(data.subtitle !== undefined) setWifiSubtitle(String(data.subtitle));
-  saveWifiRows(Array.isArray(data.rows) ? data.rows : []);
-  saveWifiTrash(Array.isArray(data.trash) ? data.trash : []);
-  saveWifiHistory(Array.isArray(data.history) ? data.history : []);
-
-  wifiRestoreDlg.close();
-  refreshWifiHeader();
-  renderWifiList();
-  alert('Restauration Vente WiFi terminée ✅');
-}
-
-// Démarrage de la synchronisation Vente WiFi + restauration de la page ouverte :
-// placé ici, à la toute fin du script, une fois TOUTES les constantes et fonctions
-// de cette section définies (appeler ceci plus tôt provoquait une erreur JS qui
-// bloquait entièrement Vente WiFi — Paramètres, Associés, Corbeille, Historique —
-// à chaque chargement de page).
-loadWifiFromSupabase();
-if(localStorage.getItem('stock_lcd_current_page') === 'wifi'){ openWifiPage(); }
 </script>
 </body>
 </html>
