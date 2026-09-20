@@ -202,6 +202,14 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 </head>
 <body>
 
+<div id="accountSelector" style="display:none; position:fixed; inset:0; z-index:10000; background:#0f1115; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px;">
+  <div style="font-size:22px; font-weight:700; color:#e8e9ec; margin-bottom:8px; text-align:center;">Choisis ton espace</div>
+  <button onclick="enterStock()" style="width:100%; max-width:320px; padding:22px; border-radius:16px; border:1px solid #2a2e38; background:#1a1d24; color:#e8e9ec; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">📦 Compte Stock</button>
+  <button onclick="enterReception()" style="width:100%; max-width:320px; padding:22px; border-radius:16px; border:1px solid #2a2e38; background:#1a1d24; color:#e8e9ec; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">📥 Compte Réception</button>
+</div>
+
+<div id="stockSpace" style="display:none;">
+
 <div class="stickyHeader">
   <h1>📦 Stock <span id="appTitleTab">LCD</span></h1>
   <div id="syncStatus" style="font-size:11px; color:var(--muted); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
@@ -223,9 +231,9 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
   <div class="headerBtns">
     <button class="actionBtn whatsapp" id="orderBtn" onclick="openOrderDlg()">📋 Commande fournisseur</button>
     <button class="actionBtn settings" onclick="openWifiApp()">📶 Wifi</button>
-    <button class="actionBtn settings" onclick="openReceptionApp()">📥 Récep.</button>
     <button class="actionBtn settings" onclick="openSettings()">⚙</button>
-    <button class="actionBtn settings" onclick="lockAppNow()" title="Déconnexion">🚪</button>
+    <button class="actionBtn settings" onclick="lockAppNow()" title="Verrouiller">🚪</button>
+    <button class="actionBtn settings" onclick="switchAccount()" title="Changer de compte">🔀</button>
   </div>
 
   <div class="globalTotals" id="globalTotals"></div>
@@ -243,6 +251,8 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 <div class="empty" id="emptyMsg" style="display:none;">Aucun article dans cette catégorie. Ajoutez-en un.</div>
 
 <button class="fab" id="fabAdd" onclick="openAdd()">+ Ajouter un article</button>
+
+</div>
 
 <div id="wifiOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--w-paper,#FAF7EF); overflow-y:auto;">
   <button onclick="closeWifiApp()" style="position:fixed; top:10px; right:10px; z-index:200; width:34px; height:34px; border-radius:50%; border:none; background:#1B2A4A; color:#fff; font-size:16px; cursor:pointer;">✕</button>
@@ -375,7 +385,7 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 </div>
 
 <div id="receptionOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#f5f5f0; overflow-y:auto;">
-  <button onclick="closeReceptionApp()" style="position:fixed; top:10px; right:10px; z-index:200; width:34px; height:34px; border-radius:50%; border:none; background:#1a1a1a; color:#fff; font-size:16px; cursor:pointer;">✕</button>
+  <button onclick="switchAccount()" title="Déconnexion — changer de compte" style="position:fixed; top:10px; right:10px; z-index:200; width:34px; height:34px; border-radius:50%; border:none; background:#1a1a1a; color:#fff; font-size:16px; cursor:pointer;">🔀</button>
   <div id="receptionView">
 
 <div class="app">
@@ -653,8 +663,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '5.0';
-const APP_UPDATED = '19/09/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.0';
+const APP_UPDATED = '20/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -1764,7 +1774,7 @@ function showLock(){
   setTimeout(() => document.getElementById('lockPinInput').focus(), 50);
 }
 
-// Ouvre la page Wifi (fusionnée dans ce même fichier — initialisation différée au premier accès).
+// Ouvre la page Wifi (accessible uniquement depuis l'espace Stock — inchangé).
 function openWifiApp(){
   if(typeof window.initWifiApp === 'function') window.initWifiApp();
   document.getElementById('wifiOverlay').style.display = 'block';
@@ -1773,14 +1783,44 @@ function closeWifiApp(){
   document.getElementById('wifiOverlay').style.display = 'none';
 }
 
-// Ouvre la page Réception (fusionnée dans ce même fichier — totalement indépendante du Stock
-// et du Wifi : tables Supabase dédiées, aucune donnée partagée). Initialisation différée au premier accès.
-function openReceptionApp(){
-  if(typeof window.initReceptionApp === 'function') window.initReceptionApp();
-  document.getElementById('receptionOverlay').style.display = 'block';
-}
-function closeReceptionApp(){
+// ============================================================
+// COMPTES / SESSION — Stock et Réception sont deux espaces réellement séparés.
+// Une session ne donne accès qu'à un seul compte à la fois (sessionStorage :
+// effacé à la fermeture de l'onglet ET par une déconnexion explicite).
+// Aucun bouton ni chemin ne relie plus Stock → Réception ou Réception → Stock :
+// le seul passage entre les deux est cette page de sélection.
+// ============================================================
+const SPACE_KEY = 'stock_lcd_active_space';
+
+function showAccountSelector(){
+  document.getElementById('accountSelector').style.display = 'flex';
+  document.getElementById('stockSpace').style.display = 'none';
   document.getElementById('receptionOverlay').style.display = 'none';
+}
+
+function enterStock(){
+  sessionStorage.setItem(SPACE_KEY, 'stock');
+  document.getElementById('accountSelector').style.display = 'none';
+  document.getElementById('stockSpace').style.display = '';
+  document.getElementById('receptionOverlay').style.display = 'none';
+  render();
+  loadFromSupabase();
+}
+
+function enterReception(){
+  sessionStorage.setItem(SPACE_KEY, 'reception');
+  document.getElementById('accountSelector').style.display = 'none';
+  document.getElementById('stockSpace').style.display = 'none';
+  document.getElementById('receptionOverlay').style.display = 'block';
+  if(typeof window.initReceptionApp === 'function') window.initReceptionApp();
+}
+
+// Déconnexion d'un compte : efface la session (empêche tout accès résiduel à l'autre
+// espace) et recharge la page entière — vide aussi toute donnée en mémoire des deux
+// espaces (items, DB Wifi, rows/priceDB Réception), pas seulement l'affichage.
+function switchAccount(){
+  sessionStorage.removeItem(SPACE_KEY);
+  location.reload();
 }
 
 function lockAppNow(){
@@ -1810,9 +1850,12 @@ async function forgotPin(){
   }
 }
 
-renderTabs();
-render();
-loadFromSupabase();
+renderTabs(); // préparation légère du DOM, sans requête réseau — sûr même si Stock n'est pas l'espace choisi
+
+const savedSpace = sessionStorage.getItem(SPACE_KEY);
+if(savedSpace === 'stock') enterStock();
+else if(savedSpace === 'reception') enterReception();
+else showAccountSelector();
 
 // Verrouillage automatique uniquement à l'ouverture RÉELLE de l'app (nouvel onglet/nouvelle session).
 // Un simple rafraîchissement ou une synchronisation dans la même session ne reverrouille plus l'app.
@@ -3168,7 +3211,7 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 
-// Initialisation différée : déclenchée par openReceptionApp() au premier accès à cette section,
+// Initialisation différée : déclenchée par enterReception() au premier accès à cet espace,
 // pas au chargement de Stock LCD (évite un appel Supabase inutile si jamais ouverte).
 window.__receptionInitialized = false;
 window.initReceptionApp = async function(){
