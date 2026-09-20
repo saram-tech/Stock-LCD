@@ -7,6 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,16 +26,16 @@
     padding:16px; max-width:560px; margin:0 auto;
     padding-bottom:90px;
   }
-  h1{font-size:20px; margin-bottom:16px; display:flex; align-items:center; gap:8px;}
-  .summaryRow{display:flex; gap:10px; margin-bottom:14px;}
+  h1{font-size:16px; margin:0 0 6px 0; display:flex; align-items:center; gap:6px;}
+  .summaryRow{display:flex; gap:8px; margin-bottom:8px;}
   .summary{
     flex:1; background:linear-gradient(135deg,#1a1d24,#22262f);
-    border:1px solid var(--border); border-radius:14px;
-    padding:16px; text-align:center;
+    border:1px solid var(--border); border-radius:12px;
+    padding:9px; text-align:center;
   }
-  .summary .big{font-size:36px; font-weight:700; color:var(--green);}
-  .summary.value .big{color:var(--gold); font-size:20px;}
-  .summary .label{color:var(--muted); font-size:12px; margin-top:4px;}
+  .summary .big{font-size:24px; font-weight:700; color:var(--green); line-height:1.1;}
+  .summary.value .big{color:var(--gold); font-size:16px;}
+  .summary .label{color:var(--muted); font-size:10.5px; margin-top:1px;}
   .orderNum{color:var(--muted); font-size:11px; font-weight:400;}
   .mcAmount{
     display:inline-block; margin-top:4px; padding:3px 10px;
@@ -49,18 +50,18 @@
     font-size:15px; margin-bottom:12px;
   }
   .globalTotals{
-    display:flex; flex-wrap:wrap; gap:6px 14px;
-    font-size:11px; color:var(--muted); margin:0 0 12px 0; padding:0 2px;
+    display:flex; flex-wrap:wrap; gap:4px 14px;
+    font-size:10.5px; color:var(--muted); margin:0 0 6px 0; padding:0 2px;
   }
   .globalTotals b{color:var(--text); font-weight:600;}
   .stickyHeader{
     position:sticky; top:0; z-index:15;
     background:var(--bg);
-    margin:0 -16px; padding:10px 16px 4px 16px;
+    margin:0 -16px; padding:6px 16px 2px 16px;
   }
-  .tabsBar{display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px;}
+  .tabsBar{display:flex; gap:8px; margin-bottom:8px; overflow-x:auto; padding-bottom:2px;}
   .tabBtn{
-    padding:8px 16px; border-radius:20px; border:1px solid var(--border);
+    padding:6px 14px; border-radius:20px; border:1px solid var(--border);
     background:var(--card); color:var(--muted); font-size:13px; font-weight:600;
     cursor:pointer; white-space:nowrap; flex-shrink:0;
   }
@@ -98,14 +99,14 @@
     white-space:nowrap; display:flex; align-items:center; gap:4px;
   }
   .sortBtn.active{border-color:var(--blue); color:var(--blue);}
-  .headerBtns{display:flex; gap:8px; margin-bottom:14px;}
+  .headerBtns{display:flex; gap:6px; margin-bottom:8px;}
   .actionBtn{
-    flex:1; padding:11px; border-radius:10px; border:1px solid var(--border);
-    background:var(--card); color:var(--text); font-size:13px; font-weight:600; cursor:pointer;
+    flex:1; padding:8px; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:12px; font-weight:600; cursor:pointer;
     display:flex; align-items:center; justify-content:center; gap:6px;
   }
   .actionBtn.whatsapp{border-color:#25d366; color:#25d366;}
-  .actionBtn.settings{width:44px; flex:0 0 44px; font-size:18px;}
+  .actionBtn.settings{width:38px; flex:0 0 38px; font-size:16px;}
   .settingsList{display:flex; flex-direction:column; gap:8px; margin-bottom:6px;}
   .settingsList button{
     width:100%; text-align:left; padding:12px 14px; border-radius:10px; border:1px solid var(--border);
@@ -185,13 +186,25 @@ table.ledger{width:100%;border-collapse:collapse;font-size:12.5px;}#wifiView tab
 @keyframes slideup{from{transform:translateY(24px);opacity:0.5;}to{transform:none;opacity:1;}}
 
 
+
+/* ===== Styles Réception (fusionnés, scopés sous #receptionView) ===== */
+#receptionView *{box-sizing:border-box;margin:0;padding:0}#receptionView{font-family:system-ui,sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px}#receptionView .app{max-width:900px;margin:0 auto;padding:1rem}#receptionView h1{font-size:17px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}#receptionView /* TABS */
+.tabs{display:flex;border:1px solid #ddd;border-radius:8px;width:fit-content;margin-bottom:1.25rem;overflow:hidden;background:#fff}#receptionView .tab{padding:8px 16px;font-size:13px;cursor:pointer;background:none;border:none;color:#666;font-family:inherit;white-space:nowrap}#receptionView .tab.active{background:#f0f0eb;color:#1a1a1a;font-weight:500}#receptionView /* BUTTONS */
+button{font-family:inherit;font-size:13px;padding:7px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer}#receptionView button:hover{background:#f5f5f0}#receptionView .btn-primary{background:#e8f0fe;color:#1a56db;border-color:#c3d4fd;font-weight:500}#receptionView .btn-primary:hover{background:#dce8fd}#receptionView .btn-success{background:#e3f9e5;color:#1a7a2e;border-color:#b5e8bb;font-weight:500}#receptionView .btn-green{background:#25d366;color:#fff;border:none;font-weight:500}#receptionView .btn-green:hover{background:#1fb859}#receptionView .btn-danger{color:#c0392b;border-color:#f5c6c2}#receptionView .btn-danger:hover{background:#fef2f2}#receptionView /* SUMMARY */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem}#receptionView .metric{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid #e8e8e8}#receptionView .metric .lbl{font-size:11px;color:#666;margin-bottom:3px}#receptionView .metric .val{font-size:19px;font-weight:500}#receptionView /* TABLE WRAPPER with fixed header */
+.tbl-outer{border:1px solid #ddd;border-radius:10px;overflow:hidden}#receptionView .tbl-scroll{overflow-y:auto;max-height:420px}#receptionView table{width:100%;border-collapse:collapse;table-layout:fixed}#receptionView colgroup col:nth-child(1){width:38px}#receptionView colgroup col:nth-child(2){width:48px}#receptionView colgroup col:nth-child(3){width:82px}#receptionView colgroup col:nth-child(4){width:160px}#receptionView colgroup col:nth-child(5){width:52px}#receptionView colgroup col:nth-child(6){width:110px}#receptionView colgroup col:nth-child(7){width:110px}#receptionView colgroup col:nth-child(8){width:32px}#receptionView /* STICKY HEADER */
+thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-align:left;font-size:11px;font-weight:500;color:#555;background:#f0f0eb;border-bottom:1px solid #ddd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#receptionView td{padding:6px 8px;border-bottom:1px solid #ececec;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}#receptionView tr:last-child td{border-bottom:none}#receptionView tbody tr:hover{background:#fafafa}#receptionView .rec-head td{background:#f7f7f4;font-weight:600;font-size:12px;color:#444;padding:6px 10px;border-bottom:1px solid #ddd;border-top:1px solid #ddd}#receptionView .rec-head:first-child td{border-top:none}#receptionView td input{font-size:12px;padding:2px 6px;height:26px;width:100%;border-radius:5px;border:1px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit}#receptionView td input:focus{outline:none;border-color:#4a90e2;background:#f8fbff}#receptionView td input.auto-filled{background:#f0fdf4;border-color:#86efac;color:#166534}#receptionView .total-row td{font-weight:600;background:#f0f0eb;font-size:13px;border-top:2px solid #ddd}#receptionView .num{text-align:right;font-variant-numeric:tabular-nums}#receptionView .del-btn{background:none;border:none;cursor:pointer;color:#aaa;font-size:15px;padding:2px;border-radius:4px;line-height:1;width:24px;height:24px;display:flex;align-items:center;justify-content:center}#receptionView .del-btn:hover{color:#c0392b;background:#fef2f2}#receptionView .row-bar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}#receptionView .row-bar input{font-size:12px;height:30px;padding:0 8px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit}#receptionView /* PASTE VIEW */
+.card{border:1px solid #ddd;border-radius:10px;padding:1rem 1.25rem;background:#fff;margin-bottom:1rem}#receptionView textarea{width:100%;min-height:130px;font-size:12px;font-family:'Courier New',monospace;border:1px solid #ddd;border-radius:8px;padding:10px;background:#f9f9f9;color:#1a1a1a;resize:vertical;line-height:1.5}#receptionView textarea::placeholder{color:#aaa}#receptionView /* DB TABLE */
+.db-wrap{border:1px solid #ddd;border-radius:8px;overflow:hidden;max-height:380px;overflow-y:auto}#receptionView .db-table{width:100%;border-collapse:collapse;font-size:12px}#receptionView .db-table thead{position:sticky;top:0;z-index:5}#receptionView .db-table th{padding:8px 10px;text-align:left;font-size:11px;font-weight:500;color:#555;background:#f0f0eb;border-bottom:1px solid #ddd}#receptionView .db-table td{padding:6px 10px;border-bottom:1px solid #ececec;color:#1a1a1a}#receptionView .db-table tr:last-child td{border-bottom:none}#receptionView .db-table tbody tr:hover{background:#fafafa}#receptionView .db-table td input{font-size:12px;padding:2px 6px;height:26px;width:100%;border-radius:5px;border:1px solid #ddd;background:#fff;font-family:inherit}#receptionView .status{font-size:12px;margin-left:auto}#receptionView .status.ok{color:#166534}#receptionView .status.err{color:#c0392b}#receptionView .hint{font-size:11px;color:#888;margin-top:8px;line-height:1.5}#receptionView .search-wrap{position:relative;margin-bottom:10px}#receptionView .search-wrap input{width:100%;padding-left:30px;font-size:13px;height:34px;border-radius:8px;border:1px solid #ddd;background:#fff}#receptionView .search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:15px;color:#aaa;pointer-events:none}#receptionView /* WHATSAPP MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;display:flex;align-items:center;justify-content:center}#receptionView .modal{background:#fff;border-radius:12px;padding:1.5rem;width:90%;max-width:500px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18)}#receptionView .modal h2{font-size:16px;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;gap:8px}#receptionView .modal-close{margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px;color:#888;padding:0 4px}#receptionView .wa-preview{background:#e9ffe8;border:1px solid #c3f0bd;border-radius:8px;padding:12px;font-size:12px;font-family:'Courier New',monospace;white-space:pre-wrap;color:#1a1a1a;max-height:300px;overflow-y:auto;line-height:1.6;margin-bottom:1rem}#receptionView .wa-btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
 </style>
 </head>
 <body>
 
 <div class="stickyHeader">
   <h1>📦 Stock <span id="appTitleTab">LCD</span></h1>
-  <div id="syncStatus" style="font-size:12px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+  <div id="syncStatus" style="font-size:11px; color:var(--muted); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
     <span id="syncDot" style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
     <span id="syncText">Connexion...</span>
   </div>
@@ -210,6 +223,7 @@ table.ledger{width:100%;border-collapse:collapse;font-size:12.5px;}#wifiView tab
   <div class="headerBtns">
     <button class="actionBtn whatsapp" id="orderBtn" onclick="openOrderDlg()">📋 Commande fournisseur</button>
     <button class="actionBtn settings" onclick="openWifiApp()">📶 Wifi</button>
+    <button class="actionBtn settings" onclick="openReceptionApp()">📥 Récep.</button>
     <button class="actionBtn settings" onclick="openSettings()">⚙</button>
     <button class="actionBtn settings" onclick="lockAppNow()" title="Déconnexion">🚪</button>
   </div>
@@ -356,6 +370,114 @@ table.ledger{width:100%;border-collapse:collapse;font-size:12.5px;}#wifiView tab
 </div>
 
 <div class="toast" id="toast"></div>
+
+  </div>
+</div>
+
+<div id="receptionOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#f5f5f0; overflow-y:auto;">
+  <button onclick="closeReceptionApp()" style="position:fixed; top:10px; right:10px; z-index:200; width:34px; height:34px; border-radius:50%; border:none; background:#1a1a1a; color:#fff; font-size:16px; cursor:pointer;">✕</button>
+  <div id="receptionView">
+
+<div class="app">
+<h1><i class="ti ti-package" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"></i>Gestion des Réceptions</h1>
+
+<div class="tabs">
+  <button class="tab active" id="tab-t" onclick="showTab('table')"><i class="ti ti-table" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Tableau</button>
+  <button class="tab" id="tab-p" onclick="showTab('paste')"><i class="ti ti-clipboard" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Coller WhatsApp</button>
+  <button class="tab" id="tab-d" onclick="showTab('db')"><i class="ti ti-database" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Base de prix</button>
+</div>
+
+<!-- PASTE -->
+<div id="view-paste" style="display:none">
+  <div class="card">
+    <textarea id="waInput" placeholder="Colle ici ton message WhatsApp copié...&#10;&#10;Exemple :&#10;[04/04 22:24] Boulliwel 3: 1ère réception &#10;1. Écran A04....1&#10;2. Écran A05....1"></textarea>
+    <div class="row-bar" style="margin-top:10px">
+      <button class="btn-primary" onclick="parseAndImport()"><i class="ti ti-wand" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Importer</button>
+      <button onclick="document.getElementById('waInput').value=''"><i class="ti ti-x" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>Vider</button>
+      <span class="status" id="parseStatus"></span>
+    </div>
+  </div>
+</div>
+
+<!-- BASE DE PRIX -->
+<div id="view-db" style="display:none">
+  <div class="card">
+    <div class="search-wrap"><i class="ti ti-search" aria-hidden="true"></i><input type="text" id="dbSearch" placeholder="Rechercher une pièce..." oninput="renderDB()"></div>
+    <div class="db-wrap">
+      <table class="db-table">
+        <thead><tr><th style="width:55%">Désignation</th><th style="width:35%">Prix unitaire GNF</th><th style="width:10%"></th></tr></thead>
+        <tbody id="dbTbody"></tbody>
+      </table>
+    </div>
+    <div class="row-bar" style="margin-top:12px">
+      <input type="text" id="dbNewDesig" placeholder="Nom de la pièce" style="width:200px">
+      <input type="number" id="dbNewPrix" placeholder="Prix GNF" min="0" style="width:120px">
+      <button class="btn-success" onclick="addDBEntry()"><i class="ti ti-plus" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>Ajouter</button>
+      <span class="status" id="dbStatus"></span>
+    </div>
+    <p class="hint"><i class="ti ti-info-circle" aria-hidden="true" style="font-size:13px;vertical-align:-2px;margin-right:3px"></i>Insensible aux majuscules/minuscules et aux accents. Les prix s'appliquent automatiquement à l'import et à l'ajout.</p>
+  </div>
+</div>
+
+<!-- TABLEAU -->
+<div id="view-table" style="display:block">
+  <div class="summary-grid" id="summaryGrid"></div>
+  <div class="tbl-outer">
+    <div class="tbl-scroll">
+      <table>
+        <colgroup><col><col><col><col><col><col><col><col></colgroup>
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>N° ord.</th>
+            <th>Date</th>
+            <th>Désignation</th>
+            <th>Qté</th>
+            <th>Prix unit. GNF</th>
+            <th class="num">Total GNF</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="6" style="text-align:right">Total général</td>
+            <td class="num" id="grandTotal">0 GNF</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+  <div class="row-bar" style="margin-top:12px">
+    <input type="date" id="newDate" style="width:128px">
+    <input type="number" id="newRec" placeholder="N° réc." min="1" style="width:64px">
+    <input type="text" id="newDesig" placeholder="Désignation" style="width:155px" oninput="autoFillPriceField()">
+    <input type="number" id="newQty" placeholder="Qté" min="1" value="1" style="width:46px">
+    <input type="number" id="newPrix" placeholder="Prix GNF" min="0" value="0" style="width:100px">
+    <button onclick="addManualRow()"><i class="ti ti-plus" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>Ajouter</button>
+    <button class="btn-green" onclick="openWAModal()" style="white-space:nowrap"><i class="ti ti-brand-whatsapp" aria-hidden="true" style="font-size:14px;margin-right:4px"></i>Envoyer via WhatsApp</button>
+    <button onclick="exportCSV()" style="margin-left:auto"><i class="ti ti-download" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>CSV</button>
+    <button class="btn-danger" onclick="clearAll()"><i class="ti ti-trash" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>Effacer tout</button>
+  </div>
+</div>
+</div>
+
+<!-- WHATSAPP MODAL -->
+<div id="waModal" class="modal-bg" style="display:none" onclick="if(event.target===this)closeWAModal()">
+  <div class="modal">
+    <h2><i class="ti ti-brand-whatsapp" aria-hidden="true" style="color:#25d366;font-size:20px"></i>Envoyer au fournisseur <button class="modal-close" onclick="closeWAModal()">×</button></h2>
+    <p style="font-size:12px;color:#555;margin-bottom:12px">Voici la facture générée. Copie-la et envoie-la dans WhatsApp à ton fournisseur pour qu'il vérifie les prix et te donne le total corrigé.</p>
+    <div class="wa-preview" id="waPreview"></div>
+    <div class="wa-btn-row">
+      <button class="btn-green" onclick="copyWA()"><i class="ti ti-copy" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Copier le message</button>
+      <button onclick="openWADirect()"><i class="ti ti-brand-whatsapp" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Ouvrir WhatsApp Web</button>
+      <span class="status" id="waCopyStatus"></span>
+    </div>
+    <p style="font-size:11px;color:#aaa;margin-top:10px"><i class="ti ti-info-circle" aria-hidden="true" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>Le fournisseur peut modifier les prix et te renvoyer le total corrigé. Il n'a pas besoin de l'application.</p>
+  </div>
+</div>
+
 
   </div>
 </div>
@@ -531,8 +653,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '4.0';
-const APP_UPDATED = '17/09/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '5.0';
+const APP_UPDATED = '19/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -1651,6 +1773,16 @@ function closeWifiApp(){
   document.getElementById('wifiOverlay').style.display = 'none';
 }
 
+// Ouvre la page Réception (fusionnée dans ce même fichier — totalement indépendante du Stock
+// et du Wifi : tables Supabase dédiées, aucune donnée partagée). Initialisation différée au premier accès.
+function openReceptionApp(){
+  if(typeof window.initReceptionApp === 'function') window.initReceptionApp();
+  document.getElementById('receptionOverlay').style.display = 'block';
+}
+function closeReceptionApp(){
+  document.getElementById('receptionOverlay').style.display = 'none';
+}
+
 function lockAppNow(){
   if(!hasPin()){ alert('Définis d\'abord un code PIN (bouton "🔑 Définir / modifier le code PIN") pour pouvoir verrouiller l\'application.'); return; }
   settingsDlg.close();
@@ -1751,6 +1883,13 @@ async function loadData(){
     operations: ops,
     meta: {initialized:true}
   };
+  sortTicketTypes();
+}
+
+// Classement automatique des tickets par prix croissant — appelé après chargement,
+// après ajout d'un type, et après toute modification de prix, pour rester toujours à jour.
+function sortTicketTypes(){
+  if(DB && DB.ticketTypes) DB.ticketTypes.sort((a,b) => a.price - b.price);
 }
 
 // Insère une ligne dans la table Supabase concernée puis l'ajoute localement, en la
@@ -2043,11 +2182,19 @@ const UI = {
     list.innerHTML = people.map(p=>{
       const m = personMoney(p.id);
       const restant = personTotalRestant(p.id);
+      const breakdown = DB.ticketTypes
+        .filter(tt => tt.active!==false)
+        .map(tt => ({tt, s: personTypeStats(p.id, tt.id)}))
+        .filter(x => x.s.restant > 0)
+        .sort((a,b) => a.tt.price - b.tt.price)
+        .map(x => `${fmt(x.tt.price)} GNF : <strong>${fmt(x.s.restant)}</strong>`)
+        .join(' &nbsp;|&nbsp; ');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
           <div>
             <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
             <div class="person-sub">${fmt(restant)} tickets en main</div>
+            ${breakdown ? `<div class="person-sub" style="margin-top:2px;font-size:12px;">${breakdown}</div>` : ''}
           </div>
           <div class="person-right">
             ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
@@ -2147,6 +2294,7 @@ const UI = {
         <select id="ep-active"><option value="true" ${p.active!==false?'selected':''}>Actif</option><option value="false" ${p.active===false?'selected':''}>Inactif</option></select>
       </div>
       <button class="btn btn-primary" onclick="UI.saveEditPerson('${p.id}')">Enregistrer</button>
+      <button class="btn btn-outline" style="margin-top:8px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.deletePerson('${p.id}')">Supprimer cette personne</button>
       <div class="help-text" style="margin-top:10px;">Une personne ayant des opérations enregistrées ne peut pas être supprimée — seulement désactivée.</div>
     `);
   },
@@ -2163,6 +2311,23 @@ const UI = {
     }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
     this.closeSheet(); this.renderSituation(); this.renderPeople();
     toast('Personne mise à jour');
+  },
+  async deletePerson(id){
+    const p = person(id);
+    if(!p) return;
+    if(!confirm(`Supprimer définitivement "${p.name}" ? Cette action est irréversible.`)) return;
+    try{
+      const { error } = await sb.from('people').delete().eq('id', id);
+      if(error) throw error;
+    }catch(e){
+      // Contrainte de clé étrangère : la personne a un historique (ventes/paiements/mouvements) — protection automatique, aucune perte de données.
+      toast('⚠ Impossible de supprimer : historique existant. Désactive-la plutôt.');
+      return;
+    }
+    DB.people = DB.people.filter(x => x.id !== id);
+    this.closeSheet(); this.renderPeople();
+    this.goto('personnes');
+    toast('Personne supprimée');
   },
 
   /* ---------- HISTORIQUE ---------- */
@@ -2284,6 +2449,8 @@ const UI = {
       const { error } = await sb.from('ticket_types').update({price}).eq('id', id);
       if(error) throw error;
       tt.price = price;
+      sortTicketTypes();
+      this.renderParametres(); this.renderDashboard(); this.renderStock();
       toast('Prix mis à jour — les anciennes ventes sont conservées');
     }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); }
   },
@@ -2320,6 +2487,7 @@ const UI = {
       const { data, error } = await sb.from('ticket_types').insert({code, name, price, active:true}).select();
       if(error) throw error;
       DB.ticketTypes.push({id:data[0].id, name:data[0].name, price:Number(data[0].price), active:data[0].active});
+      sortTicketTypes();
       if(initial>0){
         await insertOp('stock_receipts', {ticket_type_id: data[0].id, quantity: initial, comment:'Stock initial'}, mapReceipt);
       }
@@ -2627,6 +2795,391 @@ window.initWifiApp = function(){
   if(window.__wifiInitialized) return;
   window.__wifiInitialized = true;
   UI.init();
+};
+
+
+
+/* ============================================================
+   MODULE RÉCEPTION — fusionné (anciennement gestion-receptions.html)
+   Totalement indépendant du Stock et du Wifi : tables Supabase dédiées
+   (reception_items, reception_price_db), aucune relation avec
+   items/ticket_types/people/sales. Partage seulement sb/SUPABASE_*.
+   ============================================================ */
+
+/* ============================================================
+   RÉCEPTION — module totalement indépendant du Stock et du Wifi.
+   Tables Supabase dédiées (reception_items, reception_price_db),
+   aucune relation avec items/ticket_types/people. Réutilise
+   uniquement le client sb déjà déclaré par Stock LCD (même projet).
+   ============================================================ */
+let rows=[];
+let priceDB=[];
+
+async function loadReceptionData(){
+  const [priceRes, itemsRes] = await Promise.all([
+    sb.from('reception_price_db').select('*').order('designation', {ascending:true}),
+    sb.from('reception_items').select('*').order('created_at', {ascending:true}),
+  ]);
+  if(priceRes.error) throw priceRes.error;
+  if(itemsRes.error) throw itemsRes.error;
+  priceDB = (priceRes.data||[]).map(p => ({id:p.id, desig:p.designation, prix:Number(p.price)}));
+  rows = (itemsRes.data||[]).map(r => ({id:r.id, date:r.reception_date||'', rec:r.reception_number, desig:r.designation, qty:r.quantity, prix:Number(r.unit_price), autoPrice:!!r.auto_price}));
+}
+
+function normalize(s){
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+function lookupPrice(desig){
+  const nd=normalize(desig);
+  let best=null,bestScore=0;
+  priceDB.forEach(e=>{
+    const ne=normalize(e.desig);
+    if(ne===nd){best=e;bestScore=999;return;}
+    if(nd.includes(ne)||ne.includes(nd)){
+      const score=Math.min(ne.length,nd.length);
+      if(score>bestScore){best=e;bestScore=score;}
+    }
+  });
+  return best?best.prix:0;
+}
+
+function showTab(t){
+  ['table','paste','db'].forEach(v=>{
+    document.getElementById('view-'+v).style.display=v===t?'block':'none';
+    const key={'table':'t','paste':'p','db':'d'}[v];
+    document.getElementById('tab-'+key).classList.toggle('active',v===t);
+  });
+  if(t==='db')renderDB();
+}
+
+function ordinal(n){return n+(n===1?'ère':'ème');}
+function fmtDate(d){if(!d)return'—';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function recFmtGNF(n){return Math.round(n).toLocaleString('fr-FR')+' GNF';}
+
+function autoFillPriceField(){
+  const desig=document.getElementById('newDesig').value.trim();
+  const p=lookupPrice(desig);
+  const inp=document.getElementById('newPrix');
+  if(p>0){inp.value=p;inp.className='auto-filled';}
+  else{inp.value=0;inp.className='';}
+}
+
+async function parseAndImport(){
+  const raw=document.getElementById('waInput').value.trim();
+  if(!raw){recSetStatus('Rien à importer.','err');return;}
+  const lines=raw.split('\n');
+  let currentRec=null,currentDate=null;
+  const newRows=[];
+  const recReg=/(\d+)[eèrm\u00e8re]+\s*r[eé]ception/i;
+  const dateReg=/\[(\d{2})\/(\d{2})\/(\d{2,4})\s/;
+  const itemReg=/^\s*(\d+)[.)]\s+(.+?)\.{2,}(\d+)\s*$/;
+  const itemReg2=/^\s*(\d+)[.)]\s+(.+?)\s+(\d+)\s*$/;
+  lines.forEach(line=>{
+    const dm=line.match(dateReg);
+    if(dm){const y=dm[3].length===2?'20'+dm[3]:dm[3];currentDate=`${y}-${dm[2]}-${dm[1]}`;}
+    const rm=line.match(recReg);
+    if(rm){currentRec=parseInt(rm[1]);return;}
+    let im=line.match(itemReg)||line.match(itemReg2);
+    if(im&&currentRec!==null){
+      const desig=im[2].replace(/\.+$/,'').trim();
+      const qty=parseInt(im[3])||1;
+      const prix=lookupPrice(desig);
+      newRows.push({date:currentDate||'',rec:currentRec,desig,qty,prix,autoPrice:prix>0});
+    }
+  });
+  if(newRows.length===0){recSetStatus('Aucune pièce reconnue.','err');return;}
+  try{
+    const payload = newRows.map(r=>({reception_number:r.rec, reception_date:r.date||null, designation:r.desig, quantity:r.qty, unit_price:r.prix, auto_price:r.autoPrice}));
+    const {data,error} = await sb.from('reception_items').insert(payload).select();
+    if(error) throw error;
+    data.forEach(d => rows.push({id:d.id, date:d.reception_date||'', rec:d.reception_number, desig:d.designation, qty:d.quantity, prix:Number(d.unit_price), autoPrice:!!d.auto_price}));
+  }catch(e){ recSetStatus('⚠ Erreur d\'enregistrement — réessayez','err'); return; }
+  recRender();
+  recSetStatus(newRows.length+' pièce(s) importée(s) ✓','ok');
+  showTab('table');
+}
+
+function recSetStatus(msg,type){
+  const el=document.getElementById('parseStatus');
+  el.textContent=msg;el.className='status '+(type||'');
+}
+
+async function updateRow(id,field,val){
+  const r=rows.find(r=>r.id===id);
+  if(!r)return;
+  const prev = {...r};
+  r[field]=val;
+  let patch;
+  if(field==='desig'){ r.prix=lookupPrice(val); r.autoPrice=r.prix>0; patch={designation:val, unit_price:r.prix, auto_price:r.autoPrice}; }
+  else if(field==='qty'){ patch={quantity:val}; }
+  else { patch={unit_price:val, auto_price:false}; r.autoPrice=false; }
+  try{
+    const {error} = await sb.from('reception_items').update(patch).eq('id', id);
+    if(error) throw error;
+  }catch(e){ Object.assign(r, prev); recRender(); return; }
+  if(field==='desig'){recRender(); return;}
+  renderTotals();
+}
+
+async function delRow(id){
+  try{
+    const {error} = await sb.from('reception_items').delete().eq('id', id);
+    if(error) throw error;
+  }catch(e){ return; }
+  rows=rows.filter(r=>r.id!==id);
+  recRender();
+}
+
+async function addManualRow(){
+  const desig=document.getElementById('newDesig').value.trim();
+  if(!desig){document.getElementById('newDesig').focus();return;}
+  const date=document.getElementById('newDate').value;
+  const rec=parseInt(document.getElementById('newRec').value)||((rows.length?Math.max(...rows.map(r=>r.rec)):0)+1);
+  const qty=parseInt(document.getElementById('newQty').value)||1;
+  const pInput=parseFloat(document.getElementById('newPrix').value)||0;
+  const autoP=lookupPrice(desig);
+  const prix=pInput>0?pInput:autoP;
+  try{
+    const {data,error} = await sb.from('reception_items').insert({
+      reception_number:rec, reception_date:date||null, designation:desig, quantity:qty, unit_price:prix, auto_price:autoP>0
+    }).select();
+    if(error) throw error;
+    rows.push({id:data[0].id, date:data[0].reception_date||'', rec:data[0].reception_number, desig:data[0].designation, qty:data[0].quantity, prix:Number(data[0].unit_price), autoPrice:!!data[0].auto_price});
+  }catch(e){ return; }
+  document.getElementById('newDesig').value='';
+  document.getElementById('newQty').value='1';
+  document.getElementById('newPrix').value='0';
+  document.getElementById('newPrix').className='';
+  recRender();
+}
+
+async function clearAll(){
+  if(!confirm('Effacer toutes les lignes ?')) return;
+  try{
+    const {error} = await sb.from('reception_items').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    if(error) throw error;
+  }catch(e){ return; }
+  rows=[];
+  recRender();
+}
+
+function recRender(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  if(!rows.length){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="8" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucune donnée — colle un message WhatsApp ou ajoute une ligne.</td>';
+    tbody.appendChild(tr);renderTotals();renderSummary(0);return;
+  }
+  const sorted=[...rows].sort((a,b)=>a.rec-b.rec);
+  let globalOrder=0;
+  let lastRec=null;
+  let recLocalOrder=0;
+
+  sorted.forEach(r=>{
+    globalOrder++;
+    if(r.rec!==lastRec){
+      lastRec=r.rec;
+      recLocalOrder=0;
+      const recDate=r.date?(' — '+fmtDate(r.date)):'';
+      const hr=document.createElement('tr');
+      hr.className='rec-head';
+      hr.innerHTML=`<td colspan="8"><i class="ti ti-package" aria-hidden="true" style="font-size:13px;margin-right:6px;vertical-align:-2px"></i>${ordinal(r.rec)} réception${recDate}</td>`;
+      tbody.appendChild(hr);
+    }
+    recLocalOrder++;
+    const total=r.qty*r.prix;
+    const tr=document.createElement('tr');
+    const priceClass=r.autoPrice?'auto-filled':'';
+    tr.innerHTML=`
+      <td style="color:#999;font-size:11px">${globalOrder}</td>
+      <td style="color:#555;font-weight:500">${recLocalOrder}</td>
+      <td style="font-size:11px;color:#777">${fmtDate(r.date)}</td>
+      <td><input value="${r.desig.replace(/"/g,'&quot;')}" onchange="updateRow('${r.id}','desig',this.value)"></td>
+      <td><input type="number" min="1" value="${r.qty}" onchange="updateRow('${r.id}','qty',+this.value)" style="width:42px"></td>
+      <td><input type="number" min="0" value="${r.prix}" class="${priceClass}" onchange="updateRow('${r.id}','prix',+this.value);rows.find(x=>x.id=='${r.id}').autoPrice=false;" placeholder="0"></td>
+      <td class="num" id="t${r.id}">${recFmtGNF(total)}</td>
+      <td><button class="del-btn" onclick="delRow('${r.id}')" aria-label="Supprimer"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  renderTotals();
+}
+
+function renderTotals(){
+  let grand=0;
+  rows.forEach(r=>{
+    const t=r.qty*r.prix;grand+=t;
+    const el=document.getElementById('t'+r.id);
+    if(el)el.textContent=recFmtGNF(t);
+  });
+  document.getElementById('grandTotal').textContent=recFmtGNF(grand);
+  renderSummary(grand);
+}
+
+function renderSummary(grand){
+  const nb=rows.length;
+  const nbRec=new Set(rows.map(r=>r.rec)).size;
+  const nbAuto=rows.filter(r=>r.autoPrice).length;
+  document.getElementById('summaryGrid').innerHTML=`
+    <div class="metric"><div class="lbl">Pièces</div><div class="val">${nb}</div></div>
+    <div class="metric"><div class="lbl">Réceptions</div><div class="val">${nbRec}</div></div>
+    <div class="metric"><div class="lbl">Prix auto</div><div class="val">${nbAuto}/${nb}</div></div>
+    <div class="metric"><div class="lbl">Total GNF</div><div class="val" style="font-size:14px">${recFmtGNF(grand)}</div></div>
+  `;
+}
+
+/* ─── WHATSAPP EXPORT ─── */
+function buildWAText(){
+  if(!rows.length)return'';
+  const sorted=[...rows].sort((a,b)=>a.rec-b.rec);
+  const today=new Date().toLocaleDateString('fr-FR');
+  let txt='📦 *FACTURE RÉCEPTIONS — '+today+'*\n';
+  txt+='─────────────────────────\n';
+  let lastRec=null,recLocal=0,grand=0,globalOrder=0;
+  sorted.forEach(r=>{
+    globalOrder++;
+    if(r.rec!==lastRec){
+      lastRec=r.rec;recLocal=0;
+      if(globalOrder>1)txt+='\n';
+      txt+='*'+ordinal(r.rec)+' réception'+(r.date?' ('+fmtDate(r.date)+')':'')+'*\n';
+    }
+    recLocal++;
+    const total=r.qty*r.prix;grand+=total;
+    const prixStr=r.prix>0?r.prix.toLocaleString('fr-FR')+' GNF':'À confirmer';
+    const totalStr=total>0?total.toLocaleString('fr-FR')+' GNF':'—';
+    txt+=recLocal+'. '+r.desig+'\n';
+    txt+='   Qté: '+r.qty+' | Prix u.: '+prixStr+' | Total: '+totalStr+'\n';
+  });
+  txt+='\n─────────────────────────\n';
+  txt+='*TOTAL GÉNÉRAL : '+grand.toLocaleString('fr-FR')+' GNF*\n';
+  txt+='\n⚠️ _Merci de vérifier les prix unitaires et de me confirmer le total exact._';
+  return txt;
+}
+
+function openWAModal(){
+  const txt=buildWAText();
+  if(!txt){alert('Aucune donnée à envoyer.');return;}
+  document.getElementById('waPreview').textContent=txt;
+  document.getElementById('waModal').style.display='flex';
+  document.getElementById('waCopyStatus').textContent='';
+}
+
+function closeWAModal(){document.getElementById('waModal').style.display='none';}
+
+function copyWA(){
+  const txt=document.getElementById('waPreview').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const s=document.getElementById('waCopyStatus');
+    s.textContent='Copié ✓';s.className='status ok';
+    setTimeout(()=>{s.textContent='';},2500);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=txt;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+    const s=document.getElementById('waCopyStatus');
+    s.textContent='Copié ✓';s.className='status ok';
+    setTimeout(()=>{s.textContent='';},2500);
+  });
+}
+
+function openWADirect(){
+  const txt=encodeURIComponent(document.getElementById('waPreview').textContent);
+  window.open('https://web.whatsapp.com/','_blank');
+}
+
+/* ─── DB ─── */
+function renderDB(){
+  const q=normalize(document.getElementById('dbSearch').value||'');
+  const filtered=priceDB.filter(e=>!q||normalize(e.desig).includes(q));
+  const tbody=document.getElementById('dbTbody');
+  tbody.innerHTML='';
+  filtered.forEach(e=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><input value="${e.desig.replace(/"/g,'&quot;')}" onchange="updateDB('${e.id}','desig',this.value)"></td>
+      <td><input type="number" min="0" value="${e.prix}" onchange="updateDB('${e.id}','prix',+this.value)"></td>
+      <td><button class="del-btn" onclick="delDB('${e.id}')" aria-label="Supprimer"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  if(!filtered.length){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="3" style="padding:1.5rem;text-align:center;color:#aaa;font-size:12px">Aucune pièce trouvée</td>';
+    tbody.appendChild(tr);
+  }
+}
+
+async function updateDB(id,field,val){
+  const e=priceDB.find(e=>e.id===id);
+  if(!e)return;
+  const prev = {...e};
+  e[field]=val;
+  const patch = field==='desig' ? {designation:val} : {price:val};
+  try{
+    const {error} = await sb.from('reception_price_db').update(patch).eq('id', id);
+    if(error) throw error;
+  }catch(err){ Object.assign(e, prev); renderDB(); }
+}
+async function delDB(id){
+  try{
+    const {error} = await sb.from('reception_price_db').delete().eq('id', id);
+    if(error) throw error;
+  }catch(e){ return; }
+  priceDB=priceDB.filter(e=>e.id!==id);
+  renderDB();
+}
+
+async function addDBEntry(){
+  const desig=document.getElementById('dbNewDesig').value.trim();
+  const prix=parseFloat(document.getElementById('dbNewPrix').value)||0;
+  const st=document.getElementById('dbStatus');
+  if(!desig){st.textContent='Saisir un nom.';st.className='status err';return;}
+  if(prix<=0){st.textContent='Saisir un prix > 0.';st.className='status err';return;}
+  try{
+    const {data,error} = await sb.from('reception_price_db').insert({designation:desig, price:prix}).select();
+    if(error) throw error;
+    priceDB.push({id:data[0].id, desig:data[0].designation, prix:Number(data[0].price)});
+  }catch(e){ st.textContent='⚠ Erreur d\'enregistrement'; st.className='status err'; return; }
+  document.getElementById('dbNewDesig').value='';
+  document.getElementById('dbNewPrix').value='';
+  st.textContent='Ajouté !';st.className='status ok';
+  setTimeout(()=>{st.textContent='';},2000);
+  renderDB();
+}
+
+function exportCSV(){
+  let csv='\uFEFFN° global,N° réception,Réception,Date,Désignation,Quantité,Prix unit. GNF,Total GNF\n';
+  let grand=0,gi=0;
+  const sorted=[...rows].sort((a,b)=>a.rec-b.rec);
+  let lastRec=null,ri=0;
+  sorted.forEach(r=>{
+    gi++;
+    if(r.rec!==lastRec){lastRec=r.rec;ri=0;}
+    ri++;
+    const t=r.qty*r.prix;grand+=t;
+    csv+=`${gi},${ri},"${ordinal(r.rec)} réception",${fmtDate(r.date)},"${r.desig}",${r.qty},${r.prix},${Math.round(t)}\n`;
+  });
+  csv+=`,,,,,,Total général,${Math.round(grand)}\n`;
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='receptions.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Initialisation différée : déclenchée par openReceptionApp() au premier accès à cette section,
+// pas au chargement de Stock LCD (évite un appel Supabase inutile si jamais ouverte).
+window.__receptionInitialized = false;
+window.initReceptionApp = async function(){
+  if(window.__receptionInitialized) return;
+  window.__receptionInitialized = true;
+  try{
+    await loadReceptionData();
+    recRender();
+  }catch(e){
+    document.getElementById('view-table').innerHTML = `<div class="card">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
+  }
 };
 
 </script>
