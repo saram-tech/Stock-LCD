@@ -306,8 +306,9 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
   <div class="search-bar">
     <input type="text" id="people-search" placeholder="Rechercher une personne...">
   </div>
+  <div class="filter-row" id="people-filter-row"></div>
   <div class="card" id="people-list"></div>
-  <div style="margin-top:12px;">
+  <div style="margin-top:12px;" id="people-add-btn-wrap">
     <button class="btn btn-secondary" onclick="UI.openAddPerson()">+ Ajouter une personne</button>
   </div>
 </div>
@@ -361,7 +362,7 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 
   <h2 class="section-title">Base de données</h2>
   <div class="card">
-    <div class="help-text">Cette application est connectée à Supabase (9 tables dédiées : types de tickets, personnes, réceptions, mouvements, ventes, paiements, corrections, journal d'audit). Toutes les opérations sont enregistrées en temps réel et synchronisées entre tous les appareils.</div>
+    <div class="help-text">Cette application est connectée à Supabase (types de tickets, personnes, réceptions, mouvements, ventes, paiements, corrections, clôtures de type de ticket, journal d'audit). Toutes les opérations sont enregistrées en temps réel et synchronisées entre tous les appareils.</div>
   </div>
 </div>
 
@@ -1884,6 +1885,7 @@ const DEFAULT_DATA = {
   ticketTypes: [],
   people: [],
   operations: [],
+  closures: [],
   meta: { initialized:false }
 };
 
@@ -1899,7 +1901,7 @@ function mapPayment(p){ return {id:p.id, ts:p.paid_at, personId:p.person_id, typ
 function mapCorrection(c){ return {id:c.id, ts:c.corrected_at, personId:null, typeId:null, opType:'CORRECTION', qty:c.delta_quantity, unitPrice:null, amount:c.delta_amount, comment:null, correctsOpId:c.target_id, reason:c.reason}; }
 
 async function loadData(){
-  const [tt, pe, rc, mv, sa, pa, co] = await Promise.all([
+  const [tt, pe, rc, mv, sa, pa, co, cl] = await Promise.all([
     sb.from('ticket_types').select('*').order('created_at', {ascending:true}),
     sb.from('people').select('*').order('created_at', {ascending:true}),
     sb.from('stock_receipts').select('*'),
@@ -1907,8 +1909,9 @@ async function loadData(){
     sb.from('sales').select('*'),
     sb.from('payments').select('*'),
     sb.from('corrections').select('*'),
+    sb.from('ticket_type_closures').select('*'),
   ]);
-  const firstError = [tt,pe,rc,mv,sa,pa,co].find(r => r.error);
+  const firstError = [tt,pe,rc,mv,sa,pa,co,cl].find(r => r.error);
   if(firstError && firstError.error) throw firstError.error;
 
   const ops = [
@@ -1922,11 +1925,39 @@ async function loadData(){
 
   DB = {
     ticketTypes: (tt.data||[]).map(t => ({id:t.id, name:t.name, price:Number(t.price), active:t.active})),
-    people: (pe.data||[]).map(p => ({id:p.id, name:p.name, active:p.active, createdAt:p.created_at})),
+    people: (pe.data||[]).map(p => ({id:p.id, name:p.name, active:p.active, createdAt:p.created_at, deletedAt:p.deleted_at||null})),
     operations: ops,
+    closures: (cl.data||[]).map(c => ({id:c.id, ticketTypeId:c.ticket_type_id, closedAt:c.closed_at, restoredAt:c.restored_at||null})),
     meta: {initialized:true}
   };
   sortTicketTypes();
+}
+
+// Journal d'audit générique (Supabase) : trace date/heure/type d'action/élément concerné/quantité
+// pour les actions administratives (suppression/restauration personne, clôture/réouverture type).
+// Ne bloque jamais l'action métier déjà effectuée si l'écriture du journal échoue.
+async function logAudit(actionType, entityType, entityId, entityLabel, quantity){
+  try{
+    await sb.from('audit_log').insert({
+      action_type: actionType, entity_type: entityType, entity_id: entityId,
+      entity_label: entityLabel, quantity: (quantity==null?null:quantity)
+    });
+  }catch(e){ console.warn('audit_log:', e); }
+}
+
+// Renvoie la date de la clôture active (non restaurée) la plus récente pour un type de ticket,
+// ou null si le type n'est pas clôturé actuellement. Une clôture restaurée redonne accès à
+// l'historique complet (ou à une clôture antérieure encore active).
+function activeClosureCutoff(typeId){
+  const list = (DB.closures||[]).filter(c=>c.ticketTypeId===typeId && !c.restoredAt);
+  if(!list.length) return null;
+  return list.reduce((max,c)=> (c.closedAt>max ? c.closedAt : max), list[0].closedAt);
+}
+// true si l'opération fait partie de la période "en cours" du type (après la dernière clôture active).
+function opInPeriod(op, typeId){
+  const cutoff = activeClosureCutoff(typeId);
+  if(!cutoff) return true;
+  return (op.ts||'') > cutoff;
 }
 
 // Classement automatique des tickets par prix croissant — appelé après chargement,
@@ -1959,6 +1990,7 @@ function typeAggregate(typeId){
   let received=0, remitted=0, soldDirect=0, soldByPeople=0, returned=0, lost=0, cancelled=0;
   DB.operations.forEach(op=>{
     if(op.typeId!==typeId) return;
+    if(!opInPeriod(op, typeId)) return; // clôture éventuelle : ne compte que la période en cours
     const q = op.qty||0;
     if(op.opType==='RECEPTION') received += q;
     else if(op.opType==='REMISE') remitted += q;
@@ -1995,6 +2027,7 @@ function stockSummary(){
     let lostMe=0, cancelMe=0, lostPeople=0, cancelPeople=0;
     DB.operations.forEach(op=>{
       if(op.typeId!==tt.id) return;
+      if(!opInPeriod(op, tt.id)) return;
       const q=op.qty||0;
       if(op.opType==='PERTE'){ if(op.personId) lostPeople+=q; else lostMe+=q; }
       if(op.opType==='ANNULATION'){ if(op.personId) cancelPeople+=q; else cancelMe+=q; }
@@ -2015,18 +2048,23 @@ function stockSummary(){
 }
 function initialReceived(typeId){
   let sum=0;
-  DB.operations.forEach(op=>{ if(op.typeId===typeId && op.opType==='RECEPTION') sum+=(op.qty||0); });
+  DB.operations.forEach(op=>{ if(op.typeId===typeId && op.opType==='RECEPTION' && opInPeriod(op, typeId)) sum+=(op.qty||0); });
   return sum;
 }
 
-// Per-person, per-type situation
+// Per-person, per-type situation.
+// Important : une clôture de type de ticket ne remet à 0 QUE la quantité "en cours" (pris/vendu/
+// retour/perte/restant). L'argent dû (montantVentes) continue toujours de cumuler TOUTES les ventes,
+// clôturées ou non, pour ne jamais effacer une dette réelle.
 function personTypeStats(personId, typeId){
   let pris=0, vendu=0, retour=0, perte=0, annule=0, montantVentes=0;
   DB.operations.forEach(op=>{
     if(op.personId!==personId || op.typeId!==typeId) return;
     const q=op.qty||0;
+    if(op.opType==='VENTE') montantVentes += (op.amount||0);
+    if(!opInPeriod(op, typeId)) return; // au-delà de ce point : uniquement les quantités de la période en cours
     if(op.opType==='REMISE') pris+=q;
-    else if(op.opType==='VENTE'){ vendu+=q; montantVentes += (op.amount||0); }
+    else if(op.opType==='VENTE') vendu+=q;
     else if(op.opType==='RETOUR') retour+=q;
     else if(op.opType==='PERTE') perte+=q;
     else if(op.opType==='ANNULATION') annule+=q;
@@ -2034,7 +2072,7 @@ function personTypeStats(personId, typeId){
       const target = DB.operations.find(o=>o.id===op.correctsOpId);
       if(target && target.personId===personId && target.typeId===typeId){
         if(target.opType==='REMISE') pris+=q;
-        else if(target.opType==='VENTE'){ vendu+=q; montantVentes += (op.amount||0); }
+        else if(target.opType==='VENTE') vendu+=q;
         else if(target.opType==='RETOUR') retour+=q;
         else if(target.opType==='PERTE') perte+=q;
         else if(target.opType==='ANNULATION') annule+=q;
@@ -2074,6 +2112,7 @@ const UI = {
   currentView: 'accueil',
   histFilter: 'all',
   stockPillType: null,
+  peopleFilter: 'active',
 
   async init(){
     try{
@@ -2115,8 +2154,40 @@ const UI = {
         <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('historique')">📜 Historique</button>
         <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('rapports')">📊 Rapports</button>
         <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('parametres')">⚙ Paramètres</button>
+        <button class="btn btn-secondary" onclick="UI.openJournal()">🗂 Journal (suppressions &amp; clôtures)</button>
       </div>
     `);
+  },
+  async openJournal(){
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Journal des suppressions &amp; clôtures</div>
+      <div id="journal-list" style="max-height:60vh;overflow-y:auto;">Chargement…</div>
+    `);
+    const labels = {
+      DELETE_PERSON:'Suppression — personne', RESTORE_PERSON:'Restauration — personne',
+      CLOSE_TICKET_TYPE:'Clôture — type de ticket', RESTORE_TICKET_TYPE_CLOSURE:'Réouverture — type de ticket',
+    };
+    try{
+      const { data, error } = await sb.from('audit_log').select('*').order('occurred_at', {ascending:false}).limit(100);
+      if(error) throw error;
+      const rows = (data||[]).map(a=>{
+        const d = new Date(a.occurred_at);
+        const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+        return `
+          <div class="hist-row">
+            <div class="hist-main">
+              <div class="hist-title">${labels[a.action_type]||a.action_type}</div>
+              <div class="hist-sub">${a.entity_label||''} · ${dateStr}</div>
+            </div>
+            ${a.quantity!=null?`<div class="hist-qty">${fmt(a.quantity)}</div>`:''}
+          </div>`;
+      }).join('') || `<div class="empty">Aucune action enregistrée.</div>`;
+      document.getElementById('journal-list').innerHTML = rows;
+    }catch(e){
+      document.getElementById('journal-list').innerHTML = `<div class="empty">⚠ Impossible de charger le journal.</div>`;
+    }
   },
 
   renderAll(){
@@ -2138,10 +2209,10 @@ const UI = {
         <div class="value">${fmt(s.disponible)}</div>
       </div>`).join('');
 
-    document.getElementById('dash-people-count').textContent = DB.people.length;
+    document.getElementById('dash-people-count').textContent = DB.people.filter(p=>!p.deletedAt).length;
     const distributed = summary.reduce((a,s)=>a+s.chezPersonnes,0);
     document.getElementById('dash-distributed').textContent = fmt(distributed);
-    const holders = DB.people.filter(p=>personTotalRestant(p.id)>0).length;
+    const holders = DB.people.filter(p=>!p.deletedAt && personTotalRestant(p.id)>0).length;
     document.getElementById('dash-holders').textContent = holders;
 
     const mt = moneyTotals();
@@ -2151,7 +2222,7 @@ const UI = {
 
     // Alerts
     const alerts = [];
-    DB.people.forEach(p=>{
+    DB.people.filter(p=>!p.deletedAt).forEach(p=>{
       const m = personMoney(p.id);
       if(m.reste>0) alerts.push({level:'amber', text:`${p.name} doit encore ${fmtGNF(m.reste)}`});
     });
@@ -2214,10 +2285,43 @@ const UI = {
   },
 
   /* ---------- PERSONNES ---------- */
+  setPeopleFilter(f){ this.peopleFilter=f; this.renderPeople(); },
   renderPeople(){
     const q = (document.getElementById('people-search').value||'').toLowerCase();
+    const deletedCount = DB.people.filter(p=>p.deletedAt).length;
+    const filterRow = document.getElementById('people-filter-row');
+    filterRow.innerHTML = `
+      <button class="filter-pill ${this.peopleFilter!=='deleted'?'active':''}" onclick="UI.setPeopleFilter('active')">Actives</button>
+      <button class="filter-pill ${this.peopleFilter==='deleted'?'active':''}" onclick="UI.setPeopleFilter('deleted')">Supprimées (${deletedCount})</button>
+    `;
+    document.getElementById('people-add-btn-wrap').style.display = this.peopleFilter==='deleted' ? 'none' : '';
+
     const list = document.getElementById('people-list');
-    const people = DB.people.filter(p=>p.name.toLowerCase().includes(q));
+    const showDeleted = this.peopleFilter==='deleted';
+    const people = DB.people.filter(p => (showDeleted ? !!p.deletedAt : !p.deletedAt) && p.name.toLowerCase().includes(q));
+
+    if(showDeleted){
+      if(people.length===0){ list.innerHTML = `<div class="empty">Aucune personne supprimée.</div>`; return; }
+      list.innerHTML = people.slice().sort((a,b)=>(b.deletedAt||'').localeCompare(a.deletedAt||'')).map(p=>{
+        const d = new Date(p.deletedAt);
+        const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+        const restant = personTotalRestant(p.id);
+        const reste = personMoney(p.id).reste;
+        return `
+          <div class="person-row">
+            <div>
+              <div class="person-name">${p.name}</div>
+              <div class="person-sub">Supprimée le ${dateStr}</div>
+              ${(restant>0||reste>0) ? `<div class="person-sub" style="color:var(--w-red);">${restant>0?fmt(restant)+' ticket(s) en main · ':''}${reste>0?'doit '+fmtGNF(reste):''}</div>` : ''}
+            </div>
+            <div class="person-right">
+              <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;" onclick="UI.restorePerson('${p.id}')">Restaurer</button>
+            </div>
+          </div>`;
+      }).join('');
+      return;
+    }
+
     if(people.length===0){
       list.innerHTML = `<div class="empty">Aucune personne enregistrée.</div>`;
       return;
@@ -2338,7 +2442,7 @@ const UI = {
       </div>
       <button class="btn btn-primary" onclick="UI.saveEditPerson('${p.id}')">Enregistrer</button>
       <button class="btn btn-outline" style="margin-top:8px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.deletePerson('${p.id}')">Supprimer cette personne</button>
-      <div class="help-text" style="margin-top:10px;">Une personne ayant des opérations enregistrées ne peut pas être supprimée — seulement désactivée.</div>
+      <div class="help-text" style="margin-top:10px;">La personne sera retirée des listes actives. Son historique est intégralement conservé et elle reste restaurable depuis Personnes → « Supprimées ».</div>
     `);
   },
   async saveEditPerson(id){
@@ -2355,22 +2459,46 @@ const UI = {
     this.closeSheet(); this.renderSituation(); this.renderPeople();
     toast('Personne mise à jour');
   },
+  // Suppression logique (jamais physique) : la personne disparaît des listes actives mais son
+  // historique (ventes, paiements, mouvements) reste intact pour ne jamais fausser les autres
+  // personnes ni les totaux. Restaurable à tout moment depuis Personnes → « Supprimées ».
   async deletePerson(id){
     const p = person(id);
     if(!p) return;
-    if(!confirm(`Supprimer définitivement "${p.name}" ? Cette action est irréversible.`)) return;
-    try{
-      const { error } = await sb.from('people').delete().eq('id', id);
-      if(error) throw error;
-    }catch(e){
-      // Contrainte de clé étrangère : la personne a un historique (ventes/paiements/mouvements) — protection automatique, aucune perte de données.
-      toast('⚠ Impossible de supprimer : historique existant. Désactive-la plutôt.');
-      return;
+    const restant = personTotalRestant(p.id);
+    const reste = personMoney(p.id).reste;
+    let msg = `Supprimer "${p.name}" ?`;
+    if(restant>0 || reste>0){
+      msg += `\n\n⚠ Cette personne a encore ${restant>0?fmt(restant)+' ticket(s) en main':''}${(restant>0&&reste>0)?' et ':''}${reste>0?fmtGNF(reste)+' à payer':''}. Ces données restent conservées dans l'historique après suppression.`;
     }
-    DB.people = DB.people.filter(x => x.id !== id);
-    this.closeSheet(); this.renderPeople();
+    msg += `\n\nVous pourrez la restaurer plus tard.`;
+    if(!confirm(msg)) return;
+    const now = new Date().toISOString();
+    try{
+      const { error } = await sb.from('people').update({deleted_at: now}).eq('id', id);
+      if(error) throw error;
+      p.deletedAt = now;
+      await logAudit('DELETE_PERSON', 'person', id, p.name, null);
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    this.closeSheet();
     this.goto('personnes');
-    toast('Personne supprimée');
+    this.peopleFilter = 'active';
+    this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports();
+    toast('Personne supprimée — restaurable depuis "Supprimées"');
+  },
+  async restorePerson(id){
+    const p = DB.people.find(x=>x.id===id);
+    if(!p) return;
+    if(!confirm(`Restaurer "${p.name}" dans les personnes actives ?`)) return;
+    const now = new Date().toISOString();
+    try{
+      const { error } = await sb.from('people').update({deleted_at: null}).eq('id', id);
+      if(error) throw error;
+      p.deletedAt = null;
+      await logAudit('RESTORE_PERSON', 'person', id, p.name, null);
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports();
+    toast('Personne restaurée');
   },
 
   /* ---------- HISTORIQUE ---------- */
@@ -2478,12 +2606,60 @@ const UI = {
     `).join('');
 
     const types = document.getElementById('settings-types');
-    types.innerHTML = DB.ticketTypes.map(tt=>`
+    types.innerHTML = DB.ticketTypes.map(tt=>{
+      const cutoff = activeClosureCutoff(tt.id);
+      const closure = cutoff ? (DB.closures||[]).find(c=>c.ticketTypeId===tt.id && c.closedAt===cutoff && !c.restoredAt) : null;
+      const closedStr = closure ? new Date(closure.closedAt).toLocaleDateString('fr-FR') + ' ' + new Date(closure.closedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : null;
+      return `
       <div class="settings-row">
-        <div><div class="st-label">${tt.name}</div><div class="st-sub">${tt.active!==false?'Actif':'Désactivé'}</div></div>
-        <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;" onclick="UI.toggleType('${tt.id}')">${tt.active!==false?'Désactiver':'Activer'}</button>
-      </div>
-    `).join('');
+        <div>
+          <div class="st-label">${tt.name}</div>
+          <div class="st-sub">${tt.active!==false?'Actif':'Désactivé'}${closure?' · Clôturé le '+closedStr:''}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;" onclick="UI.toggleType('${tt.id}')">${tt.active!==false?'Désactiver':'Activer'}</button>
+          ${closure
+            ? `<button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;color:var(--w-green);" onclick="UI.reopenTicketType('${tt.id}')">Rouvrir</button>`
+            : `<button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;color:var(--w-red);" onclick="UI.closeTicketType('${tt.id}')">Clôturer</button>`}
+        </div>
+      </div>`;
+    }).join('');
+  },
+  // Clôture : remet à 0 la situation/quantité en cours du type (stock, chez moi, chez les
+  // personnes) SANS toucher au stock ni aux autres types, et SANS effacer l'historique ni les
+  // montants dus (voir personTypeStats). Restauration possible via reopenTicketType().
+  async closeTicketType(id){
+    const tt = ticketType(id);
+    if(!tt) return;
+    if(!confirm(`Clôturer "${tt.name}" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L'historique complet reste consultable et la clôture est annulable.`)) return;
+    const now = new Date().toISOString();
+    try{
+      const { data, error } = await sb.from('ticket_type_closures').insert({ticket_type_id: id, closed_at: now}).select();
+      if(error) throw error;
+      (DB.closures = DB.closures||[]).push({id:data[0].id, ticketTypeId:id, closedAt:data[0].closed_at, restoredAt:null});
+      await logAudit('CLOSE_TICKET_TYPE', 'ticket_type', id, tt.name, null);
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    this.renderAll();
+    if(this.currentView==='situation') this.renderSituation();
+    toast(`${tt.name} clôturé — situation remise à 0`);
+  },
+  async reopenTicketType(id){
+    const tt = ticketType(id);
+    if(!tt) return;
+    const cutoff = activeClosureCutoff(id);
+    const closure = (DB.closures||[]).find(c=>c.ticketTypeId===id && c.closedAt===cutoff && !c.restoredAt);
+    if(!closure) return;
+    if(!confirm(`Annuler la clôture de "${tt.name}" ? La situation antérieure à la clôture sera restaurée.`)) return;
+    const now = new Date().toISOString();
+    try{
+      const { error } = await sb.from('ticket_type_closures').update({restored_at: now}).eq('id', closure.id);
+      if(error) throw error;
+      closure.restoredAt = now;
+      await logAudit('RESTORE_TICKET_TYPE_CLOSURE', 'ticket_type', id, tt.name, null);
+    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    this.renderAll();
+    if(this.currentView==='situation') this.renderSituation();
+    toast(`Clôture de ${tt.name} annulée`);
   },
   async updatePrice(id, val){
     const tt = ticketType(id);
@@ -2581,7 +2757,7 @@ const UI = {
     }
   },
   renderPersonPicker(opType){
-    const activePeople = DB.people.filter(p=>p.active!==false);
+    const activePeople = DB.people.filter(p=>p.active!==false && !p.deletedAt);
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
@@ -2595,7 +2771,7 @@ const UI = {
   },
   filterPersonPicker(q){
     q=q.toLowerCase();
-    const activePeople = DB.people.filter(p=>p.active!==false && p.name.toLowerCase().includes(q));
+    const activePeople = DB.people.filter(p=>p.active!==false && !p.deletedAt && p.name.toLowerCase().includes(q));
     document.getElementById('pp-list').innerHTML = activePeople.map(p=>`<div class="person-row" onclick="UI.selectPerson('${p.id}')"><div class="person-name">${p.name}</div></div>`).join('') || '<div class="empty">Aucun résultat.</div>';
   },
   selectPerson(personId){
