@@ -675,7 +675,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.3';
+const APP_VERSION = '6.5';
 const APP_UPDATED = '21/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2384,8 +2384,9 @@ const UI = {
               <div class="person-sub">Supprimée le ${dateStr}</div>
               ${(restant>0||reste>0) ? `<div class="person-sub" style="color:var(--w-red);">${restant>0?fmt(restant)+' ticket(s) en main · ':''}${reste>0?'doit '+fmtGNF(reste):''}</div>` : ''}
             </div>
-            <div class="person-right">
+            <div class="person-right" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
               <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;" onclick="UI.restorePerson('${p.id}')">Restaurer</button>
+              <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.deletePersonForever('${p.id}')">Supprimer définitivement</button>
             </div>
           </div>`;
       }).join('');
@@ -2432,7 +2433,7 @@ const UI = {
       <div id="np-error"></div>
       <button class="btn btn-primary" onclick="UI.savePerson()">Enregistrer</button>
     `);
-    setTimeout(()=>document.getElementById('np-name').focus(),150);
+    setTimeout(()=>{ const el=document.getElementById('np-name'); if(el) el.focus(); },150);
   },
   async savePerson(){
     const name = document.getElementById('np-name').value.trim();
@@ -2574,29 +2575,63 @@ const UI = {
     this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports();
     toast('Personne restaurée');
   },
-  // "Vider" les personnes supprimées : suppression DÉFINITIVE, mais UNIQUEMENT des personnes déjà
-  // supprimées (jamais des personnes actives) et UNIQUEMENT si elles n'ont plus aucune opération
-  // liée (ventes/mouvements/paiements) — sinon la suppression physique casserait l'historique et
-  // les montants dus des autres personnes. Une personne encore liée à de l'historique reste dans
-  // "Supprimées" (elle n'est pas perdue) ; l'utilisateur en est informé.
+  // Suppression DÉFINITIVE et RÉELLE d'une seule personne : supprime en cascade, sur Supabase,
+  // TOUTES les données qui lui appartiennent (ventes, paiements, mouvements de stock la concernant,
+  // et les corrections qui portent sur ces opérations), puis la personne elle-même. Ne touche
+  // JAMAIS aux données d'une autre personne ni aux mouvements globaux (réceptions, autres associés).
+  // Utilisée à la fois par le bouton individuel et par "Vider".
+  async hardDeletePerson(personId, {skipRefresh=false}={}){
+    const p = DB.people.find(x=>x.id===personId);
+    if(!p) return {ok:false};
+    const opIds = DB.operations.filter(o=>o.personId===personId && ['VENTE','PAIEMENT','REMISE','RETOUR','PERTE','ANNULATION'].includes(o.opType)).map(o=>o.id);
+    try{
+      await logAudit('DELETE_PERSON', 'person', p.id, p.name+' (suppression définitive)', null);
+      if(opIds.length>0){
+        for(const id of opIds){
+          const { error } = await sb.from('corrections').delete().eq('target_id', id);
+          if(error) throw error;
+        }
+      }
+      let r = await sb.from('sales').delete().eq('person_id', personId); if(r.error) throw r.error;
+      r = await sb.from('payments').delete().eq('person_id', personId); if(r.error) throw r.error;
+      r = await sb.from('stock_movements').delete().eq('person_id', personId); if(r.error) throw r.error;
+      r = await sb.from('people').delete().eq('id', personId); if(r.error) throw r.error;
+    }catch(e){ return {ok:false, error:e}; }
+    // Nettoyage en mémoire : retire la personne ET toutes ses opérations/corrections liées,
+    // pour que les calculs (stock, historique, situations) soient immédiatement cohérents.
+    DB.people = DB.people.filter(x=>x.id!==personId);
+    const opIdSet = new Set(opIds);
+    DB.operations = DB.operations.filter(o=>{
+      if(o.personId===personId) return false;
+      if(o.opType==='CORRECTION' && opIdSet.has(o.correctsOpId)) return false;
+      return true;
+    });
+    if(!skipRefresh){ this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports(); }
+    return {ok:true};
+  },
+  async deletePersonForever(personId){
+    const p = DB.people.find(x=>x.id===personId);
+    if(!p) return;
+    const restant = personTotalRestant(p.id);
+    const reste = personMoney(p.id).reste;
+    const warn = (restant>0||reste>0) ? `\n\n⚠ ${restant>0?fmt(restant)+' ticket(s) en main. ':''}${reste>0?'Doit '+fmtGNF(reste)+'. ':''}Tout sera effacé avec elle.` : '';
+    if(!confirm(`Supprimer DÉFINITIVEMENT "${p.name}" ?\n\nToutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.${warn}`)) return;
+    const res = await this.hardDeletePerson(personId);
+    toast(res.ok ? `${p.name} définitivement supprimée` : "⚠ Erreur lors de la suppression définitive");
+  },
+  // "Vider" les personnes supprimées : suppression DÉFINITIVE et RÉELLE de TOUTES les personnes déjà
+  // supprimées (jamais des personnes actives), avec toutes leurs données liées, sans laisser d'orphelins.
   async emptyDeletedPeople(){
     const deleted = DB.people.filter(p=>p.deletedAt);
     if(deleted.length===0){ toast('Aucune personne supprimée à vider'); return; }
-    if(!confirm(`Vider définitivement ${deleted.length} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE. Seules les personnes sans aucun historique lié (ventes, mouvements, paiements) seront réellement effacées ; les autres resteront dans "Supprimées" pour préserver leurs données.`)) return;
-    let removed=0, kept=0;
+    if(!confirm(`Vider définitivement ${deleted.length} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.`)) return;
+    let removed=0, failed=0;
     for(const p of deleted.slice()){
-      const hasHistory = DB.operations.some(o=>o.personId===p.id);
-      if(hasHistory){ kept++; continue; }
-      try{
-        const { error } = await sb.from('people').delete().eq('id', p.id);
-        if(error) throw error;
-        DB.people = DB.people.filter(x=>x.id!==p.id);
-        await logAudit('DELETE_PERSON', 'person', p.id, p.name+' (définitif)', null);
-        removed++;
-      }catch(e){ kept++; }
+      const res = await this.hardDeletePerson(p.id, {skipRefresh:true});
+      if(res.ok) removed++; else failed++;
     }
-    this.renderPeople(); this.renderDashboard();
-    toast(removed>0 ? `${removed} personne(s) définitivement effacée(s)${kept?' · '+kept+' conservée(s) (historique lié)':''}` : 'Aucune personne effacée — toutes ont un historique lié');
+    this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports();
+    toast(failed>0 ? `${removed} effacée(s) · ${failed} erreur(s)` : `${removed} personne(s) définitivement effacée(s)`);
   },
 
   /* ---------- HISTORIQUE ---------- */
@@ -2954,7 +2989,7 @@ const UI = {
       <div id="op-error"></div>
       <button class="btn btn-primary" style="margin-top:6px;" onclick="UI.submitOp()">Enregistrer</button>
     `);
-    setTimeout(()=>document.getElementById('op-qty').focus(),150);
+    setTimeout(()=>{ const el=document.getElementById('op-qty'); if(el) el.focus(); },150);
   },
   updateQtyPreview(){
     const op=this.newOp; const tt=ticketType(op.typeId);
