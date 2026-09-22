@@ -678,7 +678,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.9';
+const APP_VERSION = '6.10';
 const APP_UPDATED = '21/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2488,19 +2488,21 @@ const UI = {
     list.innerHTML = people.map(p=>{
       const m = personMoney(p.id);
       const restant = personTotalRestant(p.id);
-      const breakdown = DB.ticketTypes
+      // Une ligne DISTINCTE et TOUJOURS visible par type actif (même à 0 tickets), au format
+      // "Type : N tickets — MONTANT GNF" — jamais fusionné sur une seule ligne avec des séparateurs "|".
+      const breakdownLines = DB.ticketTypes
         .filter(tt => tt.active!==false)
-        .map(tt => ({tt, s: personTypeStats(p.id, tt.id)}))
-        .filter(x => x.s.restant > 0)
-        .sort((a,b) => a.tt.price - b.tt.price)
-        .map(x => `${fmt(x.tt.price)} GNF : <strong>${fmt(x.s.restant)}</strong>`)
-        .join(' &nbsp;|&nbsp; ');
+        .map(tt => {
+          const s = personTypeStats(p.id, tt.id);
+          const montant = s.restant * (tt.price||0);
+          return `<div class="person-sub" style="margin-top:2px;">${tt.name} : <strong>${fmt(s.restant)} tickets</strong> — ${fmtGNF(montant)}</div>`;
+        }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
           <div>
             <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
             <div class="person-sub">${fmt(restant)} tickets en main</div>
-            ${breakdown ? `<div class="person-sub" style="margin-top:2px;font-size:12px;">${breakdown}</div>` : ''}
+            ${breakdownLines}
           </div>
           <div class="person-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
             ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
