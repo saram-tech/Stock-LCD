@@ -162,7 +162,7 @@
   --w-line:#DCD3BC;
   --w-radius:14px;
   --w-shadow:0 1px 2px rgba(27,42,74,0.06), 0 4px 14px rgba(27,42,74,0.06);
-}#wifiView *{box-sizing:border-box;}#wifiView{margin:0;padding:0;background:var(--w-paper);color:var(--w-ink);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;}#wifiView{padding-bottom:78px;min-height:100vh;}#wifiView .num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}#wifiView ::selection{background:var(--w-green-soft);}#wifiView button{font-family:inherit;}#wifiView a{color:inherit;}#wifiView /* Header */
+}#wifiView *{box-sizing:border-box;}#wifiView{margin:0;padding:0;background:var(--w-paper);color:var(--w-ink);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;}#wifiView{padding-bottom:78px;min-height:100vh;}#wifiView .num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}#wifiView ::selection{background:var(--w-green-soft);}#wifiView button{font-family:inherit;}#wifiView a{color:inherit;}#wifiView /* Header */
 .topbar{
   position:sticky;top:0;z-index:20;
   background:var(--w-paper);
@@ -254,7 +254,7 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 
 </div>
 
-<div id="wifiOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--w-paper,#FAF7EF); overflow-y:auto;">
+<div id="wifiOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--w-paper,#FAF7EF); overflow-y:auto; overscroll-behavior-y:contain; touch-action:pan-y;">
   <button onclick="closeWifiApp()" style="position:fixed; top:10px; right:10px; z-index:200; width:34px; height:34px; border-radius:50%; border:none; background:#1B2A4A; color:#fff; font-size:16px; cursor:pointer;">✕</button>
   <div id="wifiView">
 
@@ -332,6 +332,9 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
     <input type="text" id="hist-search" placeholder="Rechercher (personne, type, commentaire)...">
   </div>
   <div class="filter-row" id="hist-filters"></div>
+  <div style="margin-bottom:10px;">
+    <button class="btn btn-outline" style="width:auto;padding:8px 12px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.openJournal()">🗂 Journal (suppressions &amp; clôtures) — Vider</button>
+  </div>
   <div class="card" id="hist-list"></div>
 </div>
 
@@ -675,7 +678,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.6';
+const APP_VERSION = '6.7';
 const APP_UPDATED = '21/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1790,9 +1793,31 @@ function showLock(){
 function openWifiApp(){
   if(typeof window.initWifiApp === 'function') window.initWifiApp();
   document.getElementById('wifiOverlay').style.display = 'block';
+  setupWifiSwipeGuard();
 }
 function closeWifiApp(){
   document.getElementById('wifiOverlay').style.display = 'none';
+}
+// Empêche le "pull-to-refresh" natif du navigateur/WebView de se déclencher quand on glisse vers
+// le bas depuis le haut de l'espace WiFi (certains WebView Android ne respectent pas totalement
+// overscroll-behavior en CSS) : au lieu de faire quitter WiFi/recharger toute la page, le geste
+// ne fait rien quand on est déjà en haut de la page WiFi.
+let _wifiSwipeGuardInstalled = false;
+function setupWifiSwipeGuard(){
+  if(_wifiSwipeGuardInstalled) return;
+  _wifiSwipeGuardInstalled = true;
+  const overlay = document.getElementById('wifiOverlay');
+  let startY = 0, blocking = false;
+  overlay.addEventListener('touchstart', (e)=>{
+    if(e.touches.length!==1) return;
+    startY = e.touches[0].clientY;
+    blocking = overlay.scrollTop <= 0;
+  }, {passive:true});
+  overlay.addEventListener('touchmove', (e)=>{
+    if(!blocking || e.touches.length!==1) return;
+    const dy = e.touches[0].clientY - startY;
+    if(dy>0 && overlay.scrollTop<=0){ e.preventDefault(); }
+  }, {passive:false});
 }
 
 // ============================================================
@@ -2501,9 +2526,10 @@ const UI = {
     const m = personMoney(p.id);
     const rows = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
       const s = personTypeStats(p.id, tt.id);
-      return `<tr><td>${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.retour)}</td><td>${fmt(s.perte)}</td><td><strong>${fmt(s.restant)}</strong></td></tr>`;
+      return `<tr><td>${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.retour)}</td><td>${fmt(s.perte)}</td><td>${fmt(s.restant)}</td><td><strong>${fmtGNF(s.restant*(tt.price||0))}</strong></td></tr>`;
     }).join('');
     const totalRestant = personTotalRestant(p.id);
+    const totalValeur = DB.ticketTypes.filter(t=>t.active!==false).reduce((sum,tt)=>sum + personTypeStats(p.id,tt.id).restant*(tt.price||0), 0);
 
     const recentOps = DB.operations.filter(o=>o.personId===p.id).sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,8);
 
@@ -2523,9 +2549,9 @@ const UI = {
       <h2 class="section-title">Stock</h2>
       <div class="card" style="overflow-x:auto;">
         <table class="ledger">
-          <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Retour</th><th>Perte</th><th>Restant</th></tr>
+          <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Retour</th><th>Perte</th><th>Restant</th><th>Valeur</th></tr>
           ${rows}
-          <tr class="total"><td>TOTAL</td><td></td><td></td><td></td><td></td><td>${fmt(totalRestant)}</td></tr>
+          <tr class="total"><td>TOTAL</td><td></td><td></td><td></td><td></td><td>${fmt(totalRestant)}</td><td>${fmtGNF(totalValeur)}</td></tr>
         </table>
       </div>
 
@@ -2760,6 +2786,14 @@ const UI = {
       const lastRemise = DB.operations.filter(o=>o.personId===p.id && o.opType==='REMISE').sort((a,b)=>b.ts.localeCompare(a.ts))[0];
       const lastTt = lastRemise ? ticketType(lastRemise.typeId) : null;
       const lastStr = lastRemise ? `${fmt(lastRemise.qty)} × ${lastTt?lastTt.name:'?'} — ${new Date(lastRemise.ts).toLocaleDateString('fr-FR')}` : 'Aucune';
+      // Détail par type de ticket (5h/24h/7j/30j, ou tout autre type créé) : quantités + montants
+      // réels, un par un — pas seulement le cumul global ci-dessus.
+      const typeRows = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+        const s = personTypeStats(p.id, tt.id);
+        const tm = personTypeMoney(p.id, tt.id);
+        if(s.pris===0 && s.vendu===0 && s.restant===0 && tm.du===0 && tm.paye===0) return '';
+        return `<tr><td>${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}">${fmtGNF(tm.reste)}</td></tr>`;
+      }).join('');
       return `
         <div class="card" style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -2772,6 +2806,13 @@ const UI = {
           <div class="money-row"><span class="label">Argent attendu</span><span class="amount">${fmtGNF(m.du)}</span></div>
           <div class="money-row"><span class="label">Argent rendu (payé)</span><span class="amount pos">${fmtGNF(m.paye)}</span></div>
           <div class="money-row"><span class="label">Dernière attribution</span><span class="amount small" style="font-family:inherit;font-weight:600;">${lastStr}</span></div>
+          ${typeRows ? `
+          <div style="margin-top:8px;overflow-x:auto;">
+            <table class="ledger" style="font-size:12px;">
+              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
+              ${typeRows}
+            </table>
+          </div>` : ''}
         </div>`;
     }).join('');
   },
