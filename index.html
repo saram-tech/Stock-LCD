@@ -678,7 +678,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.8';
+const APP_VERSION = '6.9';
 const APP_UPDATED = '21/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2544,10 +2544,13 @@ const UI = {
     const p = person(this.pIdView);
     if(!p){ document.getElementById('situation-content').innerHTML=`<div class="empty">Personne introuvable.</div>`; return; }
     const m = personMoney(p.id);
-    const rows = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+    // Une ligne DISTINCTE et TOUJOURS visible par type de ticket actif (même à 0), au format
+    // "Type : N tickets — MONTANT GNF" — jamais une table à colonnes multiples qui se comprime
+    // à l'écran. Montant = quantité détenue (restant) × prix ACTUEL du type.
+    const typeLines = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
       const s = personTypeStats(p.id, tt.id);
-      if(s.pris===0 && s.vendu===0 && s.retour===0 && s.perte===0 && s.restant===0) return '';
-      return `<tr><td>${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.retour)}</td><td>${fmt(s.perte)}</td><td>${fmt(s.restant)}</td><td><strong>${fmtGNF(s.restant*(tt.price||0))}</strong></td></tr>`;
+      const montant = s.restant * (tt.price||0);
+      return `<div class="money-row"><span class="label wname">${tt.name}</span><span class="amount">${fmt(s.restant)} tickets — ${fmtGNF(montant)}</span></div>`;
     }).join('');
     const totalRestant = personTotalRestant(p.id);
     const totalValeur = DB.ticketTypes.filter(t=>t.active!==false).reduce((sum,tt)=>sum + personTypeStats(p.id,tt.id).restant*(tt.price||0), 0);
@@ -2567,13 +2570,10 @@ const UI = {
         </div>
       </div>
 
-      <h2 class="section-title">Stock</h2>
-      <div class="card" style="overflow-x:auto;">
-        <table class="ledger">
-          <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Retour</th><th>Perte</th><th>Restant</th><th>Valeur</th></tr>
-          ${rows || `<tr><td colspan="7" style="color:var(--w-ink-soft);">Aucune donnée pour cette personne.</td></tr>`}
-          <tr class="total"><td>TOTAL</td><td></td><td></td><td></td><td></td><td>${fmt(totalRestant)}</td><td>${fmtGNF(totalValeur)}</td></tr>
-        </table>
+      <h2 class="section-title">Types de tickets</h2>
+      <div class="card">
+        ${typeLines || `<div class="empty">Aucun type de ticket actif.</div>`}
+        <div class="money-row" style="border-top:1px solid var(--w-line,#e2ddd0);margin-top:4px;padding-top:8px;"><span class="label"><strong>TOTAL</strong></span><span class="amount"><strong>${fmt(totalRestant)} tickets — ${fmtGNF(totalValeur)}</strong></span></div>
       </div>
 
       <h2 class="section-title">Argent</h2>
