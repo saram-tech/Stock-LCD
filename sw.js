@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stock-lcd-v26';
+const CACHE_NAME = 'stock-lcd-v27';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -7,8 +7,14 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  // Peuple le cache asset par asset (et non via cache.addAll) : si une seule ressource de la liste
+  // est absente/404 (ex. une icône), cache.addAll ferait échouer l'installation ENTIÈRE du nouveau
+  // Service Worker — et donc bloquerait silencieusement toute mise à jour de l'app. Ici, un échec
+  // isolé n'empêche pas l'activation de la nouvelle version.
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(ASSETS.map((url) => cache.add(url).catch((err) => console.warn('SW install: échec', url, err))))
+    )
   );
   self.skipWaiting();
 });

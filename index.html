@@ -678,7 +678,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.7';
+const APP_VERSION = '6.8';
 const APP_UPDATED = '21/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1899,8 +1899,28 @@ else showAccountSelector();
 if(hasPin() && !sessionStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
 
 if ('serviceWorker' in navigator) {
+  // Empêche qu'une ancienne version reste affichée : dès que le nouveau Service Worker prend le
+  // contrôle de la page (skipWaiting + clients.claim, déjà en place dans sw.js), on recharge une
+  // seule fois automatiquement pour recevoir la nouvelle version — au lieu d'attendre une fermeture
+  // manuelle de l'onglet. Ne touche à aucune donnée locale ni Supabase : uniquement le cache SW.
+  let _swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(_swRefreshing) return;
+    _swRefreshing = true;
+    window.location.reload();
+  });
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
+    navigator.serviceWorker.register('sw.js', {updateViaCache:'none'}).then(reg => {
+      // Force une vérification immédiate de sw.js (contourne le cache HTTP du navigateur),
+      // puis revérifie régulièrement tant que l'app reste ouverte, et systématiquement au retour
+      // en ligne ou quand l'app repasse au premier plan — pour détecter toute nouvelle version
+      // sans attendre que le navigateur le fasse de lui-même.
+      const check = () => reg.update().catch(()=>{});
+      check();
+      setInterval(check, 5*60*1000);
+      window.addEventListener('online', check);
+      document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible') check(); });
+    }).catch(err => console.log('SW error:', err));
   });
 }
 
@@ -2526,6 +2546,7 @@ const UI = {
     const m = personMoney(p.id);
     const rows = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
       const s = personTypeStats(p.id, tt.id);
+      if(s.pris===0 && s.vendu===0 && s.retour===0 && s.perte===0 && s.restant===0) return '';
       return `<tr><td>${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.retour)}</td><td>${fmt(s.perte)}</td><td>${fmt(s.restant)}</td><td><strong>${fmtGNF(s.restant*(tt.price||0))}</strong></td></tr>`;
     }).join('');
     const totalRestant = personTotalRestant(p.id);
@@ -2550,7 +2571,7 @@ const UI = {
       <div class="card" style="overflow-x:auto;">
         <table class="ledger">
           <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Retour</th><th>Perte</th><th>Restant</th><th>Valeur</th></tr>
-          ${rows}
+          ${rows || `<tr><td colspan="7" style="color:var(--w-ink-soft);">Aucune donnée pour cette personne.</td></tr>`}
           <tr class="total"><td>TOTAL</td><td></td><td></td><td></td><td></td><td>${fmt(totalRestant)}</td><td>${fmtGNF(totalValeur)}</td></tr>
         </table>
       </div>
@@ -2895,6 +2916,13 @@ const UI = {
       const { data, error } = await sb.from('ticket_type_closures').insert({id: closureId, ticket_type_id: id, closed_at: now}).select();
       if(error) throw error;
       const row = (data && data[0]) ? data[0] : {id:closureId, closed_at:now};
+      // Vérification RÉELLE que la clôture est bien persistée côté serveur (et pas seulement
+      // acceptée en apparence) : on relit la ligne par son id avant de considérer que c'est bon.
+      // C'est cette relecture — pas la seule réponse de l'insert — qui garantit qu'après une
+      // actualisation/reconnexion, la clôture sera bien retrouvée (elle vient de la même requête).
+      const check = await sb.from('ticket_type_closures').select('id,ticket_type_id,closed_at,restored_at').eq('id', row.id);
+      if(check.error) throw check.error;
+      if(!check.data || !check.data.length) throw new Error("la clôture n'a pas pu être vérifiée après enregistrement (elle n'a pas persisté côté serveur)");
       (DB.closures = DB.closures||[]).push({id:row.id, ticketTypeId:id, closedAt:row.closed_at, restoredAt:null});
       await logAudit('CLOSE_TICKET_TYPE', 'ticket_type', id, tt.name, null);
     }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
@@ -2913,6 +2941,9 @@ const UI = {
     try{
       const { error } = await sb.from('ticket_type_closures').update({restored_at: now}).eq('id', closure.id);
       if(error) throw error;
+      const check = await sb.from('ticket_type_closures').select('id,restored_at').eq('id', closure.id);
+      if(check.error) throw check.error;
+      if(!check.data || !check.data.length || !check.data[0].restored_at) throw new Error("la réouverture n'a pas pu être vérifiée après enregistrement (elle n'a pas persisté côté serveur)");
       closure.restoredAt = now;
       await logAudit('RESTORE_TICKET_TYPE_CLOSURE', 'ticket_type', id, tt.name, null);
     }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
