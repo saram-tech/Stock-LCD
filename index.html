@@ -675,7 +675,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.5';
+const APP_VERSION = '6.6';
 const APP_UPDATED = '21/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1908,7 +1908,7 @@ let DB = null; // copie de travail en mémoire, reconstruite depuis Supabase à 
 function mapReceipt(r){ return {id:r.id, ts:r.received_at, personId:null, typeId:r.ticket_type_id, opType:'RECEPTION', qty:r.quantity, unitPrice:null, amount:null, comment:r.comment, correctsOpId:null, reason:null}; }
 function mapMovement(m){ return {id:m.id, ts:m.occurred_at, personId:m.person_id, typeId:m.ticket_type_id, opType:m.movement_type, qty:m.quantity, unitPrice:null, amount:null, comment:m.comment, correctsOpId:null, reason:m.reason}; }
 function mapSale(s){ return {id:s.id, ts:s.sold_at, personId:s.person_id, typeId:s.ticket_type_id, opType:'VENTE', qty:s.quantity, unitPrice:s.unit_price, amount:s.amount, comment:s.comment, correctsOpId:null, reason:null}; }
-function mapPayment(p){ return {id:p.id, ts:p.paid_at, personId:p.person_id, typeId:null, opType:'PAIEMENT', qty:null, unitPrice:null, amount:p.amount, comment:p.comment, correctsOpId:null, reason:null}; }
+function mapPayment(p){ return {id:p.id, ts:p.paid_at, personId:p.person_id, typeId:p.ticket_type_id||null, opType:'PAIEMENT', qty:null, unitPrice:null, amount:p.amount, comment:p.comment, correctsOpId:null, reason:null}; }
 function mapCorrection(c){ return {id:c.id, ts:c.corrected_at, personId:null, typeId:null, opType:'CORRECTION', qty:c.delta_quantity, unitPrice:null, amount:c.delta_amount, comment:null, correctsOpId:c.target_id, reason:c.reason}; }
 
 async function loadData(){
@@ -1980,9 +1980,18 @@ function sortTicketTypes(){
 // Insère une ligne dans la table Supabase concernée puis l'ajoute localement, en la
 // convertissant immédiatement au format "operation" unifié (pas de rechargement complet nécessaire).
 async function insertOp(table, payload, mapper){
-  const { data, error } = await sb.from(table).insert(payload).select();
+  // Génère id + horodatage côté client AVANT l'insertion : si la policy RLS de la table autorise
+  // l'INSERT mais bloque le SELECT de relecture (piège Supabase classique), .select() renvoie un
+  // tableau vide sans "error" — on ne dépend donc plus de la ligne retournée pour construire
+  // l'opération locale, ce qui évite un "Erreur de sauvegarde" alors que l'insertion a réussi.
+  const id = (typeof crypto!=='undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('id-'+Date.now()+'-'+Math.random().toString(36).slice(2));
+  const now = new Date().toISOString();
+  const tsField = {sales:'sold_at', payments:'paid_at', stock_movements:'occurred_at', stock_receipts:'received_at', corrections:'corrected_at'}[table];
+  const fullPayload = {id, ...(tsField?{[tsField]:now}:{}), ...payload};
+  const { data, error } = await sb.from(table).insert(fullPayload).select();
   if(error) throw error;
-  const op = mapper(data[0]);
+  const row = (data && data[0]) ? data[0] : fullPayload;
+  const op = mapper(row);
   DB.operations.push(op);
   DB.operations.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
   DB.operations.forEach((o,i) => o.num = i+1);
@@ -2114,6 +2123,22 @@ function personMoney(personId){
   });
   return {du, paye, reste: du-paye};
 }
+// Même logique que personMoney(), mais limitée à UN type de ticket — nécessaire depuis que chaque
+// versement est obligatoirement rattaché à un type (voir submitPayment). Un ancien paiement sans
+// type (typeId=null, enregistré avant ce correctif) n'est compté dans AUCUN sous-total par type
+// (mais reste compté dans le total global via personMoney) pour ne pas fausser un type au hasard.
+function personTypeMoney(personId, typeId){
+  const du = personTypeStats(personId, typeId).montantVentes;
+  let paye = 0;
+  DB.operations.forEach(op=>{
+    if(op.opType==='PAIEMENT' && op.personId===personId && op.typeId===typeId) paye += (op.amount||0);
+    if(op.opType==='CORRECTION'){
+      const target = DB.operations.find(o=>o.id===op.correctsOpId);
+      if(target && target.opType==='PAIEMENT' && target.personId===personId && target.typeId===typeId) paye += (op.amount||0);
+    }
+  });
+  return {du, paye, reste: du-paye};
+}
 function personTotalRestant(personId){
   let sum=0; DB.ticketTypes.forEach(tt=>{ sum += personTypeStats(personId, tt.id).restant; }); return sum;
 }
@@ -2156,6 +2181,8 @@ const UI = {
     const savedStockPill = this.stockPillType;
     const savedHistFilter = this.histFilter;
     const savedPeopleFilter = this.peopleFilter;
+    const overlay = document.getElementById('wifiOverlay');
+    const savedScroll = overlay ? overlay.scrollTop : 0;
     try{
       await loadData();
     }catch(e){ toast('⚠ Actualisation impossible — vérifiez la connexion'); return; }
@@ -2175,6 +2202,7 @@ const UI = {
       document.getElementById('view-situation').classList.add('active');
       this.renderSituation();
     }
+    if(overlay) overlay.scrollTop = savedScroll; // conserve la position de défilement autant que possible
     toast('WiFi actualisé');
   },
 
@@ -2236,12 +2264,26 @@ const UI = {
               <div class="hist-sub">${a.entity_label||''} · ${dateStr}</div>
             </div>
             ${a.quantity!=null?`<div class="hist-qty">${fmt(a.quantity)}</div>`:''}
+            <button type="button" title="Supprimer cette ligne du journal" aria-label="Supprimer cette ligne du journal"
+              onclick="UI.deleteJournalEntry('${a.id}')"
+              style="background:none;border:none;color:var(--w-red);font-size:16px;line-height:1;padding:4px 2px;cursor:pointer;margin-left:6px;">🗑️</button>
           </div>`;
       }).join('') || `<div class="empty">Aucune action enregistrée.</div>`;
       document.getElementById('journal-list').innerHTML = rows;
     }catch(e){
-      document.getElementById('journal-list').innerHTML = `<div class="empty">⚠ Impossible de charger le journal.</div>`;
+      document.getElementById('journal-list').innerHTML = `<div class="empty">⚠ Impossible de charger le journal${e&&e.message?' : '+e.message:''}.</div>`;
     }
+  },
+  // Suppression individuelle d'une ligne du journal (jamais des ventes/paiements/mouvements —
+  // ce journal ne contient que des traces d'actions administratives).
+  async deleteJournalEntry(entryId){
+    if(!confirm('Supprimer définitivement cette ligne du journal ?')) return;
+    try{
+      const { error } = await sb.from('audit_log').delete().eq('id', entryId);
+      if(error) throw error;
+    }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible')); return; }
+    toast('Ligne du journal supprimée');
+    this.openJournal();
   },
   // Vide uniquement le journal d'audit (suppressions/restaurations de personnes, clôtures/réouvertures
   // de types de tickets, retours+réattributions). Ne touche JAMAIS aux ventes, paiements, mouvements
@@ -2252,7 +2294,7 @@ const UI = {
     try{
       const { error } = await sb.from('audit_log').delete().not('id','is',null);
       if(error) throw error;
-    }catch(e){ toast('⚠ Erreur — impossible de vider le journal'); return; }
+    }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'impossible de vider le journal')); return; }
     toast('Journal vidé');
     this.openJournal();
   },
@@ -2338,11 +2380,12 @@ const UI = {
     const el = document.getElementById('stock-breakdown');
     const s = stockSummary().find(x=>x.type.id===this.stockPillType);
     if(!s){ el.innerHTML = `<div class="empty">Aucun type de ticket.</div>`; return; }
-    const perPerson = DB.people.map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
+    const price = s.type.price||0;
+    const perPerson = DB.people.filter(p=>!p.deletedAt).map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
       .filter(x=>x.restant>0).sort((a,b)=>b.restant-a.restant);
     el.innerHTML = `
-      <div class="money-row"><span class="label wname">Chez moi</span><span class="amount">${fmt(s.disponible)}</span></div>
-      ${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}
+      <div class="money-row"><span class="label wname">Chez moi</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
+      ${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}
       <div class="money-row"><span class="label">Vendus (total)</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
       <div class="money-row"><span class="label">Retournés</span><span class="amount">${fmt(s.retours)}</span></div>
       <div class="money-row"><span class="label">Perdus</span><span class="amount">${fmt(s.pertes)}</span></div>
@@ -2442,7 +2485,7 @@ const UI = {
       const { data, error } = await sb.from('people').insert({name, active:true}).select();
       if(error) throw error;
       DB.people.push({id:data[0].id, name:data[0].name, active:data[0].active, createdAt:data[0].created_at});
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.closeSheet(); this.renderPeople(); this.renderDashboard();
     toast('Personne ajoutée');
   },
@@ -2487,10 +2530,16 @@ const UI = {
       </div>
 
       <h2 class="section-title">Argent</h2>
-      <div class="card">
-        <div class="money-row"><span class="label">Montant des ventes</span><span class="amount">${fmtGNF(m.du)}</span></div>
-        <div class="money-row"><span class="label">Déjà payé</span><span class="amount pos">${fmtGNF(m.paye)}</span></div>
-        <div class="money-row"><span class="label">Reste à payer</span><span class="amount ${m.reste>0?'neg':'pos'}">${fmtGNF(m.reste)}</span></div>
+      <div class="card" style="overflow-x:auto;">
+        <table class="ledger">
+          <tr><th>Type</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
+          ${DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+            const tm = personTypeMoney(p.id, tt.id);
+            if(tm.du===0 && tm.paye===0) return '';
+            return `<tr><td>${tt.name}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmtGNF(tm.reste)}</strong></td></tr>`;
+          }).join('') || `<tr><td colspan="4" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
+          <tr class="total"><td>TOTAL</td><td>${fmtGNF(m.du)}</td><td>${fmtGNF(m.paye)}</td><td>${fmtGNF(m.reste)}</td></tr>
+        </table>
       </div>
 
       <h2 class="section-title">Dernières opérations</h2>
@@ -2530,7 +2579,7 @@ const UI = {
       if(error) throw error;
       p.name = name;
       p.active = active;
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.closeSheet(); this.renderSituation(); this.renderPeople();
     toast('Personne mise à jour');
   },
@@ -2554,7 +2603,7 @@ const UI = {
       if(error) throw error;
       p.deletedAt = now;
       await logAudit('DELETE_PERSON', 'person', id, p.name, null);
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.closeSheet();
     this.goto('personnes');
     this.peopleFilter = 'active';
@@ -2571,7 +2620,7 @@ const UI = {
       if(error) throw error;
       p.deletedAt = null;
       await logAudit('RESTORE_PERSON', 'person', id, p.name, null);
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports();
     toast('Personne restaurée');
   },
@@ -2617,7 +2666,7 @@ const UI = {
     const warn = (restant>0||reste>0) ? `\n\n⚠ ${restant>0?fmt(restant)+' ticket(s) en main. ':''}${reste>0?'Doit '+fmtGNF(reste)+'. ':''}Tout sera effacé avec elle.` : '';
     if(!confirm(`Supprimer DÉFINITIVEMENT "${p.name}" ?\n\nToutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.${warn}`)) return;
     const res = await this.hardDeletePerson(personId);
-    toast(res.ok ? `${p.name} définitivement supprimée` : "⚠ Erreur lors de la suppression définitive");
+    toast(res.ok ? `${p.name} définitivement supprimée` : "⚠ Erreur : "+(res.error&&res.error.message?res.error.message:'suppression impossible (vérifier les droits de suppression Supabase)'));
   },
   // "Vider" les personnes supprimées : suppression DÉFINITIVE et RÉELLE de TOUTES les personnes déjà
   // supprimées (jamais des personnes actives), avec toutes leurs données liées, sans laisser d'orphelins.
@@ -2625,13 +2674,13 @@ const UI = {
     const deleted = DB.people.filter(p=>p.deletedAt);
     if(deleted.length===0){ toast('Aucune personne supprimée à vider'); return; }
     if(!confirm(`Vider définitivement ${deleted.length} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.`)) return;
-    let removed=0, failed=0;
+    let removed=0, failed=0, lastErr=null;
     for(const p of deleted.slice()){
       const res = await this.hardDeletePerson(p.id, {skipRefresh:true});
-      if(res.ok) removed++; else failed++;
+      if(res.ok) removed++; else { failed++; lastErr = res.error; }
     }
     this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports();
-    toast(failed>0 ? `${removed} effacée(s) · ${failed} erreur(s)` : `${removed} personne(s) définitivement effacée(s)`);
+    toast(failed>0 ? `${removed} effacée(s) · ${failed} erreur(s)${lastErr&&lastErr.message?' : '+lastErr.message:''}` : `${removed} personne(s) définitivement effacée(s)`);
   },
 
   /* ---------- HISTORIQUE ---------- */
@@ -2800,12 +2849,14 @@ const UI = {
     if(!tt) return;
     if(!confirm(`Clôturer "${tt.name}" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L'historique complet reste consultable et la clôture est annulable.`)) return;
     const now = new Date().toISOString();
+    const closureId = (typeof crypto!=='undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('id-'+Date.now()+'-'+Math.random().toString(36).slice(2));
     try{
-      const { data, error } = await sb.from('ticket_type_closures').insert({ticket_type_id: id, closed_at: now}).select();
+      const { data, error } = await sb.from('ticket_type_closures').insert({id: closureId, ticket_type_id: id, closed_at: now}).select();
       if(error) throw error;
-      (DB.closures = DB.closures||[]).push({id:data[0].id, ticketTypeId:id, closedAt:data[0].closed_at, restoredAt:null});
+      const row = (data && data[0]) ? data[0] : {id:closureId, closed_at:now};
+      (DB.closures = DB.closures||[]).push({id:row.id, ticketTypeId:id, closedAt:row.closed_at, restoredAt:null});
       await logAudit('CLOSE_TICKET_TYPE', 'ticket_type', id, tt.name, null);
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
     toast(`${tt.name} clôturé — situation remise à 0`);
@@ -2823,7 +2874,7 @@ const UI = {
       if(error) throw error;
       closure.restoredAt = now;
       await logAudit('RESTORE_TICKET_TYPE_CLOSURE', 'ticket_type', id, tt.name, null);
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
     toast(`Clôture de ${tt.name} annulée`);
@@ -2838,7 +2889,7 @@ const UI = {
       sortTicketTypes();
       this.renderParametres(); this.renderDashboard(); this.renderStock();
       toast('Prix mis à jour — les anciennes ventes sont conservées');
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); }
   },
   async toggleType(id){
     const tt = ticketType(id);
@@ -2847,7 +2898,7 @@ const UI = {
       const { error } = await sb.from('ticket_types').update({active}).eq('id', id);
       if(error) throw error;
       tt.active = active;
-    }catch(e){ toast('⚠ Erreur de sauvegarde — réessayez'); return; }
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.renderParametres(); this.renderDashboard(); this.renderStock();
   },
   openAddTicketType(){
@@ -2943,8 +2994,7 @@ const UI = {
   },
   selectPerson(personId){
     this.newOp.personId = personId;
-    if(this.newOp.opType==='PAIEMENT'){ this.renderPaymentForm(); }
-    else { this.renderTypePicker(this.newOp.opType); }
+    this.renderTypePicker(this.newOp.opType);
   },
 
   renderTypePicker(opType){
@@ -2960,7 +3010,8 @@ const UI = {
   },
   selectType(typeId){
     this.newOp.typeId = typeId;
-    this.renderQtyForm();
+    if(this.newOp.opType==='PAIEMENT'){ this.renderPaymentForm(); }
+    else { this.renderQtyForm(); }
   },
 
   renderQtyForm(){
@@ -3051,12 +3102,13 @@ const UI = {
 
   renderPaymentForm(){
     const p = person(this.newOp.personId);
-    const m = personMoney(p.id);
+    const tt = ticketType(this.newOp.typeId);
+    const tm = personTypeMoney(p.id, tt.id);
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
-      <div class="sheet-title">Paiement — ${p.name}</div>
-      <div class="sheet-sub">Reste à payer : ${fmtGNF(m.reste)}</div>
+      <div class="sheet-title">Paiement — ${tt.name}</div>
+      <div class="sheet-sub"><span class="wname">${p.name}</span> · Reste à payer pour ce type : ${fmtGNF(tm.reste)}</div>
       <div class="field"><label>Montant versé (GNF)</label><input type="number" id="pay-amount" min="1" placeholder="0"></div>
       <div class="field"><label>Commentaire (optionnel)</label><textarea id="pay-comment"></textarea></div>
       <div id="pay-error"></div>
@@ -3068,8 +3120,10 @@ const UI = {
     const comment = document.getElementById('pay-comment').value.trim()||null;
     const errEl = document.getElementById('pay-error');
     if(amount<=0){ errEl.innerHTML=`<div class="error-text">Montant invalide.</div>`; return; }
+    const typeId = this.newOp.typeId;
+    if(!typeId){ errEl.innerHTML=`<div class="error-text">Type de ticket manquant — recommencez.</div>`; return; }
     try{
-      await insertOp('payments', {person_id: personId, amount, comment}, mapPayment);
+      await insertOp('payments', {person_id: personId, ticket_type_id: typeId, amount, comment}, mapPayment);
     }catch(e){
       errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
       return;
@@ -3233,7 +3287,7 @@ const UI = {
     }
     try{
       if(rr.amount>0){
-        await insertOp('payments', {person_id: rr.personId, amount: rr.amount, comment: rr.comment || "Retour d'argent — clôture d'attribution ("+tt.name+")"}, mapPayment);
+        await insertOp('payments', {person_id: rr.personId, ticket_type_id: rr.typeId, amount: rr.amount, comment: rr.comment || "Retour d'argent — clôture d'attribution ("+tt.name+")"}, mapPayment);
       }
       if(rr.oldQty>0){
         await insertOp('stock_movements', {movement_type:'RETOUR', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: rr.oldQty, comment:"Clôture de l'ancienne attribution", reason:null}, mapMovement);
