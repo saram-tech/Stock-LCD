@@ -162,26 +162,25 @@
   --w-line:#DCD3BC;
   --w-radius:14px;
   --w-shadow:0 1px 2px rgba(27,42,74,0.06), 0 4px 14px rgba(27,42,74,0.06);
-  --wfs:1;
 }
 /* Thèmes — surchargent uniquement les variables de couleur ; toutes les tailles de police suivent
    --wfs indépendamment du thème. data-theme est posé sur #wifiView par JS (persisté localement). */
-#wifiView[data-theme="blanc"]{
+#wifiOverlay[data-theme="blanc"],#wifiOverlay[data-theme="blanc"] #wifiView{
   --w-paper:#FFFFFF; --w-paper-line:#E7E7E7; --w-ink:#111111; --w-ink-soft:#5A5A5A; --w-card:#FFFFFF;
   --w-line:#DDDDDD; --w-green:#1E7A5F; --w-green-soft:#E1F3EB; --w-amber:#B5691E; --w-amber-soft:#FCEBD8;
   --w-red:#B0342E; --w-red-soft:#FBE5E3; --w-shadow:0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(0,0,0,0.05);
 }
-#wifiView[data-theme="gris"]{
+#wifiOverlay[data-theme="gris"],#wifiOverlay[data-theme="gris"] #wifiView{
   --w-paper:#E7E7E7; --w-paper-line:#CFCFCF; --w-ink:#1A1A1A; --w-ink-soft:#54545A; --w-card:#F4F4F4;
   --w-line:#BDBDBD; --w-green:#1E6E56; --w-green-soft:#D9EAE3; --w-amber:#A9631C; --w-amber-soft:#F0E0CB;
   --w-red:#A6322C; --w-red-soft:#F0D9D7; --w-shadow:0 1px 2px rgba(0,0,0,0.08), 0 4px 14px rgba(0,0,0,0.08);
 }
-#wifiView[data-theme="noir"]{
+#wifiOverlay[data-theme="noir"],#wifiOverlay[data-theme="noir"] #wifiView{
   --w-paper:#000000; --w-paper-line:#242424; --w-ink:#FFFFFF; --w-ink-soft:#B0B0B0; --w-card:#0D0D0D;
   --w-line:#2E2E2E; --w-green:#4FBE9E; --w-green-soft:rgba(79,190,158,0.16); --w-amber:#E0A054; --w-amber-soft:rgba(224,160,84,0.16);
   --w-red:#E17870; --w-red-soft:rgba(225,120,112,0.16); --w-shadow:0 1px 2px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.5);
 }
-#wifiView[data-theme="sombre"]{
+#wifiOverlay[data-theme="sombre"],#wifiOverlay[data-theme="sombre"] #wifiView{
   --w-paper:#151920; --w-paper-line:#262C36; --w-ink:#ECEDF0; --w-ink-soft:#9AA1B0; --w-card:#1E242D;
   --w-line:#323A46; --w-green:#4FBE9E; --w-green-soft:rgba(79,190,158,0.14); --w-amber:#E0A054; --w-amber-soft:rgba(224,160,84,0.14);
   --w-red:#E17870; --w-red-soft:rgba(225,120,112,0.14); --w-shadow:0 1px 2px rgba(0,0,0,0.4), 0 4px 14px rgba(0,0,0,0.4);
@@ -222,6 +221,20 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;display:flex;align-items:center;justify-content:center}#receptionView .modal{background:#fff;border-radius:12px;padding:1.5rem;width:90%;max-width:500px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18)}#receptionView .modal h2{font-size:16px;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;gap:8px}#receptionView .modal-close{margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px;color:#888;padding:0 4px}#receptionView .wa-preview{background:#e9ffe8;border:1px solid #c3f0bd;border-radius:8px;padding:12px;font-size:12px;font-family:'Courier New',monospace;white-space:pre-wrap;color:#1a1a1a;max-height:300px;overflow-y:auto;line-height:1.6;margin-bottom:1rem}#receptionView .wa-btn-row{display:flex;gap:8px;flex-wrap:wrap}
 
 
+#wifiOverlay[data-theme="ocean"],#wifiOverlay[data-theme="ocean"] #wifiView{--w-paper:#0B1C2C;--w-paper-line:#1B3550;--w-ink:#E3F0FB;--w-ink-soft:#8FB0CC;--w-card:#12293F;--w-line:#1F4160;--w-green:#4FD1B0;--w-green-soft:rgba(80,200,150,0.16);--w-amber:#F0B45A;--w-amber-soft:rgba(240,180,80,0.16);--w-red:#F2837B;--w-red-soft:rgba(240,110,100,0.16);--w-shadow:0 4px 14px rgba(0,0,0,0.4)}
+#wifiOverlay[data-theme="foret"],#wifiOverlay[data-theme="foret"] #wifiView{--w-paper:#0F1A14;--w-paper-line:#22382A;--w-ink:#E4F2E8;--w-ink-soft:#8FB09A;--w-card:#17261D;--w-line:#26402F;--w-green:#5BD48A;--w-green-soft:rgba(80,200,150,0.16);--w-amber:#E6B455;--w-amber-soft:rgba(240,180,80,0.16);--w-red:#F08A80;--w-red-soft:rgba(240,110,100,0.16);--w-shadow:0 4px 14px rgba(0,0,0,0.4)}
+#wifiOverlay[data-theme="sepia"],#wifiOverlay[data-theme="sepia"] #wifiView{--w-paper:#F1E6D0;--w-paper-line:#DCCDAA;--w-ink:#3B2F1E;--w-ink-soft:#7A6A50;--w-card:#F8F0DE;--w-line:#D9C9A6;--w-green:#3F7A5A;--w-green-soft:rgba(80,200,150,0.16);--w-amber:#B5691E;--w-amber-soft:rgba(240,180,80,0.16);--w-red:#A6382E;--w-red-soft:rgba(240,110,100,0.16);--w-shadow:0 1px 2px rgba(59,47,30,0.08)}
+#wifiOverlay[data-theme="contraste"],#wifiOverlay[data-theme="contraste"] #wifiView{--w-paper:#000000;--w-paper-line:#FFFFFF;--w-ink:#FFFFFF;--w-ink-soft:#FFE066;--w-card:#000000;--w-line:#FFFFFF;--w-green:#3CFF9A;--w-green-soft:rgba(80,200,150,0.16);--w-amber:#FFD23F;--w-amber-soft:rgba(240,180,80,0.16);--w-red:#FF6B6B;--w-red-soft:rgba(240,110,100,0.16);--w-shadow:none}
+html[data-app-theme="ocean"]{--bg:#0b1c2c;--card:#12293f;--border:#1f4160;--text:#e3f0fb;--muted:#8fb0cc;--inset:#08151f;--sumbg:#12293f;color-scheme:dark}
+html[data-app-theme="foret"]{--bg:#0f1a14;--card:#17261d;--border:#26402f;--text:#e4f2e8;--muted:#8fb09a;--inset:#0a120d;--sumbg:#17261d;color-scheme:dark}
+html[data-app-theme="sepia"]{--bg:#f1e6d0;--card:#f8f0de;--border:#d9c9a6;--text:#3b2f1e;--muted:#7a6a50;--inset:#eadcc0;--sumbg:#f8f0de;color-scheme:light}
+html[data-app-theme="contraste"]{--bg:#000;--card:#000;--border:#fff;--text:#fff;--muted:#ffe066;--inset:#000;--sumbg:#000;color-scheme:dark}
+/* Barre du bas WiFi : tailles plafonnées pour rester entièrement visible quelle que soit la taille de police */
+#wifiView .bottomnav .navbtn{flex:1 1 0;min-width:0;white-space:nowrap;font-size:min(calc(9.5px * var(--wfs,1)),12px)}
+#wifiView .bottomnav .navbtn .ic{font-size:min(calc(18px * var(--wfs,1)),22px)}
+#wifiView .bottomnav{max-width:100vw}
+#wifiView .view{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+@media (max-width:340px){#wifiView .bottomnav .navbtn{font-size:min(calc(9.5px * var(--wfs,1)),10.5px)}#wifiView .bottomnav .fab{width:46px;height:46px;margin:0 2px}}
 /* ===== Préférences globales : thème / police / taille (Stock + WiFi) ===== */
 html[data-app-theme="creme"]{--bg:#FAF7EF;--card:#fff;--border:#e2dccb;--text:#1B2A4A;--muted:#6b7280;--inset:#f3efe3;--sumbg:#fff;color-scheme:light}
 html[data-app-theme="blanc"]{--bg:#fff;--card:#f6f7f9;--border:#dfe2e8;--text:#111827;--muted:#6b7280;--inset:#eef0f4;--sumbg:#f6f7f9;color-scheme:light}
@@ -651,7 +664,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
     <div class="prefRow"><span>Police</span><select id="prefFont" onchange="setPref('font',this.value)"><option value="">Système</option><option value="serif">Serif</option><option value="mono">Mono</option><option value="rounded">Arrondie</option></select></div>
     <div class="prefRow"><span>Taille du texte</span><span style="display:flex;align-items:center;gap:8px;"><button onclick="setPref('size',-0.05)">−</button><b id="prefSizePct">100%</b><button onclick="setPref('size',0.05)">+</button></span></div>
     <div class="prefRow"><span>Langue</span><select id="prefLang" onchange="setPref('lang',this.value)"><option value="fr">Français</option><option value="en">English</option><option value="ff">Adlam (Fulfulde)</option></select></div>
-    <div class="prefRow"><span>Thème</span><select id="prefTheme" onchange="setPref('theme',this.value)"><option value="">Défaut</option><option value="creme">Crème</option><option value="blanc">Blanc</option><option value="gris">Gris</option><option value="noir">Noir</option><option value="sombre">Sombre</option></select></div>
+    <div class="prefRow"><span>Thème</span><select id="prefTheme" onchange="setPref('theme',this.value)"><option value="">Défaut</option><option value="creme">Crème</option><option value="blanc">Blanc</option><option value="gris">Gris</option><option value="noir">Noir</option><option value="sombre">Sombre</option><option value="ocean">Océan</option><option value="foret">Forêt</option><option value="sepia">Sépia</option><option value="contraste">Contraste élevé</option></select></div>
   </div>
   <div class="settingsList">
     <button onclick="openOrderDlg(); settingsDlg.close();">📋 Commande fournisseur (WhatsApp)</button>
@@ -3994,6 +4007,10 @@ const UI = {
       {id:'gris', label:t('Gris')},
       {id:'noir', label:t('Noir')},
       {id:'sombre', label:t('Sombre')},
+      {id:'ocean', label:t('Océan')},
+      {id:'foret', label:t('Forêt')},
+      {id:'sepia', label:t('Sépia')},
+      {id:'contraste', label:t('Contraste élevé')},
     ];
     const themePicker = document.getElementById('theme-picker');
     if(themePicker) themePicker.innerHTML = themes.map(x=>`<button type="button" class="filter-pill ${x.id===curTheme?'active':''}" onclick="UI.setTheme('${x.id}')">${x.label}</button>`).join('');
@@ -4460,7 +4477,7 @@ window.initReceptionApp = async function(){
 
 // Traductions ajoutées (uniquement si absentes du dictionnaire existant)
 (function(){
-  const add = {"Choisis ton espace": "Choose your space", "Commande fournisseur (WhatsApp)": "Supplier order (WhatsApp)", "Commande fournisseur": "Supplier order", "disponible(s)": "available", "valeur du stock (GNF)": "stock value (GNF)", "Rechercher un article...": "Search an item...", "+ Ajouter un article": "+ Add an item", "Aucun article dans cette catégorie. Ajoutez-en un.": "No item in this category. Add one.", "Nom / modèle": "Name / model", "Numéro de téléphone": "Phone number", "Référence (optionnel)": "Reference (optional)", "Quantité en stock": "Quantity in stock", "Seuil d'alerte par défaut": "Default alert threshold", "Seuil d'alerte": "Alert threshold", "Prix d'achat unitaire (GNF, optionnel — rempli quand connu)": "Unit purchase price (GNF, optional — filled when known)", "Désignation": "Designation", "Montant (GNF)": "Amount (GNF)", "Envoyer WhatsApp": "Send WhatsApp", "Copier": "Copy", "Code PIN requis": "PIN code required", "Code PIN": "PIN code", "Valider": "Confirm", "Application verrouillée": "App locked", "Entre ton code PIN pour continuer": "Enter your PIN to continue", "Déverrouiller": "Unlock", "PIN oublié ?": "Forgot PIN?", "Trier A→Z / Z→A": "Sort A→Z / Z→A", "Nom de l'onglet stock perso": "Personal stock tab name", "Nom de l'onglet compte": "Account tab name", "Supprimer une catégorie": "Delete a category", "Définir / modifier le code PIN": "Set / change PIN code", "Verrouiller l'application maintenant": "Lock the app now", "Forcer la synchronisation": "Force synchronization", "Sauvegarder les données (backup)": "Back up data", "Restaurer depuis une sauvegarde": "Restore from a backup", "À propos de l'application": "About the app", "Articles (toutes catégories)": "Items (all categories)", "En attente de synchronisation": "Waiting to sync", "Connexion": "Connection", "hors ligne": "offline", "en ligne": "online", "À propos": "About", "Dernière mise à jour": "Last update", "Développé pour Boulliwel Service": "Built for Boulliwel Service", "Sauvegarde des données": "Data backup", "Restaurer une sauvegarde": "Restore a backup", "Apparence": "Appearance", "Police": "Font", "Système": "System", "Arrondie": "Rounded", "Défaut": "Default", "Crème": "Cream", "Synchronisé": "Synced", "Synchronisation en cours": "Syncing", "Hors ligne": "Offline", "Erreur de synchronisation": "Sync error", "Données en attente": "Data pending", "en attente": "pending", "Mise à jour": "Update", "Rechercher une mise à jour": "Check for updates", "(disponible)": "(available)", "(vérification…)": "(checking…)", "(à jour ✓)": "(up to date ✓)", "(hors ligne)": "(offline)", "(échec, réessaie)": "(failed, retry)", "Toucher pour synchroniser": "Tap to sync","Supprimer cette opération":"Delete this operation","Opération supprimée":"Operation deleted","Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.":"Permanently delete this operation ({label})?\n\nIt will be removed from stock and amounts. This cannot be undone."};
+  const add = {"Choisis ton espace": "Choose your space", "Commande fournisseur (WhatsApp)": "Supplier order (WhatsApp)", "Commande fournisseur": "Supplier order", "disponible(s)": "available", "valeur du stock (GNF)": "stock value (GNF)", "Rechercher un article...": "Search an item...", "+ Ajouter un article": "+ Add an item", "Aucun article dans cette catégorie. Ajoutez-en un.": "No item in this category. Add one.", "Nom / modèle": "Name / model", "Numéro de téléphone": "Phone number", "Référence (optionnel)": "Reference (optional)", "Quantité en stock": "Quantity in stock", "Seuil d'alerte par défaut": "Default alert threshold", "Seuil d'alerte": "Alert threshold", "Prix d'achat unitaire (GNF, optionnel — rempli quand connu)": "Unit purchase price (GNF, optional — filled when known)", "Désignation": "Designation", "Montant (GNF)": "Amount (GNF)", "Envoyer WhatsApp": "Send WhatsApp", "Copier": "Copy", "Code PIN requis": "PIN code required", "Code PIN": "PIN code", "Valider": "Confirm", "Application verrouillée": "App locked", "Entre ton code PIN pour continuer": "Enter your PIN to continue", "Déverrouiller": "Unlock", "PIN oublié ?": "Forgot PIN?", "Trier A→Z / Z→A": "Sort A→Z / Z→A", "Nom de l'onglet stock perso": "Personal stock tab name", "Nom de l'onglet compte": "Account tab name", "Supprimer une catégorie": "Delete a category", "Définir / modifier le code PIN": "Set / change PIN code", "Verrouiller l'application maintenant": "Lock the app now", "Forcer la synchronisation": "Force synchronization", "Sauvegarder les données (backup)": "Back up data", "Restaurer depuis une sauvegarde": "Restore from a backup", "À propos de l'application": "About the app", "Articles (toutes catégories)": "Items (all categories)", "En attente de synchronisation": "Waiting to sync", "Connexion": "Connection", "hors ligne": "offline", "en ligne": "online", "À propos": "About", "Dernière mise à jour": "Last update", "Développé pour Boulliwel Service": "Built for Boulliwel Service", "Sauvegarde des données": "Data backup", "Restaurer une sauvegarde": "Restore a backup", "Apparence": "Appearance", "Police": "Font", "Système": "System", "Arrondie": "Rounded", "Défaut": "Default", "Crème": "Cream", "Synchronisé": "Synced", "Synchronisation en cours": "Syncing", "Hors ligne": "Offline", "Erreur de synchronisation": "Sync error", "Données en attente": "Data pending", "en attente": "pending", "Mise à jour": "Update", "Rechercher une mise à jour": "Check for updates", "(disponible)": "(available)", "(vérification…)": "(checking…)", "(à jour ✓)": "(up to date ✓)", "(hors ligne)": "(offline)", "(échec, réessaie)": "(failed, retry)", "Toucher pour synchroniser": "Tap to sync","Océan":"Ocean","Forêt":"Forest","Sépia":"Sepia","Contraste élevé":"High contrast","Supprimer cette opération":"Delete this operation","Opération supprimée":"Operation deleted","Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.":"Permanently delete this operation ({label})?\n\nIt will be removed from stock and amounts. This cannot be undone."};
   for(const k in add){ if(!(k in I18N.en)) I18N.en[k] = add[k]; }
   delete I18N.en.__sorted; delete I18N.ff.__sorted;
 })();
