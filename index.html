@@ -189,8 +189,8 @@
   position:sticky;top:0;z-index:20;
   background:var(--w-paper);
   border-bottom:1px solid var(--w-paper-line);
-  padding:14px 16px 10px;
-}#wifiView .topbar-row{display:flex;align-items:baseline;justify-content:space-between;}#wifiView .brand{font-weight:700;font-size:calc(20px * var(--wfs,1));letter-spacing:-0.01em;}#wifiView .brand small{display:block;font-weight:400;font-size:calc(13.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:1px;}#wifiView .date-chip{font-family:'IBM Plex Mono',monospace;font-size:calc(12.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView /* Views */
+  padding:5px 48px 5px 12px;
+}#wifiView .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:nowrap;}#wifiView .topbar .syncBadge,#wifiView .topbar .verBadge,#wifiView .topbar .date-chip{white-space:nowrap;font-size:calc(10.5px * var(--wfs,1));}#wifiView .topbar .verBadge{padding:1px 6px;}#wifiView .brand{font-weight:700;font-size:calc(16px * var(--wfs,1));letter-spacing:-0.01em;white-space:nowrap;line-height:1.2;}#wifiView .brand small{display:block;font-weight:400;font-size:calc(13.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:1px;}@media (max-width:520px){#wifiView .brand small{display:none;}}#wifiView .date-chip{font-family:'IBM Plex Mono',monospace;font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView /* Views */
 .view{display:none;padding:14px 16px 24px;max-width:640px;margin:0 auto;}#wifiView .view.active{display:block;animation:fade .18s ease;}#wifiView h2.section-title{font-size:calc(16px * var(--wfs,1));font-weight:600;color:var(--w-ink-soft);margin:22px 0 10px;text-transform:none;}#wifiView h2.section-title:first-child{margin-top:2px;}#wifiView /* Cards */
 .card{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px;box-shadow:var(--w-shadow);}#wifiView .card + .card{margin-top:10px;}#wifiView /* Dashboard grid */
 .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:calc(22px * var(--wfs,1));font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:calc(16px * var(--wfs,1));}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:calc(13px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:calc(14.5px * var(--wfs,1));}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView /* Alerts */
@@ -317,11 +317,11 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 <div class="topbar">
   <div class="topbar-row">
     <div class="brand">Carnet WiFi<small>Suivi des tickets &amp; associés</small></div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:6px;">
       <span class="verBadge" style="margin:0" onclick="verBadgeClick()"></span>
       <span class="syncBadge" id="wifiSyncBadge" onclick="wifiSync(true)"></span>
       <button type="button" title="Actualiser WiFi" aria-label="Actualiser WiFi" onclick="UI.refreshWifi()"
-        style="background:none;border:none;font-size:17px;line-height:1;padding:4px;cursor:pointer;color:var(--w-ink);">🔄</button>
+        style="background:none;border:none;font-size:15px;line-height:1;padding:2px;cursor:pointer;color:var(--w-ink);">🔄</button>
       <div class="date-chip" id="today-chip">—</div>
     </div>
   </div>
@@ -403,6 +403,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 
   <h2 class="section-title" style="margin-top:24px;">Rapport fournisseur</h2>
   <div class="help-text" style="margin-bottom:10px;">Justification complète des tickets reçus, type par type.</div>
+  <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="UI.openReception()">🚚 + Nouvelle réception du fournisseur</button>
   <div id="rapport-content"></div>
   <div style="margin-top:14px;">
     <button class="btn btn-secondary" onclick="UI.exportBackup()">⇩ Exporter une sauvegarde (JSON)</button>
@@ -762,7 +763,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.14';
+const APP_VERSION = '6.15';
 const APP_UPDATED = '24/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1009,7 +1010,14 @@ function mirrorClosures(){
   });
   try{ localStorage.setItem(WIFI_CLKEY, JSON.stringify(DB.closures)); }catch(e){}
 }
-function isTypeClosed(typeId){ return activeClosureCutoff(typeId) !== null; }
+// Un type clôturé redevient "vivant" dès qu'une nouvelle réception est enregistrée après la clôture
+// (nouvelle période : opInPeriod ne compte que ce qui suit la clôture, l'historique reste intact).
+function isTypeClosed(typeId){
+  const cutoff = activeClosureCutoff(typeId);
+  if(cutoff === null) return false;
+  const t = Date.parse(cutoff);
+  return !DB.operations.some(o => o.typeId===typeId && o.opType==='RECEPTION' && Date.parse(o.ts||'') > t);
+}
 function liveTypes(){ return DB.ticketTypes.filter(t => t.active !== false && !isTypeClosed(t.id)); }
 
 async function wifiSync(manual){
@@ -3639,8 +3647,6 @@ const UI = {
       <div class="op-grid">
         <button class="op-tile" onclick="UI.opStep1('REMISE')"><span class="op-icon">📦</span><span class="op-label">Remise</span><span class="op-desc">Donner des tickets</span></button>
         <button class="op-tile" onclick="UI.opStep1('VENTE')"><span class="op-icon">💳</span><span class="op-label">Vente</span><span class="op-desc">Enregistrer une vente</span></button>
-        <button class="op-tile" onclick="UI.opStep1('RETOUR')"><span class="op-icon">↩</span><span class="op-label">Retour</span><span class="op-desc">Tickets rendus</span></button>
-        <button class="op-tile" onclick="UI.opStep1('PERTE')"><span class="op-icon">⚠</span><span class="op-label">Perte</span><span class="op-desc">Tickets perdus</span></button>
         <button class="op-tile" onclick="UI.opStep1('ANNULATION')"><span class="op-icon">✕</span><span class="op-label">Annulation</span><span class="op-desc">Tickets inutilisables</span></button>
         <button class="op-tile" onclick="UI.opStep1('PAIEMENT')"><span class="op-icon">💰</span><span class="op-label">Paiement</span><span class="op-desc">Argent versé</span></button>
         <button class="op-tile" onclick="UI.opStep1('RECEPTION')"><span class="op-icon">🚚</span><span class="op-label">Réception</span><span class="op-desc">Du fournisseur</span></button>
@@ -3649,6 +3655,10 @@ const UI = {
     `);
   },
 
+  openReception(){
+    this.newOp = {personId: null};
+    this.opStep1('RECEPTION');
+  },
   opStep1(opType){
     this.newOp.opType = opType;
     const needsPerson = opType!=='RECEPTION';
@@ -3682,13 +3692,14 @@ const UI = {
   },
 
   renderTypePicker(opType){
-    const types = liveTypes();
+    // Réception fournisseur : tous les types actifs, y compris clôturés (une réception rouvre une nouvelle période).
+    const types = opType==='RECEPTION' ? DB.ticketTypes.filter(t=>t.active!==false) : liveTypes();
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">${OP_META[opType].label} — Type de ticket</div>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        ${types.map(tt=>`<button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="UI.selectType('${tt.id}')">${tt.name} <span style="margin-left:auto;color:var(--ink-soft);font-size:12px;">${tt.price?fmtGNF(tt.price):''}</span></button>`).join('')}
+        ${types.map(tt=>`<button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="UI.selectType('${tt.id}')">${tt.name} <span style="margin-left:auto;color:var(--ink-soft);font-size:12px;">${opType==='RECEPTION'&&isTypeClosed(tt.id)?'clôturé · ':''}${tt.price?fmtGNF(tt.price):''}</span></button>`).join('') || '<div class="empty">Aucun type de ticket actif. Créez-en un dans Paramètres.</div>'}
       </div>
     `);
   },
