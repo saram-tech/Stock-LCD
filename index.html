@@ -8,7 +8,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<meta name="theme-color" content="#0f1115">
+<meta name="theme-color" id="metaTheme" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stock LCD">
@@ -16,20 +16,20 @@
 <style>
   :root{
     --bg:#0f1115; --card:#1a1d24; --border:#2a2e38;
-    --text:#e8e9ec; --muted:#8b8f9a;
+    --text:#e8e9ec; --muted:#8b8f9a; --inset:var(--inset); --sumbg:linear-gradient(135deg,#1a1d24,#22262f);
     --green:#22c55e; --red:#ef4444; --blue:#3b82f6; --orange:#f59e0b; --gold:#eab308;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     background:var(--bg); color:var(--text);
-    font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+    font-family:var(--app-font,-apple-system,Segoe UI,Roboto,sans-serif);
     padding:16px; max-width:560px; margin:0 auto;
     padding-bottom:90px;
   }
   h1{font-size:16px; margin:0 0 6px 0; display:flex; align-items:center; gap:6px;}
   .summaryRow{display:flex; gap:8px; margin-bottom:8px;}
   .summary{
-    flex:1; background:linear-gradient(135deg,#1a1d24,#22262f);
+    flex:1; background:var(--sumbg);
     border:1px solid var(--border); border-radius:12px;
     padding:9px; text-align:center;
   }
@@ -110,14 +110,14 @@
   .settingsList{display:flex; flex-direction:column; gap:8px; margin-bottom:6px;}
   .settingsList button{
     width:100%; text-align:left; padding:12px 14px; border-radius:10px; border:1px solid var(--border);
-    background:#111318; color:var(--text); font-size:14px; cursor:pointer;
+    background:var(--inset); color:var(--text); font-size:14px; cursor:pointer;
   }
   .settingsList button.danger{color:var(--red); border-color:#3a1f22;}
   .row button.danger{background:var(--red); color:#fff; border:none;}
   .settingsInfo{font-size:12px; color:var(--muted); margin:10px 0; line-height:1.6;}
   textarea.backupArea{
     width:100%; min-height:100px; margin-top:6px; margin-bottom:14px;
-    border-radius:8px; border:1px solid var(--border); background:#111318; color:var(--text);
+    border-radius:8px; border:1px solid var(--border); background:var(--inset); color:var(--text);
     font-size:12px; padding:10px; font-family:'Courier New',monospace;
     white-space:pre;
   }
@@ -134,13 +134,13 @@
   dialog::backdrop{background:rgba(0,0,0,0.6);}
   dialog input, dialog select{
     width:100%; padding:11px; margin-top:6px; margin-bottom:14px;
-    border-radius:8px; border:1px solid var(--border); background:#111318; color:var(--text);
+    border-radius:8px; border:1px solid var(--border); background:var(--inset); color:var(--text);
     font-size:15px;
   }
   dialog label{font-size:13px; color:var(--muted);}
   dialog .row{display:flex; gap:10px;}
   dialog .row button{flex:1; padding:12px; border-radius:8px; border:none; font-weight:600; cursor:pointer;}
-  .cancel{background:#2a2e38; color:var(--text);}
+  .cancel{background:var(--border); color:var(--text);}
   .save{background:var(--blue); color:#fff;}
   .fieldRow{display:flex; gap:10px;}
   .fieldRow > div{flex:1;}
@@ -162,25 +162,48 @@
   --w-line:#DCD3BC;
   --w-radius:14px;
   --w-shadow:0 1px 2px rgba(27,42,74,0.06), 0 4px 14px rgba(27,42,74,0.06);
-}#wifiView *{box-sizing:border-box;}#wifiView{margin:0;padding:0;background:var(--w-paper);color:var(--w-ink);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;}#wifiView{padding-bottom:78px;min-height:100vh;}#wifiView .num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}#wifiView ::selection{background:var(--w-green-soft);}#wifiView button{font-family:inherit;}#wifiView a{color:inherit;}#wifiView /* Header */
+  --wfs:1;
+}
+/* Thèmes — surchargent uniquement les variables de couleur ; toutes les tailles de police suivent
+   --wfs indépendamment du thème. data-theme est posé sur #wifiView par JS (persisté localement). */
+#wifiView[data-theme="blanc"]{
+  --w-paper:#FFFFFF; --w-paper-line:#E7E7E7; --w-ink:#111111; --w-ink-soft:#5A5A5A; --w-card:#FFFFFF;
+  --w-line:#DDDDDD; --w-green:#1E7A5F; --w-green-soft:#E1F3EB; --w-amber:#B5691E; --w-amber-soft:#FCEBD8;
+  --w-red:#B0342E; --w-red-soft:#FBE5E3; --w-shadow:0 1px 2px rgba(0,0,0,0.05), 0 4px 14px rgba(0,0,0,0.05);
+}
+#wifiView[data-theme="gris"]{
+  --w-paper:#E7E7E7; --w-paper-line:#CFCFCF; --w-ink:#1A1A1A; --w-ink-soft:#54545A; --w-card:#F4F4F4;
+  --w-line:#BDBDBD; --w-green:#1E6E56; --w-green-soft:#D9EAE3; --w-amber:#A9631C; --w-amber-soft:#F0E0CB;
+  --w-red:#A6322C; --w-red-soft:#F0D9D7; --w-shadow:0 1px 2px rgba(0,0,0,0.08), 0 4px 14px rgba(0,0,0,0.08);
+}
+#wifiView[data-theme="noir"]{
+  --w-paper:#000000; --w-paper-line:#242424; --w-ink:#FFFFFF; --w-ink-soft:#B0B0B0; --w-card:#0D0D0D;
+  --w-line:#2E2E2E; --w-green:#4FBE9E; --w-green-soft:rgba(79,190,158,0.16); --w-amber:#E0A054; --w-amber-soft:rgba(224,160,84,0.16);
+  --w-red:#E17870; --w-red-soft:rgba(225,120,112,0.16); --w-shadow:0 1px 2px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.5);
+}
+#wifiView[data-theme="sombre"]{
+  --w-paper:#151920; --w-paper-line:#262C36; --w-ink:#ECEDF0; --w-ink-soft:#9AA1B0; --w-card:#1E242D;
+  --w-line:#323A46; --w-green:#4FBE9E; --w-green-soft:rgba(79,190,158,0.14); --w-amber:#E0A054; --w-amber-soft:rgba(224,160,84,0.14);
+  --w-red:#E17870; --w-red-soft:rgba(225,120,112,0.14); --w-shadow:0 1px 2px rgba(0,0,0,0.4), 0 4px 14px rgba(0,0,0,0.4);
+}#wifiView *{box-sizing:border-box;}#wifiView{margin:0;padding:0;background:var(--w-paper);color:var(--w-ink);font-family:var(--app-font,'IBM Plex Sans',sans-serif);-webkit-font-smoothing:antialiased;overscroll-behavior-y:contain;}#wifiView{padding-bottom:78px;min-height:100vh;}#wifiView .num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}#wifiView ::selection{background:var(--w-green-soft);}#wifiView button{font-family:inherit;}#wifiView a{color:inherit;}#wifiView /* Header */
 .topbar{
   position:sticky;top:0;z-index:20;
   background:var(--w-paper);
   border-bottom:1px solid var(--w-paper-line);
   padding:14px 16px 10px;
-}#wifiView .topbar-row{display:flex;align-items:baseline;justify-content:space-between;}#wifiView .brand{font-weight:700;font-size:17px;letter-spacing:-0.01em;}#wifiView .brand small{display:block;font-weight:400;font-size:11.5px;color:var(--w-ink-soft);margin-top:1px;}#wifiView .date-chip{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--w-ink-soft);}#wifiView /* Views */
-.view{display:none;padding:14px 16px 24px;max-width:640px;margin:0 auto;}#wifiView .view.active{display:block;animation:fade .18s ease;}#wifiView h2.section-title{font-size:14px;font-weight:600;color:var(--w-ink-soft);margin:22px 0 10px;text-transform:none;}#wifiView h2.section-title:first-child{margin-top:2px;}#wifiView /* Cards */
+}#wifiView .topbar-row{display:flex;align-items:baseline;justify-content:space-between;}#wifiView .brand{font-weight:700;font-size:calc(20px * var(--wfs,1));letter-spacing:-0.01em;}#wifiView .brand small{display:block;font-weight:400;font-size:calc(13.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:1px;}#wifiView .date-chip{font-family:'IBM Plex Mono',monospace;font-size:calc(12.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView /* Views */
+.view{display:none;padding:14px 16px 24px;max-width:640px;margin:0 auto;}#wifiView .view.active{display:block;animation:fade .18s ease;}#wifiView h2.section-title{font-size:calc(16px * var(--wfs,1));font-weight:600;color:var(--w-ink-soft);margin:22px 0 10px;text-transform:none;}#wifiView h2.section-title:first-child{margin-top:2px;}#wifiView /* Cards */
 .card{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px;box-shadow:var(--w-shadow);}#wifiView .card + .card{margin-top:10px;}#wifiView /* Dashboard grid */
-.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:11.5px;color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:16px;}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:13px;color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14.5px;}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView /* Alerts */
-.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.4;}#wifiView .alert + .alert{margin-top:8px;}#wifiView .alert.amber{background:var(--w-amber-soft);color:#7A4A17;}#wifiView .alert.red{background:var(--w-red-soft);color:#7A2621;}#wifiView .alert .dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex:none;}#wifiView .alert.amber .dot{background:var(--w-amber);}#wifiView .alert.red .dot{background:var(--w-red);}#wifiView /* Table (ledger style) */
-table.ledger{width:100%;border-collapse:collapse;font-size:12.5px;}#wifiView table.ledger th{text-align:right;font-weight:500;color:var(--w-ink-soft);font-size:10.5px;padding:0 4px 6px;border-bottom:1px solid var(--w-line);}#wifiView table.ledger th:first-child, #wifiView table.ledger td:first-child{text-align:left;}#wifiView table.ledger td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--w-paper-line);font-family:'IBM Plex Mono',monospace;}#wifiView table.ledger tr:last-child td{border-bottom:none;}#wifiView table.ledger tr.total td{font-weight:700;border-top:1px solid var(--w-ink);padding-top:8px;}#wifiView /* People list */
-.person-row{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:700;font-size:17px;}#wifiView .wname{font-weight:700;font-size:14.5px;color:var(--w-ink);}#wifiView .person-sub{font-size:11.5px;color:var(--w-ink-soft);margin-top:2px;}#wifiView .person-right{text-align:right;}#wifiView .chip{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:20px;font-weight:600;}#wifiView .chip.due{background:var(--w-red-soft);color:var(--w-red);}#wifiView .chip.clear{background:var(--w-green-soft);color:var(--w-green);}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
-.hist-row{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--w-paper-line);align-items:flex-start;}#wifiView .hist-row:last-child{border-bottom:none;}#wifiView .hist-badge{flex:none;width:8px;height:8px;border-radius:2px;margin-top:5px;}#wifiView .hist-main{flex:1;min-width:0;}#wifiView .hist-title{font-size:13px;font-weight:600;}#wifiView .hist-sub{font-size:11.5px;color:var(--w-ink-soft);margin-top:1px;}#wifiView .hist-qty{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;white-space:nowrap;}#wifiView /* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:11px 16px;font-size:13.5px;font-weight:600;cursor:pointer;width:100%;}#wifiView .btn-primary{background:var(--w-ink);color:var(--w-paper);}#wifiView .btn-secondary{background:var(--w-card);color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-outline{background:transparent;color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-danger{background:var(--w-red);color:#fff;}#wifiView .btn-row{display:flex;gap:8px;}#wifiView .btn-row .btn{width:auto;flex:1;}#wifiView .btn:active{transform:scale(0.98);}#wifiView .btn:disabled{opacity:0.4;cursor:not-allowed;}#wifiView /* Op-type grid (new operation) */
-.op-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}#wifiView .op-tile{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px 12px;text-align:left;cursor:pointer;}#wifiView .op-tile .op-icon{font-size:19px;}#wifiView .op-tile .op-label{display:block;font-weight:600;font-size:13.5px;margin-top:6px;}#wifiView .op-tile .op-desc{display:block;font-size:11px;color:var(--w-ink-soft);margin-top:2px;}#wifiView /* Bottom nav */
-.bottomnav{position:fixed;bottom:0;left:0;right:0;background:var(--w-card);border-top:1px solid var(--w-line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom);}#wifiView .navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 8px;background:none;border:none;color:var(--w-ink-soft);cursor:pointer;font-size:9.5px;font-weight:600;}#wifiView .navbtn.active{color:var(--w-ink);}#wifiView .navbtn .ic{font-size:18px;}#wifiView .fab{position:relative;top:-16px;width:52px;height:52px;border-radius:50%;background:var(--w-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 14px rgba(47,111,94,0.4);border:4px solid var(--w-paper);flex:none;margin:0 4px;cursor:pointer;}#wifiView /* Sheets/modals */
-.overlay{position:fixed;inset:0;background:rgba(27,42,74,0.42);z-index:50;display:none;align-items:flex-end;}#wifiView .overlay.active{display:flex;}#wifiView .sheet{background:var(--w-paper);width:100%;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));animation:slideup .2s ease;}#wifiView .sheet-handle{width:36px;height:4px;background:var(--w-line);border-radius:3px;margin:0 auto 12px;}#wifiView .sheet-title{font-size:16px;font-weight:700;margin-bottom:4px;}#wifiView .sheet-sub{font-size:12px;color:var(--w-ink-soft);margin-bottom:14px;}#wifiView .sheet-close{position:absolute;right:14px;top:14px;background:none;border:none;font-size:20px;color:var(--w-ink-soft);cursor:pointer;}#wifiView /* Forms */
-.field{margin-bottom:12px;}#wifiView .field label{display:block;font-size:11.5px;font-weight:600;color:var(--w-ink-soft);margin-bottom:5px;}#wifiView .field input, #wifiView .field select, #wifiView .field textarea{width:100%;border:1px solid var(--w-line);background:var(--w-card);border-radius:10px;padding:10px 11px;font-size:14px;font-family:inherit;color:var(--w-ink);}#wifiView .field textarea{resize:vertical;min-height:56px;}#wifiView .field input:focus, #wifiView .field select:focus, #wifiView .field textarea:focus{outline:2px solid var(--w-ink);outline-offset:-1px;}#wifiView .qty-select{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}#wifiView .qty-tile{border:1px solid var(--w-line);background:var(--w-card);border-radius:9px;padding:9px 4px;text-align:center;font-size:11.5px;cursor:pointer;}#wifiView .qty-tile .qty-n{display:block;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;}#wifiView .qty-tile.disabled{opacity:0.35;}#wifiView .qty-tile.selected{border-color:var(--w-ink);background:var(--w-ink);color:#fff;}#wifiView .help-text{font-size:11px;color:var(--w-ink-soft);margin-top:4px;}#wifiView .error-text{font-size:11.5px;color:var(--w-red);margin-top:6px;font-weight:600;}#wifiView .search-bar{display:flex;gap:8px;margin-bottom:10px;}#wifiView .search-bar input{flex:1;}#wifiView .filter-row{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;}#wifiView .filter-pill{flex:none;border:1px solid var(--w-line);background:var(--w-card);border-radius:20px;padding:6px 12px;font-size:11.5px;cursor:pointer;white-space:nowrap;}#wifiView .filter-pill.active{background:var(--w-ink);color:var(--w-paper);border-color:var(--w-ink);}#wifiView .empty{text-align:center;padding:30px 10px;color:var(--w-ink-soft);font-size:13px;}#wifiView .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--w-ink);color:var(--w-paper);padding:10px 18px;border-radius:20px;font-size:12.5px;font-weight:600;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;}#wifiView .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}#wifiView .settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--w-paper-line);}#wifiView .settings-row:last-child{border-bottom:none;}#wifiView .settings-row .st-label{font-size:13.5px;font-weight:500;}#wifiView .settings-row .st-sub{font-size:11px;color:var(--w-ink-soft);margin-top:2px;}#wifiView .settings-row input[type=number]{width:90px;text-align:right;}#wifiView .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--w-ink-soft);background:none;border:none;padding:0 0 12px;cursor:pointer;}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:calc(22px * var(--wfs,1));font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:calc(16px * var(--wfs,1));}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:calc(13px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:calc(14.5px * var(--wfs,1));}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView /* Alerts */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:calc(12.5px * var(--wfs,1));line-height:1.4;}#wifiView .alert + .alert{margin-top:8px;}#wifiView .alert.amber{background:var(--w-amber-soft);color:#7A4A17;}#wifiView .alert.red{background:var(--w-red-soft);color:#7A2621;}#wifiView .alert .dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex:none;}#wifiView .alert.amber .dot{background:var(--w-amber);}#wifiView .alert.red .dot{background:var(--w-red);}#wifiView /* Table (ledger style) */
+table.ledger{width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--wfs,1));}#wifiView table.ledger th{text-align:right;font-weight:500;color:var(--w-ink-soft);font-size:calc(10.5px * var(--wfs,1));padding:0 4px 6px;border-bottom:1px solid var(--w-line);}#wifiView table.ledger th:first-child, #wifiView table.ledger td:first-child{text-align:left;}#wifiView table.ledger td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--w-paper-line);font-family:'IBM Plex Mono',monospace;}#wifiView table.ledger tr:last-child td{border-bottom:none;}#wifiView table.ledger tr.total td{font-weight:700;border-top:1px solid var(--w-ink);padding-top:8px;}#wifiView /* People list */
+.person-row{display:flex;align-items:center;justify-content:space-between;padding:14px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:700;font-size:calc(21px * var(--wfs,1));}#wifiView .wname{font-weight:700;font-size:calc(16px * var(--wfs,1));color:var(--w-ink);}#wifiView .person-sub{font-size:calc(15px * var(--wfs,1));color:var(--w-ink-soft);margin-top:3px;}#wifiView .person-right{text-align:right;}#wifiView .chip{display:inline-block;font-size:calc(13px * var(--wfs,1));padding:3px 9px;border-radius:20px;font-weight:600;}#wifiView .chip.due{background:var(--w-red-soft);color:var(--w-red);}#wifiView .chip.clear{background:var(--w-green-soft);color:var(--w-green);}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
+.hist-row{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--w-paper-line);align-items:flex-start;}#wifiView .hist-row:last-child{border-bottom:none;}#wifiView .hist-badge{flex:none;width:8px;height:8px;border-radius:2px;margin-top:5px;}#wifiView .hist-main{flex:1;min-width:0;}#wifiView .hist-title{font-size:calc(13px * var(--wfs,1));font-weight:600;}#wifiView .hist-sub{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:1px;}#wifiView .hist-qty{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--wfs,1));font-weight:600;white-space:nowrap;}#wifiView /* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:13px 16px;font-size:calc(16px * var(--wfs,1));font-weight:600;cursor:pointer;width:100%;}#wifiView .btn-primary{background:var(--w-ink);color:var(--w-paper);}#wifiView .btn-secondary{background:var(--w-card);color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-outline{background:transparent;color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-danger{background:var(--w-red);color:#fff;}#wifiView .btn-row{display:flex;gap:8px;}#wifiView .btn-row .btn{width:auto;flex:1;}#wifiView .btn:active{transform:scale(0.98);}#wifiView .btn:disabled{opacity:0.4;cursor:not-allowed;}#wifiView /* Op-type grid (new operation) */
+.op-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}#wifiView .op-tile{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px 12px;text-align:left;cursor:pointer;}#wifiView .op-tile .op-icon{font-size:calc(19px * var(--wfs,1));}#wifiView .op-tile .op-label{display:block;font-weight:600;font-size:calc(13.5px * var(--wfs,1));margin-top:6px;}#wifiView .op-tile .op-desc{display:block;font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);margin-top:2px;}#wifiView /* Bottom nav */
+.bottomnav{position:fixed;bottom:0;left:0;right:0;background:var(--w-card);border-top:1px solid var(--w-line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom);}#wifiView .navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 8px;background:none;border:none;color:var(--w-ink-soft);cursor:pointer;font-size:calc(9.5px * var(--wfs,1));font-weight:600;}#wifiView .navbtn.active{color:var(--w-ink);}#wifiView .navbtn .ic{font-size:calc(18px * var(--wfs,1));}#wifiView .fab{position:relative;top:-16px;width:52px;height:52px;border-radius:50%;background:var(--w-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:calc(26px * var(--wfs,1));box-shadow:0 4px 14px rgba(47,111,94,0.4);border:4px solid var(--w-paper);flex:none;margin:0 4px;cursor:pointer;}#wifiView /* Sheets/modals */
+.overlay{position:fixed;inset:0;background:rgba(27,42,74,0.42);z-index:50;display:none;align-items:flex-end;}#wifiView .overlay.active{display:flex;}#wifiView .sheet{background:var(--w-paper);width:100%;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));animation:slideup .2s ease;}#wifiView .sheet-handle{width:36px;height:4px;background:var(--w-line);border-radius:3px;margin:0 auto 12px;}#wifiView .sheet-title{font-size:calc(16px * var(--wfs,1));font-weight:700;margin-bottom:4px;}#wifiView .sheet-sub{font-size:calc(12px * var(--wfs,1));color:var(--w-ink-soft);margin-bottom:14px;}#wifiView .sheet-close{position:absolute;right:14px;top:14px;background:none;border:none;font-size:calc(20px * var(--wfs,1));color:var(--w-ink-soft);cursor:pointer;}#wifiView /* Forms */
+.field{margin-bottom:12px;}#wifiView .field label{display:block;font-size:calc(11.5px * var(--wfs,1));font-weight:600;color:var(--w-ink-soft);margin-bottom:5px;}#wifiView .field input, #wifiView .field select, #wifiView .field textarea{width:100%;border:1px solid var(--w-line);background:var(--w-card);border-radius:10px;padding:10px 11px;font-size:calc(14px * var(--wfs,1));font-family:inherit;color:var(--w-ink);}#wifiView .field textarea{resize:vertical;min-height:56px;}#wifiView .field input:focus, #wifiView .field select:focus, #wifiView .field textarea:focus{outline:2px solid var(--w-ink);outline-offset:-1px;}#wifiView .qty-select{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}#wifiView .qty-tile{border:1px solid var(--w-line);background:var(--w-card);border-radius:9px;padding:9px 4px;text-align:center;font-size:calc(11.5px * var(--wfs,1));cursor:pointer;}#wifiView .qty-tile .qty-n{display:block;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:calc(14px * var(--wfs,1));}#wifiView .qty-tile.disabled{opacity:0.35;}#wifiView .qty-tile.selected{border-color:var(--w-ink);background:var(--w-ink);color:#fff;}#wifiView .help-text{font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);margin-top:4px;}#wifiView .error-text{font-size:calc(11.5px * var(--wfs,1));color:var(--w-red);margin-top:6px;font-weight:600;}#wifiView .search-bar{display:flex;gap:8px;margin-bottom:10px;}#wifiView .search-bar input{flex:1;font-size:calc(16px * var(--wfs,1));padding:10px 11px;border:1px solid var(--w-line);border-radius:10px;background:var(--w-card);color:var(--w-ink);}#wifiView .filter-row{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;}#wifiView .filter-pill{flex:none;border:1px solid var(--w-line);background:var(--w-card);border-radius:20px;padding:8px 14px;font-size:calc(14px * var(--wfs,1));cursor:pointer;white-space:nowrap;}#wifiView .filter-pill.active{background:var(--w-ink);color:var(--w-paper);border-color:var(--w-ink);}#wifiView .empty{text-align:center;padding:30px 10px;color:var(--w-ink-soft);font-size:calc(15px * var(--wfs,1));}#wifiView .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--w-ink);color:var(--w-paper);padding:10px 18px;border-radius:20px;font-size:calc(12.5px * var(--wfs,1));font-weight:600;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;}#wifiView .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}#wifiView .settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--w-paper-line);}#wifiView .settings-row:last-child{border-bottom:none;}#wifiView .settings-row .st-label{font-size:calc(13.5px * var(--wfs,1));font-weight:500;}#wifiView .settings-row .st-sub{font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);margin-top:2px;}#wifiView .settings-row input[type=number]{width:90px;text-align:right;}#wifiView .back-btn{display:flex;align-items:center;gap:6px;font-size:calc(13px * var(--wfs,1));font-weight:600;color:var(--w-ink-soft);background:none;border:none;padding:0 0 12px;cursor:pointer;}
 
 @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
 @keyframes slideup{from{transform:translateY(24px);opacity:0.5;}to{transform:none;opacity:1;}}
@@ -198,12 +221,31 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 .db-wrap{border:1px solid #ddd;border-radius:8px;overflow:hidden;max-height:380px;overflow-y:auto}#receptionView .db-table{width:100%;border-collapse:collapse;font-size:12px}#receptionView .db-table thead{position:sticky;top:0;z-index:5}#receptionView .db-table th{padding:8px 10px;text-align:left;font-size:11px;font-weight:500;color:#555;background:#f0f0eb;border-bottom:1px solid #ddd}#receptionView .db-table td{padding:6px 10px;border-bottom:1px solid #ececec;color:#1a1a1a}#receptionView .db-table tr:last-child td{border-bottom:none}#receptionView .db-table tbody tr:hover{background:#fafafa}#receptionView .db-table td input{font-size:12px;padding:2px 6px;height:26px;width:100%;border-radius:5px;border:1px solid #ddd;background:#fff;font-family:inherit}#receptionView .status{font-size:12px;margin-left:auto}#receptionView .status.ok{color:#166534}#receptionView .status.err{color:#c0392b}#receptionView .hint{font-size:11px;color:#888;margin-top:8px;line-height:1.5}#receptionView .search-wrap{position:relative;margin-bottom:10px}#receptionView .search-wrap input{width:100%;padding-left:30px;font-size:13px;height:34px;border-radius:8px;border:1px solid #ddd;background:#fff}#receptionView .search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:15px;color:#aaa;pointer-events:none}#receptionView /* WHATSAPP MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;display:flex;align-items:center;justify-content:center}#receptionView .modal{background:#fff;border-radius:12px;padding:1.5rem;width:90%;max-width:500px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18)}#receptionView .modal h2{font-size:16px;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;gap:8px}#receptionView .modal-close{margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px;color:#888;padding:0 4px}#receptionView .wa-preview{background:#e9ffe8;border:1px solid #c3f0bd;border-radius:8px;padding:12px;font-size:12px;font-family:'Courier New',monospace;white-space:pre-wrap;color:#1a1a1a;max-height:300px;overflow-y:auto;line-height:1.6;margin-bottom:1rem}#receptionView .wa-btn-row{display:flex;gap:8px;flex-wrap:wrap}
 
+
+/* ===== Préférences globales : thème / police / taille (Stock + WiFi) ===== */
+html[data-app-theme="creme"]{--bg:#FAF7EF;--card:#fff;--border:#e2dccb;--text:#1B2A4A;--muted:#6b7280;--inset:#f3efe3;--sumbg:#fff;color-scheme:light}
+html[data-app-theme="blanc"]{--bg:#fff;--card:#f6f7f9;--border:#dfe2e8;--text:#111827;--muted:#6b7280;--inset:#eef0f4;--sumbg:#f6f7f9;color-scheme:light}
+html[data-app-theme="gris"]{--bg:#e5e7eb;--card:#f3f4f6;--border:#cfd3da;--text:#1f2937;--muted:#5b6472;--inset:#dfe2e7;--sumbg:#f3f4f6;color-scheme:light}
+html[data-app-theme="noir"]{--bg:#000;--card:#0c0c0c;--border:#262626;--text:#f5f5f5;--muted:#9a9a9a;--inset:#000;--sumbg:#0c0c0c;color-scheme:dark}
+html[data-app-theme="sombre"]{--bg:#131826;--card:#1c2333;--border:#2c3550;--text:#e6e9f2;--muted:#8f99b3;--inset:#0e121c;--sumbg:#1c2333;color-scheme:dark}
+html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
+#stockSpace,dialog{zoom:var(--app-zoom,1)}
+.prefBlock{border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:10px}
+.prefRow{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:6px 0;font-size:14px}
+.prefRow select{width:auto;flex:1;max-width:60%;margin:0;padding:8px}
+.prefRow button{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--inset);color:var(--text);font-size:16px}
+.verBadge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid currentColor;opacity:.75;cursor:pointer;white-space:nowrap}
+.verBadge.upd{opacity:1;color:var(--orange,#f59e0b);animation:pulseUpd 1.6s infinite}
+@keyframes pulseUpd{50%{opacity:.5}}
+.syncBadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer}
+.syncBadge i{width:8px;height:8px;border-radius:50%;display:inline-block}
 </style>
 </head>
 <body>
 
 <div id="accountSelector" style="display:none; position:fixed; inset:0; z-index:10000; background:#0f1115; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px;">
   <div style="font-size:22px; font-weight:700; color:#e8e9ec; margin-bottom:8px; text-align:center;">Choisis ton espace</div>
+  <span class="verBadge" style="margin:0;color:#8b8f9a" onclick="verBadgeClick()"></span>
   <button onclick="enterStock()" style="width:100%; max-width:320px; padding:22px; border-radius:16px; border:1px solid #2a2e38; background:#1a1d24; color:#e8e9ec; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">📦 Compte Stock</button>
   <button onclick="enterReception()" style="width:100%; max-width:320px; padding:22px; border-radius:16px; border:1px solid #2a2e38; background:#1a1d24; color:#e8e9ec; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">📥 Compte Réception</button>
 </div>
@@ -211,8 +253,8 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 <div id="stockSpace" style="display:none;">
 
 <div class="stickyHeader">
-  <h1>📦 Stock <span id="appTitleTab">LCD</span></h1>
-  <div id="syncStatus" style="font-size:11px; color:var(--muted); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+  <h1>📦 Stock <span id="appTitleTab">LCD</span><span class="verBadge" onclick="verBadgeClick()"></span></h1>
+  <div id="syncStatus" onclick="forceSync()" title="Forcer la synchronisation" style="cursor:pointer; font-size:11px; color:var(--muted); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
     <span id="syncDot" style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
     <span id="syncText">Connexion...</span>
   </div>
@@ -238,7 +280,7 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 
   <div class="globalTotals" id="globalTotals"></div>
 
-  <div class="tabsBar" id="tabsBar"></div>
+  <div class="tabsBar" id="tabsBar" data-noi18n></div>
   <div class="toolbar">
     <input class="search" id="search" placeholder="Rechercher un article...">
     <button class="sortBtn" id="infosBtn" onclick="openInfos()">ℹ️ Infos</button>
@@ -247,7 +289,7 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 </div>
 
 
-<div id="list"></div>
+<div id="list" data-noi18n></div>
 <div class="empty" id="emptyMsg" style="display:none;">Aucun article dans cette catégorie. Ajoutez-en un.</div>
 
 <button class="fab" id="fabAdd" onclick="openAdd()">+ Ajouter un article</button>
@@ -263,6 +305,8 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
   <div class="topbar-row">
     <div class="brand">Carnet WiFi<small>Suivi des tickets &amp; associés</small></div>
     <div style="display:flex;align-items:center;gap:10px;">
+      <span class="verBadge" style="margin:0" onclick="verBadgeClick()"></span>
+      <span class="syncBadge" id="wifiSyncBadge" onclick="wifiSync(true)"></span>
       <button type="button" title="Actualiser WiFi" aria-label="Actualiser WiFi" onclick="UI.refreshWifi()"
         style="background:none;border:none;font-size:17px;line-height:1;padding:4px;cursor:pointer;color:var(--w-ink);">🔄</button>
       <div class="date-chip" id="today-chip">—</div>
@@ -354,6 +398,26 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 
 <!-- PARAMETRES -->
 <div class="view" id="view-parametres">
+  <h2 class="section-title" data-i18n="Affichage">Affichage</h2>
+  <div class="card">
+    <div class="settings-row">
+      <div><div class="st-label" data-i18n="Taille du texte">Taille du texte</div><div class="st-sub" id="fontsize-pct">100%</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" style="width:auto;padding:10px 16px;font-size:18px;" onclick="UI.adjustFontScale(-0.05)">−</button>
+      <input type="range" id="fontscale-slider" min="0.8" max="1.6" step="0.05" value="1" style="flex:1;" oninput="UI.setFontScale(this.value)">
+      <button class="btn btn-outline" style="width:auto;padding:10px 16px;font-size:18px;" onclick="UI.adjustFontScale(0.05)">+</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <div class="st-label" style="margin-bottom:8px;" data-i18n="Thème">Thème</div>
+    <div class="filter-row" id="theme-picker" style="margin-bottom:0;"></div>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <div class="st-label" style="margin-bottom:8px;" data-i18n="Langue">Langue</div>
+    <div class="filter-row" id="lang-picker" style="margin-bottom:0;"></div>
+  </div>
+
   <h2 class="section-title">Prix des tickets</h2>
   <div class="card" id="settings-prices"></div>
 
@@ -401,10 +465,10 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 
 <div id="receptionOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#f5f5f0; overflow-y:auto;">
   <button onclick="switchAccount()" title="Déconnexion — changer de compte" style="position:fixed; top:10px; right:10px; z-index:200; width:34px; height:34px; border-radius:50%; border:none; background:#1a1a1a; color:#fff; font-size:16px; cursor:pointer;">🔀</button>
-  <div id="receptionView">
+  <div id="receptionView" data-noi18n>
 
 <div class="app">
-<h1><i class="ti ti-package" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"></i>Gestion des Réceptions</h1>
+<h1><i class="ti ti-package" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"></i>Gestion des Réceptions<span class="verBadge" style="float:right" onclick="verBadgeClick()"></span></h1>
 
 <div class="tabs">
   <button class="tab active" id="tab-t" onclick="showTab('table')"><i class="ti ti-table" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Tableau</button>
@@ -551,7 +615,7 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 <dialog id="orderDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:8px;">Commande fournisseur</label>
   <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Articles au seuil d'alerte ou épuisés, tous types confondus (hors onglet stock perso). Tu peux modifier le texte avant d'envoyer.</p>
-  <textarea id="orderText" class="backupArea" style="min-height:260px;"></textarea>
+  <textarea id="orderText" data-noi18n class="backupArea" style="min-height:260px;"></textarea>
   <div class="row" style="margin-bottom:10px;">
     <button class="cancel" onclick="copyOrderText()">📋 Copier</button>
     <button class="save" style="background:#25d366;" onclick="sendToWhatsapp()">Envoyer WhatsApp</button>
@@ -583,6 +647,12 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
 
 <dialog id="settingsDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:14px;">Paramètres</label>
+  <div class="prefBlock">
+    <div class="prefRow"><span>Police</span><select id="prefFont" onchange="setPref('font',this.value)"><option value="">Système</option><option value="serif">Serif</option><option value="mono">Mono</option><option value="rounded">Arrondie</option></select></div>
+    <div class="prefRow"><span>Taille du texte</span><span style="display:flex;align-items:center;gap:8px;"><button onclick="setPref('size',-0.05)">−</button><b id="prefSizePct">100%</b><button onclick="setPref('size',0.05)">+</button></span></div>
+    <div class="prefRow"><span>Langue</span><select id="prefLang" onchange="setPref('lang',this.value)"><option value="fr">Français</option><option value="en">English</option><option value="ff">Adlam (Fulfulde)</option></select></div>
+    <div class="prefRow"><span>Thème</span><select id="prefTheme" onchange="setPref('theme',this.value)"><option value="">Défaut</option><option value="creme">Crème</option><option value="blanc">Blanc</option><option value="gris">Gris</option><option value="noir">Noir</option><option value="sombre">Sombre</option></select></div>
+  </div>
   <div class="settingsList">
     <button onclick="openOrderDlg(); settingsDlg.close();">📋 Commande fournisseur (WhatsApp)</button>
     <button onclick="toggleSort(); settingsDlg.close();">🔤 Trier A→Z / Z→A</button>
@@ -593,6 +663,7 @@ thead{position:sticky;top:0;z-index:10}#receptionView th{padding:9px 10px;text-a
     <button onclick="editPin()">🔑 Définir / modifier le code PIN</button>
     <button onclick="lockAppNow()">🔒 Verrouiller l'application maintenant</button>
     <button onclick="forceSync()">🔄 Forcer la synchronisation</button>
+    <button onclick="checkForUpdate(true)">⬆️ Rechercher une mise à jour <span id="updState"></span></button>
     <button onclick="openBackup()">💾 Sauvegarder les données (backup)</button>
     <button onclick="openRestore()">📥 Restaurer depuis une sauvegarde</button>
     <button onclick="openAbout()">ℹ️ À propos de l'application</button>
@@ -678,8 +749,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.10';
-const APP_UPDATED = '21/09/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.14';
+const APP_UPDATED = '24/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -805,14 +876,27 @@ function scheduleSync(delay = 600){
   syncTimer = setTimeout(trySync, delay);
 }
 
-let currentConnState = 'offline'; // reflète le dernier état RÉEL constaté (résultat de requête), pas navigator.onLine seul
-function setStatus(state, text){
+let currentConnState = 'offline'; // synced | syncing | offline | error | pending
+let syncFails = 0, lastSyncError = '', lastSyncOk = 0;
+const SYNC_UI = {synced:['var(--green)','Synchronisé'], syncing:['var(--blue)','Synchronisation en cours'], offline:['var(--orange)','Hors ligne'], error:['var(--red)','Erreur de synchronisation'], pending:['var(--gold)','Données en attente']};
+function syncBadgeHtml(state, n, err){
+  const [c, label] = SYNC_UI[state] || SYNC_UI.offline;
+  return {color:c, text: label + (n && state!=='synced' && state!=='pending' ? ' · '+n+' en attente' : (state==='pending' ? ' · '+n : '')) + (state==='error' && err ? ' — '+String(err).slice(0,60) : '')};
+}
+function pendingCount(){ return Object.keys(pending.inserts).length + Object.keys(pending.updates).length + pending.deletes.length; }
+function setStatus(state){
+  if(state==='online') state = hasPending() ? 'pending' : 'synced';
   currentConnState = state;
-  const dot = document.getElementById('syncDot');
-  const txt = document.getElementById('syncText');
-  const colors = {online:'var(--green)', offline:'var(--orange)', syncing:'var(--blue)'};
-  dot.style.background = colors[state] || 'var(--muted)';
-  txt.textContent = text;
+  const b = syncBadgeHtml(state, pendingCount(), lastSyncError);
+  const dot = document.getElementById('syncDot'), txt = document.getElementById('syncText');
+  if(dot) dot.style.background = b.color;
+  if(txt) txt.textContent = b.text;
+}
+function syncFail(e){
+  if(isNetworkError(e)){ syncFails = 0; setStatus('offline'); return; }
+  syncFails++; lastSyncError = (e && e.message) ? e.message : String(e);
+  setStatus('error');
+  scheduleSync(Math.min(3000 * Math.pow(2, syncFails-1), 60000)); // réessai à délai croissant, jamais abandonné
 }
 
 // navigator.onLine n'est pas fiable partout (WebView Android, portails captifs...).
@@ -823,6 +907,169 @@ function isNetworkError(e){
   if(e instanceof TypeError) return true; // fetch échoue avec TypeError en cas de coupure réseau
   const msg = (e && e.message) ? String(e.message).toLowerCase() : '';
   return msg.includes('fetch') || msg.includes('network') || msg.includes('failed to fetch');
+}
+
+
+/* ============================================================
+   PRÉFÉRENCES GLOBALES · SYNCHRO WIFI · MISES À JOUR
+   (déclarés ici, avant tout appel : enterStock() s'exécute pendant l'évaluation du script)
+   ============================================================ */
+const APP_FONT_KEY = 'app_font';
+const FONT_STACKS = {serif:'Georgia,"Times New Roman",serif', mono:'ui-monospace,Menlo,Consolas,monospace', rounded:'ui-rounded,"Nunito","Segoe UI",system-ui,sans-serif'};
+function applyGlobalPrefs(){
+  const de = document.documentElement;
+  const theme = localStorage.getItem(WIFI_THEME_KEY) || '';
+  const font = localStorage.getItem(APP_FONT_KEY) || '';
+  const scale = parseFloat(localStorage.getItem(WIFI_FONTSCALE_KEY)) || 1;
+  if(theme) de.setAttribute('data-app-theme', theme); else de.removeAttribute('data-app-theme');
+  if(font && FONT_STACKS[font]){ de.setAttribute('data-app-font', font); de.style.setProperty('--app-font', FONT_STACKS[font]); }
+  else { de.removeAttribute('data-app-font'); de.style.removeProperty('--app-font'); }
+  de.style.setProperty('--app-zoom', scale);
+  CURRENT_LANG = localStorage.getItem(WIFI_LANG_KEY) || 'fr';
+  de.lang = CURRENT_LANG;
+  applyDisplayPrefsOnOpen();          // espace WiFi : taille, thème, sens d'écriture + observateur de traduction
+  applyI18n(document.body);           // Stock + boîtes de dialogue
+  const m = document.getElementById('metaTheme');
+  if(m) m.content = getComputedStyle(document.body).backgroundColor;
+  syncPrefControls();
+  refreshBadges();
+}
+function syncPrefControls(){
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.value = v; };
+  set('prefFont', localStorage.getItem(APP_FONT_KEY) || '');
+  set('prefLang', localStorage.getItem(WIFI_LANG_KEY) || 'fr');
+  set('prefTheme', localStorage.getItem(WIFI_THEME_KEY) || '');
+  const pct = document.getElementById('prefSizePct');
+  if(pct) pct.textContent = Math.round((parseFloat(localStorage.getItem(WIFI_FONTSCALE_KEY)) || 1) * 100) + '%';
+}
+function setPref(kind, val){
+  const put = (k, v) => v ? localStorage.setItem(k, v) : localStorage.removeItem(k);
+  if(kind === 'font') put(APP_FONT_KEY, val);
+  else if(kind === 'theme') put(WIFI_THEME_KEY, val);
+  else if(kind === 'lang') put(WIFI_LANG_KEY, val || 'fr');
+  else if(kind === 'size'){
+    const cur = parseFloat(localStorage.getItem(WIFI_FONTSCALE_KEY)) || 1;
+    localStorage.setItem(WIFI_FONTSCALE_KEY, Math.round(Math.max(0.8, Math.min(1.6, cur + val)) * 20) / 20);
+  }
+  applyGlobalPrefs();
+  renderTabs(); render();
+  if(window.__wifiInitialized && DB){ UI.renderAll(); UI.renderDisplayPrefs(); }
+}
+
+// ---- Synchronisation WiFi : file d'attente hors ligne des opérations + statut réel ----
+const WIFI_QKEY = 'wifi_pending_ops', WIFI_CLKEY = 'wifi_closures_cache', WIFI_CACHEKEY = 'wifi_db_cache';
+const WIFI_MAPPERS = {stock_receipts:mapReceipt, stock_movements:mapMovement, sales:mapSale, payments:mapPayment, corrections:mapCorrection};
+let wifiQ = []; try{ wifiQ = JSON.parse(localStorage.getItem(WIFI_QKEY) || '[]'); }catch(e){ wifiQ = []; }
+let wifiState = navigator.onLine ? 'synced' : 'offline', wifiSyncing = false, wifiErr = '', wifiFails = 0, wifiTimer = null, wifiLastOk = 0;
+function wifiSaveQ(){ localStorage.setItem(WIFI_QKEY, JSON.stringify(wifiQ)); }
+function wifiSetStatus(state){
+  if(state === 'synced' && wifiQ.length) state = 'pending';
+  wifiState = state;
+  const el = document.getElementById('wifiSyncBadge');
+  if(!el) return;
+  const b = syncBadgeHtml(state, wifiQ.length, wifiErr);
+  el.innerHTML = '<i style="background:' + b.color + '"></i><span>' + b.text + '</span>';
+  el.title = 'Toucher pour synchroniser';
+}
+function wifiSchedule(ms){ clearTimeout(wifiTimer); wifiTimer = setTimeout(() => wifiSync(), ms); }
+function mergeWifiQueue(ops){
+  wifiQ.forEach(q => { if(!ops.some(o => o.id === q.payload.id) && WIFI_MAPPERS[q.table]) ops.push(WIFI_MAPPERS[q.table](q.payload)); });
+  return ops;
+}
+function loadWifiCache(){
+  try{
+    const c = JSON.parse(localStorage.getItem(WIFI_CACHEKEY) || 'null');
+    if(!c || !c.ticketTypes) return false;
+    DB = c; mergeWifiQueue(DB.operations);
+    DB.operations.sort((a,b) => (a.ts||'').localeCompare(b.ts||'')); DB.operations.forEach((o,i) => o.num = i+1);
+    mirrorClosures(); wifiSetStatus('offline'); return true;
+  }catch(e){ return false; }
+}
+// Clôtures : copie locale « anti-réapparition ». Une clôture connue localement et non restaurée n'est jamais perdue,
+// même si une lecture serveur est incomplète/périmée ; elle est ré-enregistrée sur le serveur si elle y manque.
+function mirrorClosures(){
+  let local = []; try{ local = JSON.parse(localStorage.getItem(WIFI_CLKEY) || '[]'); }catch(e){}
+  const ids = new Set(DB.closures.map(c => c.id));
+  local.filter(c => !c.restoredAt && !ids.has(c.id)).forEach(c => {
+    DB.closures.push(c);
+    if(navigator.onLine) sb.from('ticket_type_closures').upsert({id:c.id, ticket_type_id:c.ticketTypeId, closed_at:c.closedAt}).then(() => {}, () => {});
+  });
+  try{ localStorage.setItem(WIFI_CLKEY, JSON.stringify(DB.closures)); }catch(e){}
+}
+function isTypeClosed(typeId){ return activeClosureCutoff(typeId) !== null; }
+function liveTypes(){ return DB.ticketTypes.filter(t => t.active !== false && !isTypeClosed(t.id)); }
+
+async function wifiSync(manual){
+  if(wifiSyncing || !window.__wifiInitialized || !DB) return;
+  wifiSyncing = true;
+  try{
+    if(!navigator.onLine){ wifiSetStatus('offline'); return; }
+    wifiSetStatus('syncing');
+    let failed = 0;
+    for(const q of [...wifiQ]){
+      const { error } = await sb.from(q.table).insert(q.payload);
+      if(error && error.code !== '23505'){           // 23505 = déjà enregistrée (réessai) → succès
+        if(isNetworkError(error)) throw error;
+        failed++; wifiErr = error.message || 'refus du serveur';
+        continue;
+      }
+      wifiQ = wifiQ.filter(x => x.payload.id !== q.payload.id); wifiSaveQ();
+    }
+    if(failed){ wifiFails++; wifiSetStatus('error'); toast('⚠ Synchronisation WiFi : ' + wifiErr); wifiSchedule(Math.min(5000 * Math.pow(2, wifiFails-1), 60000)); return; }
+    const sheetOpen = document.getElementById('overlay').classList.contains('active');
+    if(!sheetOpen && !(await UI.refreshWifi(true))) throw new TypeError('network');
+    wifiFails = 0; wifiErr = ''; wifiLastOk = Date.now();
+    wifiSetStatus('synced');
+  }catch(e){
+    if(isNetworkError(e)) wifiSetStatus('offline');
+    else { wifiErr = (e && e.message) || String(e); wifiFails++; wifiSetStatus('error'); wifiSchedule(Math.min(5000 * Math.pow(2, wifiFails-1), 60000)); }
+  }finally{
+    wifiSyncing = false;
+    if(wifiQ.length && wifiState === 'syncing') wifiSchedule(300);
+  }
+}
+
+// ---- Mises à jour ----
+let updateAvailable = null, swReg = null, _reloading = false, _updTimer = null;
+function refreshBadges(){
+  document.querySelectorAll('.verBadge').forEach(b => {
+    b.textContent = updateAvailable ? '⟳ Mise à jour' + (/^\d/.test(updateAvailable) ? ' v' + updateAvailable : '') : 'v' + APP_VERSION;
+    b.classList.toggle('upd', !!updateAvailable);
+  });
+  const s = document.getElementById('updState');
+  if(s) s.textContent = updateAvailable ? '(disponible)' : '';
+}
+function setUpdateState(v){ updateAvailable = v; refreshBadges(); }
+function verBadgeClick(){ if(updateAvailable) applyUpdateWhenSafe(true); else checkForUpdate(true); }
+function safeToReload(){
+  return !document.querySelector('dialog[open]:not(#lockDlg)') && !document.getElementById('overlay').classList.contains('active') && !syncing && !wifiSyncing;
+}
+async function fetchRemoteVersion(){
+  const r = await fetch('index.html?_=' + Date.now(), {cache:'no-store'});
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  const m = (await r.text()).match(/const APP_VERSION\s*=\s*'([^']+)'/);
+  return m ? m[1] : null;
+}
+async function checkForUpdate(manual){
+  const s = document.getElementById('updState');
+  if(!navigator.onLine){ if(manual && s) s.textContent = '(hors ligne)'; return; }
+  if(manual && s) s.textContent = '(vérification…)';
+  try{
+    if(swReg) await swReg.update().catch(() => {});
+    const v = await fetchRemoteVersion();
+    if(v && v !== APP_VERSION){ setUpdateState(v); applyUpdateWhenSafe(!!manual); }
+    else if(!updateAvailable){ setUpdateState(null); if(manual && s) s.textContent = '(à jour ✓)'; }
+  }catch(e){ if(manual && s) s.textContent = '(échec, réessaie)'; }
+}
+function applyUpdateWhenSafe(force){
+  if(!updateAvailable) return;
+  if(force || safeToReload()) return applyUpdate();
+  clearTimeout(_updTimer); _updTimer = setTimeout(() => applyUpdateWhenSafe(false), 10000); // jamais en plein remplissage d'un formulaire
+}
+async function applyUpdate(){
+  if(_reloading) return; _reloading = true;
+  try{ const reg = swReg || await navigator.serviceWorker.getRegistration(); if(reg && reg.waiting) reg.waiting.postMessage('SKIP_WAITING'); }catch(e){}
+  setTimeout(() => location.reload(), 300); // laisse le nouveau SW prendre la main ; le HTML est de toute façon servi réseau-d'abord
 }
 
 function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
@@ -1009,6 +1256,7 @@ async function permanentlyDeleteItem(id){
 
 async function trySync(){
   if(syncing) return;
+  if(!navigator.onLine){ setStatus('offline'); return; }
   syncing = true;
   try{
     let pass = 0;
@@ -1071,21 +1319,18 @@ async function trySync(){
 
     if(!hasPending()){
       await refreshFromServer();
-      setStatus('online','Synchronisé');
+      syncFails = 0; lastSyncError = ''; lastSyncOk = Date.now();
+      setStatus('online');
     } else {
-      setStatus('syncing','Synchronisation...');
+      setStatus('syncing');
       scheduleSync(500);
     }
   }catch(e){
     console.log('sync error', e);
-    if(isNetworkError(e)){
-      setStatus('offline','Hors ligne — sera synchronisé');
-    } else {
-      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
-      scheduleSync(3000);
-    }
+    syncFail(e);
   }finally{
     syncing = false;
+    if(hasPending() && (currentConnState==='syncing' || currentConnState==='pending')) scheduleSync(300); // modif faite pendant la synchro
   }
 }
 
@@ -1093,6 +1338,7 @@ async function refreshFromServer(){
   if(hasPending()) return;
   const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
   if(error) throw error;
+  if(hasPending()) return; // une modif locale est arrivée pendant la requête : ne jamais l'écraser
   items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold)}));
   cacheLocal();
   renderTabs(); render();
@@ -1101,17 +1347,13 @@ async function refreshFromServer(){
 async function loadFromSupabase(){
   renderTabs(); render();
   if(hasPending()){ await trySync(); return; }
-  setStatus('syncing','Synchronisation...');
+  setStatus('syncing');
   try{
     await refreshFromServer();
-    setStatus('online','Synchronisé');
+    syncFails = 0; lastSyncError = ''; lastSyncOk = Date.now();
+    setStatus('online');
   }catch(e){
-    if(isNetworkError(e)){
-      setStatus('offline','Hors ligne — données locales');
-    } else {
-      setStatus('syncing','Erreur de synchronisation — nouvelle tentative...');
-      scheduleSync(3000);
-    }
+    syncFail(e);
   }
 }
 
@@ -1329,10 +1571,18 @@ attachAutoCap(document.getElementById('fNewCategory'));
 
 document.getElementById('search').addEventListener('input', render);
 
-window.addEventListener('online', () => { setStatus('syncing','Reconnexion...'); trySync(); });
-window.addEventListener('offline', () => setStatus('offline','Hors ligne — données locales'));
-
-setInterval(() => { if(hasPending()) trySync(); }, 15000);
+window.addEventListener('online', () => { setStatus('syncing'); trySync(); wifiSync(); });
+window.addEventListener('offline', () => { setStatus('offline'); wifiSetStatus('offline'); });
+// Synchronisation automatique : à chaque retour au premier plan, dès que le réseau revient, et périodiquement
+// (file en attente / hors ligne / erreur : toutes les 15 s ; sinon rafraîchissement discret toutes les 60 s).
+function autoSync(){
+  const stockOn = document.getElementById('stockSpace').style.display !== 'none';
+  if(stockOn && (hasPending() || currentConnState==='offline' || currentConnState==='error' || Date.now()-lastSyncOk > 60000)) trySync();
+  if(wifiQ.length || wifiState==='offline' || wifiState==='error') wifiSync();
+}
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible') autoSync(); });
+window.addEventListener('focus', autoSync);
+setInterval(() => { if(document.visibilityState==='visible') autoSync(); }, 15000);
 
 // --- Commande fournisseur (format tableau WhatsApp, une seule ligne par article) ---
 
@@ -1438,14 +1688,16 @@ const settingsDlg = document.getElementById('settingsDlg');
 
 function openSettings(){
   const total = items.reduce((s,it) => s + it.qty, 0);
-  const pendingCount = Object.keys(pending.inserts).length + Object.keys(pending.updates).length + pending.deletes.length;
+  const pendingCnt = pendingCount();
   document.getElementById('defThresholdLabel').textContent = defaultThreshold;
   document.getElementById('personalLabelDisplay').textContent = getPersonalLabel();
   document.getElementById('monCompteLabelDisplay').textContent = getMonCompteLabel();
   document.getElementById('settingsInfo').innerHTML =
     `Articles (toutes catégories) : ${items.length} · Total : ${total}<br>` +
-    `En attente de synchronisation : ${pendingCount}<br>` +
-    `Connexion : ${currentConnState === 'offline' ? 'hors ligne' : 'en ligne'}`;
+    `En attente de synchronisation : ${pendingCnt}<br>` +
+    `Connexion : ${currentConnState === 'offline' ? 'hors ligne' : 'en ligne'}<br>` +
+    `Version : ${APP_VERSION}`;
+  syncPrefControls();
   settingsDlg.showModal();
 }
 
@@ -1482,9 +1734,9 @@ function editMonCompteLabel(){
 }
 
 async function forceSync(){
-  setStatus('syncing','Synchronisation forcée...');
-  await trySync();
-  openSettings();
+  setStatus('syncing');
+  await Promise.all([trySync(), wifiSync()]);
+  if(settingsDlg.open) openSettings();
 }
 
 const aboutDlg = document.getElementById('aboutDlg');
@@ -1794,6 +2046,9 @@ function openWifiApp(){
   if(typeof window.initWifiApp === 'function') window.initWifiApp();
   document.getElementById('wifiOverlay').style.display = 'block';
   setupWifiSwipeGuard();
+  // Applique immédiatement les préférences d'affichage (taille de police / thème / langue),
+  // relues depuis localStorage — appareil par appareil, jamais depuis Supabase.
+  if(typeof applyDisplayPrefsOnOpen === 'function') applyDisplayPrefsOnOpen();
 }
 function closeWifiApp(){
   document.getElementById('wifiOverlay').style.display = 'none';
@@ -1898,28 +2153,25 @@ else showAccountSelector();
 // Un simple rafraîchissement ou une synchronisation dans la même session ne reverrouille plus l'app.
 if(hasPin() && !sessionStorage.getItem(SESSION_UNLOCKED_KEY)) showLock();
 
+// ---- Mises à jour : détection automatique + application fiable (voir bloc "MISES À JOUR" en fin de script) ----
 if ('serviceWorker' in navigator) {
-  // Empêche qu'une ancienne version reste affichée : dès que le nouveau Service Worker prend le
-  // contrôle de la page (skipWaiting + clients.claim, déjà en place dans sw.js), on recharge une
-  // seule fois automatiquement pour recevoir la nouvelle version — au lieu d'attendre une fermeture
-  // manuelle de l'onglet. Ne touche à aucune donnée locale ni Supabase : uniquement le cache SW.
-  let _swRefreshing = false;
+  const hadController = !!navigator.serviceWorker.controller; // évite un rechargement inutile à la toute première installation
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if(_swRefreshing) return;
-    _swRefreshing = true;
-    window.location.reload();
+    if(!hadController || _reloading) return;
+    if(!updateAvailable) setUpdateState('nouvelle');
+    applyUpdateWhenSafe(false);
   });
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js', {updateViaCache:'none'}).then(reg => {
-      // Force une vérification immédiate de sw.js (contourne le cache HTTP du navigateur),
-      // puis revérifie régulièrement tant que l'app reste ouverte, et systématiquement au retour
-      // en ligne ou quand l'app repasse au premier plan — pour détecter toute nouvelle version
-      // sans attendre que le navigateur le fasse de lui-même.
-      const check = () => reg.update().catch(()=>{});
-      check();
-      setInterval(check, 5*60*1000);
-      window.addEventListener('online', check);
-      document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible') check(); });
+      swReg = reg;
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        if(w) w.addEventListener('statechange', () => { if(w.state==='installed' && navigator.serviceWorker.controller && !updateAvailable) setUpdateState('nouvelle'); });
+      });
+      checkForUpdate(false);
+      setInterval(() => checkForUpdate(false), 5*60*1000);
+      window.addEventListener('online', () => checkForUpdate(false));
+      document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible') checkForUpdate(false); });
     }).catch(err => console.log('SW error:', err));
   });
 }
@@ -1930,6 +2182,283 @@ if ('serviceWorker' in navigator) {
    Isolé fonctionnellement : tables Supabase dédiées, jamais mêlé
    aux items/catégories de Stock LCD. Partage seulement sb/SUPABASE_*.
    ============================================================ */
+
+/* ---------- INTERNATIONALISATION (FR / EN-US / Adlam Fulfulde) ----------
+   Français = langue source (clé du dictionnaire = texte français exact).
+   Préférence purement locale à l'appareil (localStorage), jamais dans Supabase.
+   Deux mécanismes complémentaires :
+   1. t(str) — traduit une chaîne ponctuelle (utilisée dans les template literals au moment du
+      rendu : titres statiques, placeholders, etc.)
+   2. Un MutationObserver sur #wifiOverlay ré-applique automatiquement la traduction à TOUT
+      changement du DOM (texte, placeholder, title, aria-label), y compris pour du contenu généré
+      par du code qui n'appelle pas t() explicitement — filet de sécurité pour ne rien oublier,
+      quelle que soit la fonction qui a produit le HTML.
+   Le remplacement se fait par sous-chaîne (les clés les plus longues d'abord, pour éviter qu'une
+   clé courte comme "Type" ne coupe au milieu d'une clé plus longue comme "Type de ticket"), donc
+   un texte dynamique mêlant un libellé fixe et une valeur variable ("Reste à payer : 5 000 GNF")
+   reste correctement traduit sur sa partie fixe sans toucher au nombre. */
+const WIFI_FONTSCALE_KEY = 'wifi_fontscale';
+const WIFI_THEME_KEY = 'wifi_theme';
+const WIFI_LANG_KEY = 'wifi_lang';
+let CURRENT_LANG = localStorage.getItem(WIFI_LANG_KEY) || 'fr';
+
+const I18N = {
+en: {
+  "Carnet WiFi":"WiFi Ledger","Suivi des tickets & associés":"Ticket & partner tracking",
+  "Actualiser WiFi":"Refresh WiFi","Rechercher une personne...":"Search for a person...",
+  "Rechercher (personne, type, commentaire)...":"Search (person, type, comment)...",
+  "Actives":"Active","Supprimées":"Deleted","+ Ajouter une personne":"+ Add a person",
+  "Aucune personne supprimée.":"No deleted people.","Aucune personne enregistrée.":"No people registered.",
+  "Vider les personnes supprimées":"Empty deleted people","tickets en main":"tickets on hand",
+  "à jour":"up to date","doit":"owes","inactif":"inactive","Actif":"Active","Inactif":"Inactive",
+  "Modifier":"Edit","Supprimer":"Delete","Restaurer":"Restore","Annuler":"Cancel","Fermer":"Close",
+  "Enregistrer":"Save","Valider":"Confirm","Continuer":"Continue","Confirmer":"Confirm",
+  "Ajouter":"Add","Retour":"Back","Supprimée le":"Deleted on",
+  "Accueil":"Home","Stock":"Stock","Personnes":"People","Historique":"History","Plus":"More","Rapports":"Reports","Paramètres":"Settings",
+  "+ Nouvelle opération":"+ New operation","Nouvelle opération":"New operation",
+  "Réception":"Receipt","Attribution":"Assignment","Vente":"Sale","Retour ticket":"Ticket return","Perte":"Loss","Annulation":"Cancellation","Paiement":"Payment",
+  "Choisir une personne":"Choose a person","Choisir un type de ticket":"Choose a ticket type","Quantité":"Quantity","Prix unitaire (GNF)":"Unit price (GNF)",
+  "Commentaire (optionnel)":"Comment (optional)","Motif (optionnel)":"Reason (optional)","Confirmer l'opération":"Confirm the operation",
+  "Chez moi":"On hand (me)","Reçus du fournisseur":"Received from supplier","Vendus (total)":"Sold (total)",
+  "Stock disponible":"Available stock","Tickets attribués":"Assigned tickets","Tickets vendus":"Sold tickets","Tickets restants":"Remaining tickets",
+  "Argent attendu":"Money expected","Argent rendu (payé)":"Money returned (paid)","Dernière attribution":"Last assignment","Aucune":"None",
+  "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
+  "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
+  "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"At-a-glance overview: assigned, sold, remaining, money expected/returned and last assignment.",
+  "Type":"Type","Pris":"Taken","Vendu":"Sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Reste":"Balance","TOTAL":"TOTAL",
+  "Argent":"Money","Types de tickets":"Ticket types","Aucun type de ticket actif.":"No active ticket type.",
+  "Aucun mouvement d'argent.":"No money movement.","Aucune donnée pour cette personne.":"No data for this person.",
+  "Journal des suppressions & clôtures":"Deletion & closure log","Journal (suppressions & clôtures)":"Log (deletions & closures)",
+  "Journal (suppressions & clôtures) — Vider":"Log (deletions & closures) — Clear",
+  "🗑️ Vider l'historique du journal":"🗑️ Clear the log history",
+  "Vide uniquement ce journal d'actions administratives. Les ventes, paiements, mouvements de stock et attributions restent conservés en permanence — ce sont des données actives, jamais supprimées.":"Only clears this administrative action log. Sales, payments, stock movements and assignments are always kept — they are active data, never deleted.",
+  "Aucune action enregistrée.":"No action recorded.","Supprimer cette ligne du journal":"Delete this log entry",
+  "Prix des tickets":"Ticket prices","Prix appliqué aux nouvelles ventes":"Price applied to new sales",
+  "+ Ajouter un type de ticket":"+ Add a ticket type","Sauvegarde":"Backup","Exporter les données":"Export data",
+  "Personnes, stock, ventes, paiements, historique":"People, stock, sales, payments, history","Exporter":"Export",
+  "Restaurer une sauvegarde":"Restore a backup",
+  "Non disponible en mode Supabase — chaque opération est déjà enregistrée en temps réel, aucun import global n'est nécessaire":"Not available in Supabase mode — every operation is already saved in real time, no global import is needed",
+  "Base de données":"Database","Affichage":"Display","Taille du texte":"Text size","Thème":"Theme","Langue":"Language",
+  "Crème (défaut)":"Cream (default)","Blanc":"White","Gris":"Grey","Noir":"Black","Sombre":"Dark",
+  "Nom":"Name","Nom de la personne":"Person's name","Nouvelle personne":"New person","Modifier la personne":"Edit person",
+  "Personne restaurée":"Person restored","Paiement enregistré":"Payment saved","Journal vidé":"Log cleared","Ligne du journal supprimée":"Log entry deleted",
+  "Actualisé":"Refreshed","WiFi actualisé":"WiFi refreshed","Clôture annulée":"Closure cancelled",
+  "Retour d'argent + nouvelle attribution":"Money return + new assignment",
+  "🔁 Retour d'argent + nouvelle attribution":"🔁 Money return + new assignment",
+  "Argent rendu (GNF)":"Money returned (GNF)","Nouvelle quantité à attribuer":"New quantity to assign",
+  "Étape 1/2 — Retour d'argent":"Step 1/2 — Money return","Étape 2/2 — Nouvelle attribution":"Step 2/2 — New assignment",
+  "Continuer — clôturer et redemander":"Continue — close and request again",
+  "Valider le retour + la nouvelle attribution":"Confirm the return + the new assignment",
+  "Retour + nouvelle attribution enregistrés":"Return + new assignment saved",
+  "ticket(s) détenus":"ticket(s) held","l'ancienne attribution":"the previous assignment","sera clôturée":"will be closed",
+  "Laissez 0 si aucune nouvelle attribution n'est faite pour l'instant.":"Leave 0 if no new assignment is being made right now.",
+  "Aucun ticket en main pour cette personne":"No tickets on hand for this person",
+  "choisir le type concerné":"choose the relevant type","en main":"on hand",
+  "Vider définitivement":"Permanently clear","personne(s) supprimée(s)":"deleted person/people",
+  "Cette action est IRRÉVERSIBLE. Seules les personnes sans aucun historique lié (ventes, mouvements, paiements) seront réellement effacées ; les autres resteront dans \"Supprimées\" pour préserver leurs données.":"This action is IRREVERSIBLE. Only people with no linked history (sales, movements, payments) will be truly erased; others will stay in \"Deleted\" to preserve their data.",
+  "personne(s) définitivement effacée(s)":"person/people permanently erased","conservée(s) (historique lié)":"kept (linked history)",
+  "Aucune personne effacée — toutes ont un historique lié":"No person erased — all have linked history","Aucune personne supprimée à vider":"No deleted person to clear",
+  "Vider l'historique (suppressions & clôtures)":"Clear history (deletions & closures)",
+  "Vider l'historique du journal (suppressions & clôtures) ?":"Clear the log history (deletions & closures)?",
+  "Cette action est irréversible mais ne touche à AUCUNE donnée active : ventes, paiements, mouvements de stock et attributions restent intacts.":"This action is irreversible but does NOT affect any active data: sales, payments, stock movements and assignments stay intact.",
+  "Supprimer définitivement cette ligne du journal ?":"Permanently delete this log entry?",
+  "tickets":"tickets","GNF":"GNF",
+  "Clôturer":"Close","Rouvrir":"Reopen","Clôturé":"Closed",
+  "⚠ Actualisation impossible — vérifiez la connexion":"⚠ Refresh failed — check your connection",
+  "Montant invalide.":"Invalid amount.","Quantité invalide.":"Invalid quantity.",
+  "Reste à payer pour ce type :":"Balance due for this type:","Montant versé (GNF)":"Amount paid (GNF)",
+  "Enregistrer le paiement":"Save the payment","Type de ticket manquant — recommencez.":"Missing ticket type — start again.",
+  "Supprimer \"{name}\" ?":"Delete \"{name}\"?","Vous pourrez la restaurer plus tard.":"You can restore them later.",
+  "⚠ Cette personne a encore {qty} ticket(s) en main et {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ This person still has {qty} ticket(s) on hand and {amount} owed. This data stays in the history after deletion.",
+  "⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l'historique après suppression.":"⚠ This person still has {qty} ticket(s) on hand. This data stays in the history after deletion.",
+  "⚠ Cette personne a encore {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ This person still owes {amount}. This data stays in the history after deletion.",
+  "Restaurer \"{name}\" dans les personnes actives ?":"Restore \"{name}\" to active people?",
+  "Supprimer DÉFINITIVEMENT \"{name}\" ?":"PERMANENTLY delete \"{name}\"?",
+  "Toutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.":"All their sales, payments and ticket movements will be IRREVERSIBLY erased.",
+  "⚠ {qty} ticket(s) en main. Doit {amount}. Tout sera effacé avec elle.":"⚠ {qty} ticket(s) on hand. Owes {amount}. Everything will be erased with them.",
+  "⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.":"⚠ {qty} ticket(s) on hand. Everything will be erased with them.",
+  "⚠ Doit {amount}. Tout sera effacé avec elle.":"⚠ Owes {amount}. Everything will be erased with them.",
+  "Vider définitivement {count} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.":"Permanently clear {count} deleted person/people?\n\nThis action is IRREVERSIBLE: all their sales, payments and ticket movements will also be erased.",
+  "Clôturer \"{name}\" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L'historique complet reste consultable et la clôture est annulable.":"Close \"{name}\"?\n\nThe current situation (available stock, quantities held by people) will be reset to 0. Full history stays viewable and the closure can be undone.",
+  "Annuler la clôture de \"{name}\" ? La situation antérieure à la clôture sera restaurée.":"Undo the closure of \"{name}\"? The situation before the closure will be restored.",
+},
+ff: {
+  "Carnet WiFi":"𞤔𞤢𞤲𞤺𞤭𞤪𞤣𞤫 𞤱𞤭𞤬𞤭","Suivi des tickets & associés":"𞤘𞤢𞤣𞤢 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤫 𞤢𞤧𞤮𞤧𞤭𞤴𞤫",
+  "Actualiser WiFi":"𞤖𞤫𞤧𞤣𞤭𞤲 𞤱𞤭𞤬𞤭","Rechercher une personne...":"𞤨𞤭𞤴𞤢𞤲 𞤲𞤫𞤯𞤯𞤮...",
+  "Rechercher (personne, type, commentaire)...":"𞤨𞤭𞤴𞤢𞤲 (𞤲𞤫𞤯𞤯𞤮, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫, 𞤪𞤭𞤫𞤪𞤢𞤲𞤣𞤢𞤲𞥋𞤣𞤫)...",
+  "Actives":"𞤖𞤮𞥅𞤪𞤢𞥄𞤶𞤭","Supprimées":"𞤃𞤮𞥅𞤥𞤼𞤢𞤯𞤫","+ Ajouter une personne":"+ 𞤄𞤫𞤴𞤢𞤲 𞤲𞤫𞤯𞤯𞤮",
+  "Aucune personne supprimée.":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮.","Aucune personne enregistrée.":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤱𞤭𞤲𞤼𞤢𞥄𞤯𞤮.",
+  "Vider les personnes supprimées":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤲𞤫𞤯𞤯𞤮𞥅𞤶𞤭 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭","tickets en main":"𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫",
+  "à jour":"𞤲𞤢𞤲𞤺𞤭𞤲𞥋𞤣𞤫","doit":"𞤣𞤢𞤴𞤢𞤲𞤢","inactif":"𞤲𞤢𞤲 𞤺𞤮𞤤𞤣𞤮","Actif":"𞤎𞤮𞤤𞤣𞤮","Inactif":"𞤄𞤢𞤯𞤭",
+  "Modifier":"𞤔𞤢𞤲𞥋𞤺𞤭𞤲","Supprimer":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲","Restaurer":"𞤄𞤢𞤪𞤼𞤭𞤲","Annuler":"𞤔𞤭𞤥𞤯𞤭𞤲","Fermer":"𞤖𞤮𞤪𞥆𞤭𞤲",
+  "Enregistrer":"𞤔𞤮𞤥𞥆𞤢𞤲","Valider":"𞤀𞤪𞤼𞤭𞤲","Continuer":"𞤙𞤢𞤪𞤭𞤴𞤢𞤲","Confirmer":"𞤀𞤪𞤼𞤭𞤲",
+  "Ajouter":"𞤄𞤫𞤴𞤢𞤲","Retour":"𞤀𞤪𞤼𞤭𞥅𞤪𞤢","Supprimée le":"𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮 𞤲𞤣𞤫𞥅",
+  "Accueil":"𞤀𞤪𞤣𞤭𞤲𞤣𞤫","Stock":"𞤔𞤢𞤺𞤢𞤪𞤢𞥄𞤶𞤭","Personnes":"𞤒𞤭𞥅𞤯𞤯𞤮","Historique":"𞤚𞤢𞤪𞤭𞤺𞤮","Plus":"𞤖𞤫𞤯𞤭","Rapports":"𞤖𞤢𞤦𞤢𞤪𞤫","Paramètres":"𞤙𞤭𞥅𞤴𞤢𞥄𞤼𞤢",
+  "+ Nouvelle opération":"+ 𞤄𞤢𞤯𞤭𞥅𞤪𞤫 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫","Nouvelle opération":"𞤄𞤢𞤯𞤭𞥅𞤪𞤫 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫",
+  "Réception":"𞤍𞤢𞤥𞤢𞤪𞤫","Attribution":"𞤚𞤮𞤼𞤢𞤪𞤫","Vente":"𞤛𞤢𞤥𞤢𞤪𞤫","Retour ticket":"𞤀𞤪𞤼𞤭𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭","Perte":"𞤈𞤢𞤴𞤣𞤫","Annulation":"𞤔𞤭𞤥𞤯𞤭𞤪𞤫","Paiement":"𞤒𞤮𞥅𞤦𞤢𞤪𞤫",
+  "Choisir une personne":"𞤖𞤢𞤢𞤢𞤪 𞤲𞤫𞤯𞤯𞤮","Choisir un type de ticket":"𞤖𞤢𞤢𞤢𞤪 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭","Quantité":"𞤈𞤢𞤢𞤪𞤢","Prix unitaire (GNF)":"𞤄𞤢 (𞤄𞤁𞤢) 𞤺𞤮 𞤴𞤭𞥅𞤴𞤢𞤥",
+  "Commentaire (optionnel)":"𞤈𞤢𞤪𞤭𞤶𞤢 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Motif (optionnel)":"𞤄𞤢𞤢𞤪𞤣𞤭 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Confirmer l'opération":"𞤀𞤪𞤼𞤭𞤲 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫",
+  "Chez moi":"𞤁𞤮 𞤥𞤭𞥅𞤲","Reçus du fournisseur":"𞤄𞤢𞤢𞤯𞤢𞥄𞤯𞤭 𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Vendus (total)":"𞤛𞤢𞤥𞤢𞥄𞤯𞤭 (𞤫𞥅𞤪𞤫)",
+  "Stock disponible":"𞤔𞤢𞤺𞤢𞤪𞤢𞥄𞤶𞤭 𞤲𞤮𞥅𞤯𞤭","Tickets attribués":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤼𞤮𞤼𞤢𞥄𞤯𞤫","Tickets vendus":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤛𞤢𞤥𞤢𞥄𞤯𞤫","Tickets restants":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤳𞤢𞤥𞤯𞤭𞤯𞤫",
+  "Argent attendu":"𞤖𞤢𞤦𞤣𞤭 𞤺𞤭𞤯𞤮 𞤲𞤢𞤲𞤺𞤭𞥅𞤯𞤮","Argent rendu (payé)":"𞤖𞤢𞤦𞤣𞤭 𞤢𞤪𞤼𞤢𞥄𞤯𞤭 (𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭)","Dernière attribution":"𞤚𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤮","Aucune":"𞤁𞤮𞥅",
+  "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
+  "⇩ Exporter une sauvegarde (JSON)":"⇩ 𞤒𞤢𞤤𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 (JSON)",
+  "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"𞤒𞤭𞤴𞤭𞥅𞤪𞤫: 𞤼𞤮𞤼𞤢𞥄𞤯𞤮, 𞤛𞤢𞤥𞤢𞥄𞤯𞤮, 𞤳𞤢𞤥𞤯𞤭𞤯𞤮, 𞤢𞤪𞤼𞤢𞥄𞤯𞤭/𞤺𞤭𞤯𞤮 𞤫 𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤢𞤲𞤯𞤫.",
+  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Reste":"𞤀𞤦𞥆𞤢𞤯𞤢𞤲","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
+  "Argent":"𞤖𞤢𞤦𞤣𞤭","Types de tickets":"𞤙𞤮𞥅𞤬𞤮𞥅𞤶𞤭 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","Aucun type de ticket actif.":"𞤁𞤮𞥅 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭 𞤺𞤮𞤤𞤣𞤮.",
+  "Aucun mouvement d'argent.":"𞤁𞤮𞥅 𞤣𞤭𞤯𞤯𞤭 𞤢𞤪𞤣𞤭𞤪.","Aucune donnée pour cette personne.":"𞤁𞤮𞥅 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤲𞤫𞤯𞤯𞤮 𞤯𞤭.",
+  "Journal des suppressions & clôtures":"𞤎𞤭𞥅𞤪𞤣𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭𞥅𞤶𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭𞥅𞤶𞤭","Journal (suppressions & clôtures)":"𞤎𞤭𞥅𞤪𞤣𞤫 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭)",
+  "Journal (suppressions & clôtures) — Vider":"𞤎𞤭𞥅𞤪𞤣𞤫 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭) — 𞤃𞤮𞥅𞤥𞤼𞤭𞤲",
+  "🗑️ Vider l'historique du journal":"🗑️ 𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤶𞤭𞥅𞤪𞤣𞤫",
+  "Vider l'historique (suppressions & clôtures)":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭)","Vider l'historique du journal (suppressions & clôtures) ?":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤶𞤭𞥅𞤪𞤣𞤫 𞤲𞤺𞤫𞥅 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭) ?",
+  "Cette action est irréversible mais ne touche à AUCUNE donnée active : ventes, paiements, mouvements de stock et attributions restent intacts.":"𞤁𞤮𞤥𞤮𞥅𞤪𞤫 𞤲𞤣𞤫 𞤲𞤺𞤢𞤤𞤢𞥄 𞤪𞤵𞤼𞤼𞤢𞤲𞤣𞤫, 𞤳𞤮𞤲𞤮 𞤴𞤭𞥅 𞤲𞤢𞤲𞤺𞤢𞤣𞤢 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤺𞤮𞤤𞤣𞤫 𞤯𞤫 : 𞤛𞤢𞤥𞤢𞤪𞤫, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫, 𞤣𞤭𞤯𞤯𞤭 𞤺𞤮 𞤼𞤮𞤼𞤢𞤪𞤫 𞤫 𞤯𞤫𞤯𞤢𞤲𞤯𞤭𞤶𞤢𞥄𞤯𞤭 𞤲𞤢 𞤳𞤮 𞤲𞤢 𞤬𞤢𞤴𞤢.",
+  "Supprimer définitivement cette ligne du journal ?":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤺𞤢𞤴𞤢 𞤣𞤢𞤪𞤫 𞤶𞤭𞥅𞤪𞤣𞤫 𞤲𞤺𞤫𞥅 ?",
+  "Vide uniquement ce journal d'actions administratives. Les ventes, paiements, mouvements de stock et attributions restent conservés en permanence — ce sont des données actives, jamais supprimées.":"𞤃𞤮𞥅𞤥𞤼𞤭𞤪𞤼𞤫𞤫 𞤶𞤭𞥅𞤪𞤣𞤫 𞤺𞤮𞤤𞤣𞤫 𞤬𞤢𞤴. 𞤛𞤢𞤥𞤢𞤪𞤫, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫, 𞤣𞤭𞤯𞤯𞤭 𞤺𞤮 𞤼𞤮𞤼𞤢𞤪𞤫 𞤯𞤫𞤯𞤢𞤲𞤯𞤭𞤶𞤢𞥄𞤯𞤭 — 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤺𞤮𞤤𞤣𞤫, 𞤢𞤤𞤢𞥄 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤫.",
+  "Aucune action enregistrée.":"𞤁𞤮𞥅 𞤺𞤮𞤤𞤣𞤫 𞤱𞤭𞤲𞤼𞤢𞥄𞤣𞤫.","Supprimer cette ligne du journal":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 𞤶𞤭𞥅𞤪𞤣𞤫 𞤲𞤺𞤫𞥅",
+  "Prix des tickets":"𞤄𞤢 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","Prix appliqué aux nouvelles ventes":"𞤄𞤢 𞤺𞤮 𞤛𞤢𞤥𞤢𞤪𞤫 𞤢𞤯𞤫",
+  "+ Ajouter un type de ticket":"+ 𞤄𞤫𞤴𞤢𞤲 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭","Sauvegarde":"𞤁𞤢𞤪𞤫","Exporter les données":"𞤒𞤢𞤤𞤼𞤭𞤲 𞤢𞤯𞤲𞤣𞤢𞤣𞤫",
+  "Personnes, stock, ventes, paiements, historique":"𞤒𞤭𞥅𞤯𞤯𞤮, 𞤶𞤢𞤺𞤢𞤪𞤢, 𞤛𞤢𞤥𞤢𞤪𞤫, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫, 𞤼𞤢𞤪𞤭𞤺𞤮","Exporter":"𞤒𞤢𞤤𞤼𞤭𞤲",
+  "Restaurer une sauvegarde":"𞤄𞤢𞤪𞤼𞤭𞤲 𞤣𞤢𞤪𞤫",
+  "Non disponible en mode Supabase — chaque opération est déjà enregistrée en temps réel, aucun import global n'est nécessaire":"𞤁𞤢𞤲𞤺𞤢𞤢𞤢 𞤲𞤢 𞤥𞤮𞥅𞤣𞤭 Supabase — 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫 𞤺𞤮𞥅𞤯𞤮 𞤱𞤭𞤲𞤼𞤢𞥄𞤯𞤮 𞤶𞤢𞥄𞤲𞤺𞤮, 𞤣𞤮𞥅 𞤶𞤮𞤺𞤢𞥄𞤣𞤭 𞤲𞤢𞤯𞤢",
+  "Base de données":"𞤁𞤢𞤦𞤢𞥄𞤪𞤫 𞤢𞤯𞤲𞤢𞤣𞤫","Affichage":"𞤍𞤭𞤴𞤢𞥄𞤪𞤫","Taille du texte":"𞤍𞤢𞥄𞤴 𞤦𞤭𞤲𞤣𞤫","Thème":"𞤄𞤢𞤼𞤢𞤪𞤢","Langue":"𞤈𞤫𞤲𞤯𞤫",
+  "Crème (défaut)":"𞤔𞤭𞤥𞥆𞤢 (𞤢𞤣𞤣𞤭𞤪𞤫)","Blanc":"𞤈𞤢𞤲𞥋𞤺𞤭","Gris":"𞤖𞤮𞤴𞤪𞤫","Noir":"𞤄𞤢𞤢𞤯𞤫","Sombre":"𞤒𞤭𞥅𞤴𞤭",
+  "Nom":"𞤩𞤭𞤥𞥆𞤮","Nom de la personne":"𞤩𞤭𞤥𞥆𞤮 𞤲𞤫𞤯𞤯𞤮","Nouvelle personne":"𞤄𞤢𞤯𞤭𞥅𞤪𞤫 𞤲𞤫𞤯𞤯𞤮","Modifier la personne":"𞤔𞤢𞤲𞥋𞤺𞤭𞤲 𞤲𞤫𞤯𞤯𞤮",
+  "Personne restaurée":"𞤒𞤭𞥅𞤯𞤯𞤮 𞤦𞤢𞤪𞤼𞤢𞥄𞤯𞤮","Paiement enregistré":"𞤒𞤮𞥅𞤦𞤢𞤪𞤫 𞤱𞤭𞤲𞤼𞤢𞥄𞤯𞤫","Journal vidé":"𞤎𞤭𞥅𞤪𞤣𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤫","Ligne du journal supprimée":"𞤈𞤢𞤪𞤫 𞤶𞤭𞥅𞤪𞤣𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤫",
+  "Actualisé":"𞤖𞤫𞤧𞤣𞤭𞤲𞤢𞥄𞤯𞤮","WiFi actualisé":"𞤱𞤭𞤬𞤭 𞤶𞤫𞥅𞤴𞤭","Clôture annulée":"𞤯𞤫𞤳𞤢𞤪𞤫 𞤶𞤭𞤥𞥆𞤢𞥄𞤯𞤫",
+  "Retour d'argent + nouvelle attribution":"𞤀𞤪𞤼𞤭𞥅𞤪𞤫 𞤢𞤪𞤣𞤭 + 𞤺𞤢𞥄𞤲𞤴𞤮 𞤦𞤢𞤯𞤫𞥅𞤪𞤫",
+  "🔁 Retour d'argent + nouvelle attribution":"🔁 𞤀𞤪𞤼𞤭𞥅𞤪𞤫 𞤢𞤪𞤣𞤭 + 𞤺𞤢𞥄𞤲𞤴𞤮 𞤦𞤢𞤯𞤫𞥅𞤪𞤫",
+  "Argent rendu (GNF)":"𞤖𞤢𞤦𞤣𞤭 𞤢𞤪𞤼𞤢𞥄𞤯𞤭 (𞤄𞤁𞤢)","Nouvelle quantité à attribuer":"𞤈𞤢𞤢𞤪𞤢 𞤦𞤢𞤯𞤫𞥅𞤪𞤫",
+  "Étape 1/2 — Retour d'argent":"𞤀𞤪𞤳𞤫𞤪𞤫 1/2 — 𞤀𞤪𞤼𞤭𞥅𞤪𞤫 𞤢𞤪𞤣𞤭","Étape 2/2 — Nouvelle attribution":"𞤀𞤪𞤳𞤫𞤪𞤫 2/2 — 𞤺𞤢𞥄𞤲𞤴𞤮 𞤦𞤢𞤯𞤫𞥅𞤪𞤫",
+  "Continuer — clôturer et redemander":"𞤙𞤢𞤪𞤭𞤴𞤢𞤲 — 𞤯𞤫𞤳 𞤫 𞤺𞤢𞤢𞤪𞤣𞤭𞤲",
+  "Valider le retour + la nouvelle attribution":"𞤀𞤪𞤼𞤭𞤲 𞤢𞤪𞤼𞤭𞥅𞤪𞤫 + 𞤺𞤢𞥄𞤲𞤴𞤮 𞤦𞤢𞤯𞤫𞥅𞤪𞤫",
+  "Retour + nouvelle attribution enregistrés":"𞤀𞤪𞤼𞤭𞥅𞤪𞤫 + 𞤺𞤢𞥄𞤲𞤴𞤮 𞤦𞤢𞤯𞤫𞥅𞤪𞤫 𞤱𞤭𞤲𞤼𞤢𞥄𞤯𞤫",
+  "ticket(s) détenus":"𞤼𞤭𞤳𞤫𞤼𞤭 𞤶𞤮𞤲𞤫","l'ancienne attribution":"𞤦𞤢𞤯𞤫𞥅𞤪𞤫 𞤱𞤢𞥄𞤣𞤭","sera clôturée":"𞤯𞤢𞤢 𞤯𞤫𞤳𞤫𞥂",
+  "Laissez 0 si aucune nouvelle attribution n'est faite pour l'instant.":"𞤁𞤢𞤪𞤲 0 𞤧𞤭 𞤦𞤢𞤯𞤫𞥅𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤮 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤣𞤫𞥅.",
+  "Aucun ticket en main pour cette personne":"𞤁𞤮𞥅 𞤼𞤭𞤳𞤫𞤼𞤭 𞤶𞤮𞤲𞤫 𞤺𞤮 𞤲𞤫𞤯𞤯𞤮 𞤯𞤭",
+  "choisir le type concerné":"𞤖𞤢𞤢𞤢𞤪 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤯𞤭","en main":"𞤶𞤮𞤲𞤫",
+  "Vider définitivement":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤺𞤢𞤴𞤢","personne(s) supprimée(s)":"𞤲𞤫𞤯𞤯𞤮𞥅𞤶𞤭 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭",
+  "Cette action est IRRÉVERSIBLE. Seules les personnes sans aucun historique lié (ventes, mouvements, paiements) seront réellement effacées ; les autres resteront dans \"Supprimées\" pour préserver leurs données.":"𞤘𞤮𞤤𞤣𞤢 𞤺𞤫𞤴 𞤢𞤪𞤼𞤢𞤢𞤢. 𞤒𞤭𞥅𞤯𞤯𞤮 𞤯𞤭 𞤯𞤢𞤲𞤫𞤪𞤢𞤢𞤢 𞤼𞤢𞤪𞤭𞤺𞤮 (𞤛𞤢𞤥𞤢𞤪𞤫, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫) 𞤯𞤫𞤲 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤺𞤢𞤴𞤢; 𞤯𞤫𞤯𞤫𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤳𞤫𞤯𞤢 𞤶𞤭 \"𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤫\".",
+  "personne(s) définitivement effacée(s)":"𞤲𞤫𞤯𞤯𞤮𞥅𞤶𞤭 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤺𞤢𞤴𞤢","conservée(s) (historique lié)":"𞤯𞤫𞤲𞥋𞤣𞤫 (𞤼𞤢𞤪𞤭𞤺𞤮 𞤱𞤮𞤲𞤣𞤫)",
+  "Aucune personne effacée — toutes ont un historique lié":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮 — 𞤺𞤢𞤴𞤫 𞤶𞤫𞤴 𞤼𞤢𞤪𞤭𞤺𞤮","Aucune personne supprimée à vider":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮 𞤺𞤮 𞤥𞤮𞥅𞤥𞤼𞤭𞤪𞤯𞤫",
+  "tickets":"𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","GNF":"𞤄𞤁𞤢",
+  "Clôturer":"𞤔𞤢𞤢","Rouvrir":"𞤈𞤢𞤦𞤢𞤪","Clôturé":"𞤖𞤫𞤳𞤢𞤯𞤮",
+  "⚠ Actualisation impossible — vérifiez la connexion":"⚠ 𞤖𞤫𞤧𞤣𞤭𞤲 𞤶𞤢𞥄𞤯𞤢𞤪𞤭 — 𞤪𞤫𞤯𞤣𞤭𞤲 𞤦𞤢𞤦𞤢𞤪𞤫",
+  "Montant invalide.":"𞤀𞤪𞤼𞤢𞥄𞤯𞤭 𞤶𞤢𞥄𞤯𞤢.","Quantité invalide.":"𞤈𞤢𞤢𞤪𞤢 𞤶𞤢𞥄𞤯𞤢.",
+  "Reste à payer pour ce type :":"𞤖𞤢𞤦𞤣𞤭 𞤯𞤫𞤦𞥆𞤭𞤯𞤮 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤲𞤺𞤫𞥅:","Montant versé (GNF)":"𞤖𞤢𞤦𞤣𞤭 𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭 (𞤄𞤁𞤢)",
+  "Enregistrer le paiement":"𞤔𞤮𞤥𞥆𞤢𞤲 𞤴𞤭𞥅𞤴𞤢𞤪𞤫","Type de ticket manquant — recommencez.":"𞤁𞤮𞥅 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭 — 𞤣𞤫𞤯𞤢𞥄𞤣 𞤺𞤢𞥄𞤲𞤺𞤢.",
+  "Supprimer \"{name}\" ?":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 \"{name}\" ?","Vous pourrez la restaurer plus tard.":"𞤀 𞤦𞤢𞤯𞤢𞤴 𞤄𞤢𞤪𞤼𞤢𞤲 𞤲𞤺𞤫𞥅 𞤺𞤭𞤤𞤢.",
+  "⚠ Cette personne a encore {qty} ticket(s) en main et {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ 𞤲𞤣𞤫𞥅 𞤲𞤺𞤫𞥅 𞤲𞤢𞤢 {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫 𞤫 {amount} 𞤯𞤫𞤦𞥆𞤭𞤯𞤮. 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤦𞤢𞤯𞤮 𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭.",
+  "⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l'historique après suppression.":"⚠ 𞤲𞤣𞤫𞥅 𞤲𞤺𞤫𞥅 𞤲𞤢𞤢 {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫. 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤦𞤢𞤯𞤮 𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭.",
+  "⚠ Cette personne a encore {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ 𞤲𞤣𞤫𞥅 𞤲𞤺𞤫𞥅 𞤲𞤢𞤢 {amount} 𞤯𞤫𞤦𞥆𞤭𞤯𞤮. 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤦𞤢𞤯𞤮 𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭.",
+  "Restaurer \"{name}\" dans les personnes actives ?":"𞤄𞤢𞤪𞤼𞤭𞤲 \"{name}\" 𞤶𞤭 𞤲𞤫𞤯𞤯𞤮 𞤺𞤮𞤤𞤣𞤭 ?",
+  "Supprimer DÉFINITIVEMENT \"{name}\" ?":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤺𞤢𞤴𞤢 \"{name}\" ?",
+  "Toutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.":"𞤛𞤢𞤥𞤢𞤪𞤫 𞤫, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫 𞤫, 𞤣𞤭𞤯𞤯𞤭 𞤼𞤭𞤳𞤫𞤼𞤭 𞤥𞤵𞤥 𞤯𞤫𞤲 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢, 𞤺𞤫𞤴 𞤢𞤪𞤼𞤢𞤢𞤢.",
+  "⚠ {qty} ticket(s) en main. Doit {amount}. Tout sera effacé avec elle.":"⚠ {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫. 𞤯𞤫𞤦𞥆𞤭 {amount}. 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤲𞤢 𞤥𞤢𞤳𞤳𞤮.",
+  "⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.":"⚠ {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫. 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤲𞤢 𞤥𞤢𞤳𞤳𞤮.",
+  "⚠ Doit {amount}. Tout sera effacé avec elle.":"⚠ 𞤯𞤫𞤦𞥆𞤭 {amount}. 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤲𞤢 𞤥𞤢𞤳𞤳𞤮.",
+  "Vider définitivement {count} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤺𞤢𞤴𞤢 {count} 𞤲𞤫𞤯𞤯𞤮𞥅𞤶𞤭 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 ?\n\n𞤘𞤮𞤤𞤣𞤢 𞤺𞤫𞤴 𞤢𞤪𞤼𞤢𞤢𞤢 : 𞤛𞤢𞤥𞤢𞤪𞤫 𞤥𞤵𞤥, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫 𞤥𞤵𞤥 𞤫 𞤣𞤭𞤯𞤯𞤭 𞤼𞤭𞤳𞤫𞤼𞤭 𞤥𞤵𞤥 𞤯𞤫𞤲 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢.",
+  "Clôturer \"{name}\" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L'historique complet reste consultable et la clôture est annulable.":"𞤔𞤢𞤢 \"{name}\" ?\n\n𞤣𞤭𞤯𞤯𞤭 𞤲𞤣𞤫 (𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤮𞤤𞤣𞤫, 𞤣𞤢𞤢𞤪𞤢 𞤶𞤭 𞤺𞤢𞤯𞤣𞤭) 𞤳𞤮 𞤯𞤢𞥄𞤺𞤢𞤲 0. 𞤼𞤢𞤪𞤭𞤺𞤮 𞤥𞵃 𞤯𞤫𞤲 𞤳𞤫𞤯𞤢, 𞔢𞤢𞤢 𞤲𞤢 𞤈𞤢𞤦𞤢𞤪.",
+  "Annuler la clôture de \"{name}\" ? La situation antérieure à la clôture sera restaurée.":"𞤔𞤭𞤥𞤯𞤭𞤲 𞤔𞤢𞤢 \"{name}\" ? 𞤣𞤭𞤯𞤯𞤭 𞤢𞤣𞤢 𞤔𞤢𞤢 𞤳𞤮 𞤄𞤢𞤪𞤼𞤢𞤲.",
+},
+};
+// Clés triées de la plus longue à la plus courte pour éviter qu'un remplacement court ne coupe
+// une clé plus longue en plein milieu (ex. "Actif" ne doit pas mordre sur "Inactif").
+function _i18nSortedKeys(lang){
+  if(!I18N[lang]) return [];
+  if(!I18N[lang].__sorted) I18N[lang].__sorted = Object.keys(I18N[lang]).sort((a,b)=>b.length-a.length);
+  return I18N[lang].__sorted;
+}
+function t(str){
+  if(CURRENT_LANG==='fr' || !str) return str;
+  const dict = I18N[CURRENT_LANG];
+  if(!dict) return str;
+  if(dict[str]!==undefined) return dict[str];
+  let out = str;
+  for(const key of _i18nSortedKeys(CURRENT_LANG)){
+    if(out.indexOf(key)!==-1) out = out.split(key).join(dict[key]);
+  }
+  return out;
+}
+// Pour les textes natifs (confirm()) : ils ne passent JAMAIS par le DOM, donc le filet de sécurité
+// MutationObserver ne peut pas les traduire — il faut les traduire explicitement AVANT de les passer
+// à confirm(). `key` est le modèle français complet avec des espaces réservés {comme_ceci} ; on
+// traduit le modèle entier (correspondance EXACTE dans le dictionnaire, donc un ordre des mots
+// naturel par langue, pas un découpage mot à mot), puis on remplace les espaces réservés.
+function tf(key, vars){
+  let out = t(key);
+  if(vars) for(const k in vars){ out = out.split('{'+k+'}').join(vars[k]); }
+  return out;
+}
+// Filet de sécurité : ré-applique la traduction sur TOUT changement du DOM sous #wifiOverlay
+// (texte, placeholder, title, aria-label), quelle que soit la fonction qui a produit le HTML —
+// pour ne rien oublier, y compris du contenu généré dynamiquement sans appel explicite à t().
+// IMPORTANT : on mémorise le texte FRANÇAIS D'ORIGINE sur le nœud lui-même (propriété JS, pas un
+// attribut) la première fois qu'on le voit, et on traduit TOUJOURS à partir de cet original — jamais
+// à partir de ce qui est actuellement affiché. Sans ça, une fois traduit vers l'anglais ou l'Adlam,
+// le texte source français serait perdu et impossible à restaurer en revenant au français.
+let _i18nObserverInstalled = false;
+function _i18nWalk(node){
+  const _el = node.nodeType===1 ? node : node.parentElement;
+  if(_el && (_el.closest('[data-noi18n]') || /^(SCRIPT|STYLE|TEXTAREA)$/.test(_el.tagName))) return; // données (articles, Réception) jamais traduites
+  if(node.nodeType===3){ // texte
+    if(node._i18nOriginal===undefined) node._i18nOriginal = node.nodeValue;
+    const original = node._i18nOriginal;
+    if(original && original.trim()){
+      const translated = t(original);
+      if(node.nodeValue!==translated) node.nodeValue = translated;
+    }
+    return;
+  }
+  if(node.nodeType!==1) return;
+  ['placeholder','title','aria-label'].forEach(attr=>{
+    const current = node.getAttribute && node.getAttribute(attr);
+    if(current==null) return;
+    const origKey = '_i18nOrig_'+attr;
+    if(node[origKey]===undefined) node[origKey] = current;
+    const original = node[origKey];
+    const tv = t(original);
+    if(node.getAttribute(attr)!==tv) node.setAttribute(attr, tv);
+  });
+  for(const child of node.childNodes) _i18nWalk(child);
+}
+function applyI18n(root){
+  _i18nWalk(root || document.getElementById('wifiOverlay'));
+}
+function setupI18nObserver(){
+  if(_i18nObserverInstalled) return;
+  _i18nObserverInstalled = true;
+  const overlay = document.body;
+  const obs = new MutationObserver((mutations)=>{
+    for(const m of mutations){
+      if(m.type==='childList'){ m.addedNodes.forEach(n=>_i18nWalk(n)); }
+      else if(m.type==='characterData'){ _i18nWalk(m.target); }
+      else if(m.type==='attributes'){ _i18nWalk(m.target); }
+    }
+  });
+  obs.observe(overlay, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['placeholder','title','aria-label']});
+}
+/* ---------- FIN INTERNATIONALISATION ---------- */
+
+// confirm() est utilisé partout dans ce module pour les confirmations avant suppression/clôture.
+// On le fait passer par t() ici — seulement dans la portée du module WiFi (Stock/Réception, définis
+// plus haut dans le fichier, continuent d'utiliser le confirm() natif du navigateur, inchangé).
+const confirm = (msg) => window.confirm(t(msg));
+
+// Applique les 3 préférences d'affichage dès l'ouverture de l'espace WiFi (avant même le premier
+// rendu), et met en place la traduction automatique du DOM pour la session.
+function applyDisplayPrefsOnOpen(){
+  const overlay = document.getElementById('wifiOverlay');
+  if(!overlay) return;
+  const scale = parseFloat(localStorage.getItem(WIFI_FONTSCALE_KEY))||1;
+  overlay.style.setProperty('--wfs', scale);
+  const theme = localStorage.getItem(WIFI_THEME_KEY)||'creme';
+  if(theme && theme!=='creme') overlay.setAttribute('data-theme', theme); else overlay.removeAttribute('data-theme');
+  CURRENT_LANG = localStorage.getItem(WIFI_LANG_KEY) || 'fr';
+  overlay.setAttribute('dir', CURRENT_LANG==='ff' ? 'rtl' : 'ltr');
+  setupI18nObserver();
+  applyI18n(overlay);
+}
+
 
 /* ============================================================
    DATA LAYER — connecté à Supabase (même projet que Stock LCD, tables dédiées)
@@ -1976,7 +2505,9 @@ async function loadData(){
     ...(sa.data||[]).map(mapSale),
     ...(pa.data||[]).map(mapPayment),
     ...(co.data||[]).map(mapCorrection),
-  ].sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+  ];
+  mergeWifiQueue(ops);
+  ops.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
   ops.forEach((o,i) => o.num = i+1); // numérotation d'affichage recalculée (pas de compteur partagé multi-appareils)
 
   DB = {
@@ -1987,6 +2518,8 @@ async function loadData(){
     meta: {initialized:true}
   };
   sortTicketTypes();
+  mirrorClosures();
+  try{ localStorage.setItem(WIFI_CACHEKEY, JSON.stringify(DB)); }catch(e){}
 }
 
 // Journal d'audit générique (Supabase) : trace date/heure/type d'action/élément concerné/quantité
@@ -2007,13 +2540,13 @@ async function logAudit(actionType, entityType, entityId, entityLabel, quantity)
 function activeClosureCutoff(typeId){
   const list = (DB.closures||[]).filter(c=>c.ticketTypeId===typeId && !c.restoredAt);
   if(!list.length) return null;
-  return list.reduce((max,c)=> (c.closedAt>max ? c.closedAt : max), list[0].closedAt);
+  return list.reduce((max,c)=> (Date.parse(c.closedAt)>Date.parse(max) ? c.closedAt : max), list[0].closedAt);
 }
 // true si l'opération fait partie de la période "en cours" du type (après la dernière clôture active).
 function opInPeriod(op, typeId){
   const cutoff = activeClosureCutoff(typeId);
   if(!cutoff) return true;
-  return (op.ts||'') > cutoff;
+  return Date.parse(op.ts||'') > Date.parse(cutoff); // comparaison numérique (formats 'Z' / '+00:00' mélangés)
 }
 
 // Classement automatique des tickets par prix croissant — appelé après chargement,
@@ -2033,13 +2566,14 @@ async function insertOp(table, payload, mapper){
   const now = new Date().toISOString();
   const tsField = {sales:'sold_at', payments:'paid_at', stock_movements:'occurred_at', stock_receipts:'received_at', corrections:'corrected_at'}[table];
   const fullPayload = {id, ...(tsField?{[tsField]:now}:{}), ...payload};
-  const { data, error } = await sb.from(table).insert(fullPayload).select();
-  if(error) throw error;
-  const row = (data && data[0]) ? data[0] : fullPayload;
+  // Écriture d'abord locale + mise en file (persistée), puis envoi automatique dès que le réseau le permet.
+  wifiQ.push({table, payload: fullPayload}); wifiSaveQ(); wifiSetStatus('pending');
+  const row = fullPayload;
   const op = mapper(row);
   DB.operations.push(op);
   DB.operations.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
   DB.operations.forEach((o,i) => o.num = i+1);
+  wifiSync();
   return op;
 }
 
@@ -2090,7 +2624,7 @@ function lostWithPeopleFor(typeId){
 }
 
 function stockSummary(){
-  return DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+  return liveTypes().map(tt=>{
     const agg = typeAggregate(tt.id);
     // disponible chez moi = reçus - remis + retours - vendu direct - pertes(moi) - annulations(moi)
     let lostMe=0, cancelMe=0, lostPeople=0, cancelPeople=0;
@@ -2208,19 +2742,20 @@ const UI = {
     try{
       await loadData();
     }catch(e){
-      document.body.innerHTML = `<div class="empty" style="padding:60px 20px;">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
-      return;
+      if(!loadWifiCache()){ document.body.innerHTML = `<div class="empty" style="padding:60px 20px;">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
+      return; }
     }
     document.getElementById('today-chip').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short'});
     document.getElementById('people-search').addEventListener('input', ()=>this.renderPeople());
     document.getElementById('hist-search').addEventListener('input', ()=>this.renderHistory());
     this.renderAll();
+    wifiSetStatus(navigator.onLine ? 'synced' : 'offline'); wifiSync();
   },
 
   // Recharge les données depuis Supabase SANS jamais quitter l'espace WiFi ni changer de vue/section :
   // restaure exactement la page ouverte (y compris une fiche "situation" d'un associé, ou le type de
   // ticket sélectionné dans Stock). Ne supprime aucune donnée.
-  async refreshWifi(){
+  async refreshWifi(silent){
     const savedView = this.currentView;
     const savedPersonId = this.pIdView;
     const savedStockPill = this.stockPillType;
@@ -2230,7 +2765,7 @@ const UI = {
     const savedScroll = overlay ? overlay.scrollTop : 0;
     try{
       await loadData();
-    }catch(e){ toast('⚠ Actualisation impossible — vérifiez la connexion'); return; }
+    }catch(e){ if(!silent) toast('⚠ Actualisation impossible — vérifiez la connexion'); return false; }
     this.stockPillType = savedStockPill;
     this.pIdView = savedPersonId;
     this.histFilter = savedHistFilter;
@@ -2248,7 +2783,8 @@ const UI = {
       this.renderSituation();
     }
     if(overlay) overlay.scrollTop = savedScroll; // conserve la position de défilement autant que possible
-    toast('WiFi actualisé');
+    if(!silent) toast('WiFi actualisé');
+    return true;
   },
 
   goto(view){
@@ -2292,7 +2828,7 @@ const UI = {
       <div class="help-text" style="margin-top:6px;">Vide uniquement ce journal d'actions administratives. Les ventes, paiements, mouvements de stock et attributions restent conservés en permanence — ce sont des données actives, jamais supprimées.</div>
     `);
     const labels = {
-      DELETE_PERSON:'Suppression — personne', RESTORE_PERSON:'Restauration — personne',
+      DELETE_OPERATION:'Suppression — opération', DELETE_PERSON:'Suppression — personne', RESTORE_PERSON:'Restauration — personne',
       CLOSE_TICKET_TYPE:'Clôture — type de ticket', RESTORE_TICKET_TYPE_CLOSURE:'Réouverture — type de ticket',
       RETOUR_REATTRIBUTION:"Retour d'argent + nouvelle attribution",
     };
@@ -2322,10 +2858,11 @@ const UI = {
   // Suppression individuelle d'une ligne du journal (jamais des ventes/paiements/mouvements —
   // ce journal ne contient que des traces d'actions administratives).
   async deleteJournalEntry(entryId){
-    if(!confirm('Supprimer définitivement cette ligne du journal ?')) return;
+    if(!confirm(t('Supprimer définitivement cette ligne du journal ?'))) return;
     try{
-      const { error } = await sb.from('audit_log').delete().eq('id', entryId);
+      const { data, error } = await sb.from('audit_log').delete().eq('id', entryId).select();
       if(error) throw error;
+      if(!data || !data.length) throw new Error("le serveur n'a rien supprimé (droits Supabase ?)");
     }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible')); return; }
     toast('Ligne du journal supprimée');
     this.openJournal();
@@ -2335,10 +2872,13 @@ const UI = {
   // de stock ni réceptions : ce sont des données actives dont la suppression physique est interdite
   // (intégrité des données > tout le reste).
   async clearAuditJournal(){
-    if(!confirm(`Vider l'historique du journal (suppressions & clôtures) ?\n\nCette action est irréversible mais ne touche à AUCUNE donnée active : ventes, paiements, mouvements de stock et attributions restent intacts.`)) return;
+    if(!confirm(t(`Vider l'historique du journal (suppressions & clôtures) ?\n\nCette action est irréversible mais ne touche à AUCUNE donnée active : ventes, paiements, mouvements de stock et attributions restent intacts.`))) return;
     try{
       const { error } = await sb.from('audit_log').delete().not('id','is',null);
       if(error) throw error;
+      const chk = await sb.from('audit_log').select('id').limit(1);   // vérification réelle : plus rien ne doit rester
+      if(chk.error) throw chk.error;
+      if(chk.data && chk.data.length) throw new Error('le serveur a refusé la suppression (droits Supabase ?)');
     }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'impossible de vider le journal')); return; }
     toast('Journal vidé');
     this.openJournal();
@@ -2488,14 +3028,15 @@ const UI = {
     list.innerHTML = people.map(p=>{
       const m = personMoney(p.id);
       const restant = personTotalRestant(p.id);
-      // Une ligne DISTINCTE et TOUJOURS visible par type actif (même à 0 tickets), au format
-      // "Type : N tickets — MONTANT GNF" — jamais fusionné sur une seule ligne avec des séparateurs "|".
-      const breakdownLines = DB.ticketTypes
-        .filter(tt => tt.active!==false)
+      // Une ligne par type actif — masquée si la quantité détenue est à 0 (uniquement les données
+      // réellement en main), au format "Type : N tickets — MONTANT GNF", jamais fusionné sur une
+      // seule ligne avec des séparateurs "|".
+      const breakdownLines = liveTypes()
         .map(tt => {
           const s = personTypeStats(p.id, tt.id);
+          if(!s.restant) return '';
           const montant = s.restant * (tt.price||0);
-          return `<div class="person-sub" style="margin-top:2px;">${tt.name} : <strong>${fmt(s.restant)} tickets</strong> — ${fmtGNF(montant)}</div>`;
+          return `<div class="person-sub" style="margin-top:3px;">${tt.name} : <strong>${fmt(s.restant)} tickets</strong> — ${fmtGNF(montant)}</div>`;
         }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
@@ -2546,16 +3087,17 @@ const UI = {
     const p = person(this.pIdView);
     if(!p){ document.getElementById('situation-content').innerHTML=`<div class="empty">Personne introuvable.</div>`; return; }
     const m = personMoney(p.id);
-    // Une ligne DISTINCTE et TOUJOURS visible par type de ticket actif (même à 0), au format
+    // Une ligne par type de ticket actif — masquée si la quantité détenue est à 0, au format
     // "Type : N tickets — MONTANT GNF" — jamais une table à colonnes multiples qui se comprime
     // à l'écran. Montant = quantité détenue (restant) × prix ACTUEL du type.
-    const typeLines = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+    const typeLines = liveTypes().map(tt=>{
       const s = personTypeStats(p.id, tt.id);
+      if(!s.restant) return '';
       const montant = s.restant * (tt.price||0);
       return `<div class="money-row"><span class="label wname">${tt.name}</span><span class="amount">${fmt(s.restant)} tickets — ${fmtGNF(montant)}</span></div>`;
     }).join('');
     const totalRestant = personTotalRestant(p.id);
-    const totalValeur = DB.ticketTypes.filter(t=>t.active!==false).reduce((sum,tt)=>sum + personTypeStats(p.id,tt.id).restant*(tt.price||0), 0);
+    const totalValeur = liveTypes().reduce((sum,tt)=>sum + personTypeStats(p.id,tt.id).restant*(tt.price||0), 0);
 
     const recentOps = DB.operations.filter(o=>o.personId===p.id).sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,8);
 
@@ -2582,7 +3124,7 @@ const UI = {
       <div class="card" style="overflow-x:auto;">
         <table class="ledger">
           <tr><th>Type</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
-          ${DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+          ${liveTypes().map(tt=>{
             const tm = personTypeMoney(p.id, tt.id);
             if(tm.du===0 && tm.paye===0) return '';
             return `<tr><td>${tt.name}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmtGNF(tm.reste)}</strong></td></tr>`;
@@ -2640,11 +3182,17 @@ const UI = {
     if(!p) return;
     const restant = personTotalRestant(p.id);
     const reste = personMoney(p.id).reste;
-    let msg = `Supprimer "${p.name}" ?`;
+    let msg = tf('Supprimer "{name}" ?', {name: p.name});
     if(restant>0 || reste>0){
-      msg += `\n\n⚠ Cette personne a encore ${restant>0?fmt(restant)+' ticket(s) en main':''}${(restant>0&&reste>0)?' et ':''}${reste>0?fmtGNF(reste)+' à payer':''}. Ces données restent conservées dans l'historique après suppression.`;
+      if(restant>0 && reste>0){
+        msg += '\n\n' + tf('⚠ Cette personne a encore {qty} ticket(s) en main et {amount} à payer. Ces données restent conservées dans l\'historique après suppression.', {qty: fmt(restant), amount: fmtGNF(reste)});
+      } else if(restant>0){
+        msg += '\n\n' + tf('⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l\'historique après suppression.', {qty: fmt(restant)});
+      } else {
+        msg += '\n\n' + tf('⚠ Cette personne a encore {amount} à payer. Ces données restent conservées dans l\'historique après suppression.', {amount: fmtGNF(reste)});
+      }
     }
-    msg += `\n\nVous pourrez la restaurer plus tard.`;
+    msg += '\n\n' + t('Vous pourrez la restaurer plus tard.');
     if(!confirm(msg)) return;
     const now = new Date().toISOString();
     try{
@@ -2662,7 +3210,7 @@ const UI = {
   async restorePerson(id){
     const p = DB.people.find(x=>x.id===id);
     if(!p) return;
-    if(!confirm(`Restaurer "${p.name}" dans les personnes actives ?`)) return;
+    if(!confirm(tf('Restaurer "{name}" dans les personnes actives ?', {name: p.name}))) return;
     const now = new Date().toISOString();
     try{
       const { error } = await sb.from('people').update({deleted_at: null}).eq('id', id);
@@ -2683,7 +3231,6 @@ const UI = {
     if(!p) return {ok:false};
     const opIds = DB.operations.filter(o=>o.personId===personId && ['VENTE','PAIEMENT','REMISE','RETOUR','PERTE','ANNULATION'].includes(o.opType)).map(o=>o.id);
     try{
-      await logAudit('DELETE_PERSON', 'person', p.id, p.name+' (suppression définitive)', null);
       if(opIds.length>0){
         for(const id of opIds){
           const { error } = await sb.from('corrections').delete().eq('target_id', id);
@@ -2694,6 +3241,11 @@ const UI = {
       r = await sb.from('payments').delete().eq('person_id', personId); if(r.error) throw r.error;
       r = await sb.from('stock_movements').delete().eq('person_id', personId); if(r.error) throw r.error;
       r = await sb.from('people').delete().eq('id', personId); if(r.error) throw r.error;
+      const chk = await sb.from('people').select('id').eq('id', personId);
+      if(chk.error) throw chk.error;
+      if(chk.data && chk.data.length) throw new Error('le serveur a refusé la suppression (droits Supabase ?)');
+      wifiQ = wifiQ.filter(q => q.payload.person_id !== personId); wifiSaveQ();
+      await logAudit('DELETE_PERSON', 'person', p.id, p.name+' (suppression définitive)', null);
     }catch(e){ return {ok:false, error:e}; }
     // Nettoyage en mémoire : retire la personne ET toutes ses opérations/corrections liées,
     // pour que les calculs (stock, historique, situations) soient immédiatement cohérents.
@@ -2712,8 +3264,11 @@ const UI = {
     if(!p) return;
     const restant = personTotalRestant(p.id);
     const reste = personMoney(p.id).reste;
-    const warn = (restant>0||reste>0) ? `\n\n⚠ ${restant>0?fmt(restant)+' ticket(s) en main. ':''}${reste>0?'Doit '+fmtGNF(reste)+'. ':''}Tout sera effacé avec elle.` : '';
-    if(!confirm(`Supprimer DÉFINITIVEMENT "${p.name}" ?\n\nToutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.${warn}`)) return;
+    let warn = '';
+    if(restant>0 && reste>0) warn = '\n\n' + tf('⚠ {qty} ticket(s) en main. Doit {amount}. Tout sera effacé avec elle.', {qty: fmt(restant), amount: fmtGNF(reste)});
+    else if(restant>0) warn = '\n\n' + tf('⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.', {qty: fmt(restant)});
+    else if(reste>0) warn = '\n\n' + tf('⚠ Doit {amount}. Tout sera effacé avec elle.', {amount: fmtGNF(reste)});
+    if(!confirm(tf('Supprimer DÉFINITIVEMENT "{name}" ?', {name: p.name}) + '\n\n' + t("Toutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.") + warn)) return;
     const res = await this.hardDeletePerson(personId);
     toast(res.ok ? `${p.name} définitivement supprimée` : "⚠ Erreur : "+(res.error&&res.error.message?res.error.message:'suppression impossible (vérifier les droits de suppression Supabase)'));
   },
@@ -2722,7 +3277,7 @@ const UI = {
   async emptyDeletedPeople(){
     const deleted = DB.people.filter(p=>p.deletedAt);
     if(deleted.length===0){ toast('Aucune personne supprimée à vider'); return; }
-    if(!confirm(`Vider définitivement ${deleted.length} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.`)) return;
+    if(!confirm(tf('Vider définitivement {count} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.', {count: deleted.length}))) return;
     let removed=0, failed=0, lastErr=null;
     for(const p of deleted.slice()){
       const res = await this.hardDeletePerson(p.id, {skipRefresh:true});
@@ -2756,7 +3311,39 @@ const UI = {
           <div class="hist-sub">${sub}${op.comment?' · '+op.comment:''}</div>
         </div>
         <div class="hist-qty">${qtyStr}</div>
+        <button type="button" title="Supprimer cette opération" aria-label="Supprimer cette opération" onclick="UI.deleteOperation('${op.id}')"
+          style="background:none;border:none;color:var(--w-red);font-size:16px;line-height:1;padding:4px 2px;cursor:pointer;margin-left:6px;">🗑️</button>
       </div>`;
+  },
+  // Suppression définitive d'UNE opération de l'historique (et des corrections qui la visent).
+  // Vérifiée côté serveur par relecture ; une opération encore en file d'attente est simplement retirée de la file.
+  async deleteOperation(opId){
+    const op = DB.operations.find(o=>o.id===opId);
+    if(!op) return;
+    const label = OP_META[op.opType].label;
+    if(!confirm(tf('Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.', {label}))) return;
+    const related = op.opType==='CORRECTION' ? [] : DB.operations.filter(o=>o.opType==='CORRECTION' && o.correctsOpId===opId);
+    const ids = new Set([opId, ...related.map(o=>o.id)]);
+    try{
+      const queued = wifiQ.filter(q=>ids.has(q.payload.id));
+      if(queued.length){ wifiQ = wifiQ.filter(q=>!ids.has(q.payload.id)); wifiSaveQ(); }
+      if(!queued.some(q=>q.payload.id===opId)){
+        if(related.length){ const c = await sb.from('corrections').delete().eq('target_id', opId); if(c.error) throw c.error; }
+        const d = await sb.from(OP_TABLE[op.opType]).delete().eq('id', opId);
+        if(d.error) throw d.error;
+        const chk = await sb.from(OP_TABLE[op.opType]).select('id').eq('id', opId);
+        if(chk.error) throw chk.error;
+        if(chk.data && chk.data.length) throw new Error('le serveur a refusé la suppression (droits Supabase ?)');
+      }
+    }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible')); return; }
+    DB.operations = DB.operations.filter(o=>!ids.has(o.id));
+    DB.operations.forEach((o,i)=>o.num=i+1);
+    try{ localStorage.setItem(WIFI_CACHEKEY, JSON.stringify(DB)); }catch(e){}
+    const p = op.personId ? person(op.personId) : null, tt = op.typeId ? ticketType(op.typeId) : null;
+    logAudit('DELETE_OPERATION','operation',opId,[label,p?p.name:'Chez moi',tt?tt.name:''].filter(Boolean).join(' — '),op.qty);
+    this.renderAll();
+    if(this.currentView==='situation') this.renderSituation();
+    toast('Opération supprimée');
   },
   renderHistory(){
     const q = (document.getElementById('hist-search').value||'').toLowerCase();
@@ -2811,7 +3398,7 @@ const UI = {
       const lastStr = lastRemise ? `${fmt(lastRemise.qty)} × ${lastTt?lastTt.name:'?'} — ${new Date(lastRemise.ts).toLocaleDateString('fr-FR')}` : 'Aucune';
       // Détail par type de ticket (5h/24h/7j/30j, ou tout autre type créé) : quantités + montants
       // réels, un par un — pas seulement le cumul global ci-dessus.
-      const typeRows = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>{
+      const typeRows = liveTypes().map(tt=>{
         const s = personTypeStats(p.id, tt.id);
         const tm = personTypeMoney(p.id, tt.id);
         if(s.pris===0 && s.vendu===0 && s.restant===0 && tm.du===0 && tm.paye===0) return '';
@@ -2877,6 +3464,7 @@ const UI = {
 
   /* ---------- PARAMETRES ---------- */
   renderParametres(){
+    this.renderDisplayPrefs();
     const prices = document.getElementById('settings-prices');
     prices.innerHTML = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>`
       <div class="settings-row">
@@ -2888,7 +3476,7 @@ const UI = {
     const types = document.getElementById('settings-types');
     types.innerHTML = DB.ticketTypes.map(tt=>{
       const cutoff = activeClosureCutoff(tt.id);
-      const closure = cutoff ? (DB.closures||[]).find(c=>c.ticketTypeId===tt.id && c.closedAt===cutoff && !c.restoredAt) : null;
+      const closure = cutoff ? (DB.closures||[]).find(c=>c.ticketTypeId===tt.id && Date.parse(c.closedAt)===Date.parse(cutoff) && !c.restoredAt) : null;
       const closedStr = closure ? new Date(closure.closedAt).toLocaleDateString('fr-FR') + ' ' + new Date(closure.closedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : null;
       return `
       <div class="settings-row">
@@ -2911,7 +3499,7 @@ const UI = {
   async closeTicketType(id){
     const tt = ticketType(id);
     if(!tt) return;
-    if(!confirm(`Clôturer "${tt.name}" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L'historique complet reste consultable et la clôture est annulable.`)) return;
+    if(!confirm(tf('Clôturer "{name}" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L\'historique complet reste consultable et la clôture est annulable.', {name: tt.name}))) return;
     const now = new Date().toISOString();
     const closureId = (typeof crypto!=='undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('id-'+Date.now()+'-'+Math.random().toString(36).slice(2));
     try{
@@ -2926,6 +3514,7 @@ const UI = {
       if(check.error) throw check.error;
       if(!check.data || !check.data.length) throw new Error("la clôture n'a pas pu être vérifiée après enregistrement (elle n'a pas persisté côté serveur)");
       (DB.closures = DB.closures||[]).push({id:row.id, ticketTypeId:id, closedAt:row.closed_at, restoredAt:null});
+      mirrorClosures();
       await logAudit('CLOSE_TICKET_TYPE', 'ticket_type', id, tt.name, null);
     }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.renderAll();
@@ -2936,17 +3525,25 @@ const UI = {
     const tt = ticketType(id);
     if(!tt) return;
     const cutoff = activeClosureCutoff(id);
-    const closure = (DB.closures||[]).find(c=>c.ticketTypeId===id && c.closedAt===cutoff && !c.restoredAt);
-    if(!closure) return;
-    if(!confirm(`Annuler la clôture de "${tt.name}" ? La situation antérieure à la clôture sera restaurée.`)) return;
+    // Toutes les clôtures actives partageant exactement le même "cutoff" (horodatage identique à la
+    // milliseconde — cas rare mais réel, ex. deux clôtures créées très rapidement) doivent être
+    // restaurées ENSEMBLE. Ne restaurer que la première trouvée laisserait les autres actives pour
+    // toujours : le type resterait "clôturé" en apparence, même après une réouverture réussie —
+    // c'est exactement le bug qui pouvait faire "réapparaître" une clôture.
+    const closures = (DB.closures||[]).filter(c=>c.ticketTypeId===id && Date.parse(c.closedAt)===Date.parse(cutoff) && !c.restoredAt);
+    if(!closures.length) return;
+    if(!confirm(tf('Annuler la clôture de "{name}" ? La situation antérieure à la clôture sera restaurée.', {name: tt.name}))) return;
     const now = new Date().toISOString();
     try{
-      const { error } = await sb.from('ticket_type_closures').update({restored_at: now}).eq('id', closure.id);
-      if(error) throw error;
-      const check = await sb.from('ticket_type_closures').select('id,restored_at').eq('id', closure.id);
-      if(check.error) throw check.error;
-      if(!check.data || !check.data.length || !check.data[0].restored_at) throw new Error("la réouverture n'a pas pu être vérifiée après enregistrement (elle n'a pas persisté côté serveur)");
-      closure.restoredAt = now;
+      for(const closure of closures){
+        const { error } = await sb.from('ticket_type_closures').update({restored_at: now}).eq('id', closure.id);
+        if(error) throw error;
+        const check = await sb.from('ticket_type_closures').select('id,restored_at').eq('id', closure.id);
+        if(check.error) throw check.error;
+        if(!check.data || !check.data.length || !check.data[0].restored_at) throw new Error(`la réouverture n'a pas pu être vérifiée après enregistrement (id ${closure.id})`);
+        closure.restoredAt = now;
+      }
+      mirrorClosures();
       await logAudit('RESTORE_TICKET_TYPE_CLOSURE', 'ticket_type', id, tt.name, null);
     }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.renderAll();
@@ -3072,7 +3669,7 @@ const UI = {
   },
 
   renderTypePicker(opType){
-    const types = DB.ticketTypes.filter(t=>t.active!==false);
+    const types = liveTypes();
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
@@ -3142,11 +3739,11 @@ const UI = {
     if(op.opType==='RECEPTION' === false && op.personId===null && op.opType==='VENTE'){
       // vente directe: check my stock
       const s = stockSummary().find(x=>x.type.id===op.typeId);
-      if(qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s.disponible)} disponibles).</div>`; return; }
+      if(!s || qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s?s.disponible:0)} disponibles).</div>`; return; }
     }
     if(op.opType==='REMISE'){
       const s = stockSummary().find(x=>x.type.id===op.typeId);
-      if(qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s.disponible)} disponibles).</div>`; return; }
+      if(!s || qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s?s.disponible:0)} disponibles).</div>`; return; }
     }
 
     let amount=null, unitPrice=null;
@@ -3293,7 +3890,7 @@ const UI = {
   openReturnReassign(personId){
     const p = person(personId);
     if(!p) return;
-    const types = DB.ticketTypes.filter(tt=>tt.active!==false && personTypeStats(p.id,tt.id).restant>0);
+    const types = liveTypes().filter(tt=>personTypeStats(p.id,tt.id).restant>0);
     if(types.length===0){ toast("Aucun ticket en main pour cette personne"); return; }
     this.newRR = {personId};
     this.openSheet(`
@@ -3378,8 +3975,73 @@ const UI = {
     if(this.currentView==='situation') this.renderSituation();
     toast('Retour + nouvelle attribution enregistrés');
   },
+
+  /* ---------- AFFICHAGE : taille de police, thème, langue ----------
+     Préférences purement locales à l'appareil (jamais dans Supabase — ce ne sont pas des données
+     métier partagées entre associés, chacun peut régler l'affichage de son propre téléphone).
+     Persistées dans localStorage, appliquées immédiatement, relues à chaque ouverture de WiFi. */
+  renderDisplayPrefs(){
+    const scale = parseFloat(localStorage.getItem(WIFI_FONTSCALE_KEY))||1;
+    const slider = document.getElementById('fontscale-slider');
+    if(slider) slider.value = scale;
+    const pct = document.getElementById('fontsize-pct');
+    if(pct) pct.textContent = Math.round(scale*100)+'%';
+
+    const curTheme = localStorage.getItem(WIFI_THEME_KEY)||'creme';
+    const themes = [
+      {id:'creme', label:t('Crème (défaut)')},
+      {id:'blanc', label:t('Blanc')},
+      {id:'gris', label:t('Gris')},
+      {id:'noir', label:t('Noir')},
+      {id:'sombre', label:t('Sombre')},
+    ];
+    const themePicker = document.getElementById('theme-picker');
+    if(themePicker) themePicker.innerHTML = themes.map(x=>`<button type="button" class="filter-pill ${x.id===curTheme?'active':''}" onclick="UI.setTheme('${x.id}')">${x.label}</button>`).join('');
+
+    const curLang = localStorage.getItem(WIFI_LANG_KEY)||'fr';
+    const langs = [
+      {id:'fr', label:'🇫🇷 Français'},
+      {id:'en', label:'🇺🇸 English'},
+      {id:'ff', label:'𞤆𞤵𞤤𞤢𞤪 𞤀𞤣𞤤𞤢𞤥'},
+    ];
+    const langPicker = document.getElementById('lang-picker');
+    if(langPicker) langPicker.innerHTML = langs.map(x=>`<button type="button" class="filter-pill ${x.id===curLang?'active':''}" onclick="UI.setLanguage('${x.id}')">${x.label}</button>`).join('');
+  },
+  setFontScale(val){
+    const scale = Math.round(Math.max(0.8, Math.min(1.6, parseFloat(val)||1))*20)/20;
+    const overlay = document.getElementById('wifiOverlay');
+    if(overlay) overlay.style.setProperty('--wfs', scale);
+    localStorage.setItem(WIFI_FONTSCALE_KEY, scale);
+    applyGlobalPrefs();
+    this.renderDisplayPrefs();
+  },
+  adjustFontScale(delta){
+    const cur = parseFloat((document.getElementById('fontscale-slider')||{}).value)||1;
+    this.setFontScale(cur+delta);
+  },
+  setTheme(themeId){
+    const overlay = document.getElementById('wifiOverlay');
+    if(overlay){ if(themeId==='creme') overlay.removeAttribute('data-theme'); else overlay.setAttribute('data-theme', themeId); }
+    localStorage.setItem(WIFI_THEME_KEY, themeId);
+    applyGlobalPrefs();
+    this.renderDisplayPrefs();
+  },
+  setLanguage(langId){
+    localStorage.setItem(WIFI_LANG_KEY, langId);
+    CURRENT_LANG = langId;
+    const overlay = document.getElementById('wifiOverlay');
+    if(overlay) overlay.setAttribute('dir', langId==='ff' ? 'rtl' : 'ltr'); // l'alphabet Adlam s'écrit de droite à gauche
+    this.renderAll();
+    // renderAll() ne touche pas le contenu STATIQUE (barre du bas, titre en haut de page) qui n'est
+    // jamais régénéré — sans cet appel explicite, ces éléments resteraient dans l'ancienne langue
+    // jusqu'à leur prochaine mutation DOM fortuite. On traduit donc explicitement tout l'espace WiFi.
+    applyI18n(overlay);
+    applyGlobalPrefs();
+    this.renderDisplayPrefs();
+  },
 };
 
+const OP_TABLE = {RECEPTION:'stock_receipts', REMISE:'stock_movements', RETOUR:'stock_movements', PERTE:'stock_movements', ANNULATION:'stock_movements', VENTE:'sales', PAIEMENT:'payments', CORRECTION:'corrections'};
 const OP_META = {
   RECEPTION:  {label:'Réception', color:'#2F6F5E'},
   REMISE:     {label:'Remise', color:'#1B2A4A'},
@@ -3392,11 +4054,11 @@ const OP_META = {
 };
 
 function toast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  const el = document.getElementById('toast');
+  el.textContent = (typeof t==='function') ? t(msg) : msg; // traduit automatiquement selon la langue active
+  el.classList.add('show');
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+  window._toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
 }
 
 document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') UI.closeSheet(); });
@@ -3795,6 +4457,15 @@ window.initReceptionApp = async function(){
   }
 };
 
+
+// Traductions ajoutées (uniquement si absentes du dictionnaire existant)
+(function(){
+  const add = {"Choisis ton espace": "Choose your space", "Commande fournisseur (WhatsApp)": "Supplier order (WhatsApp)", "Commande fournisseur": "Supplier order", "disponible(s)": "available", "valeur du stock (GNF)": "stock value (GNF)", "Rechercher un article...": "Search an item...", "+ Ajouter un article": "+ Add an item", "Aucun article dans cette catégorie. Ajoutez-en un.": "No item in this category. Add one.", "Nom / modèle": "Name / model", "Numéro de téléphone": "Phone number", "Référence (optionnel)": "Reference (optional)", "Quantité en stock": "Quantity in stock", "Seuil d'alerte par défaut": "Default alert threshold", "Seuil d'alerte": "Alert threshold", "Prix d'achat unitaire (GNF, optionnel — rempli quand connu)": "Unit purchase price (GNF, optional — filled when known)", "Désignation": "Designation", "Montant (GNF)": "Amount (GNF)", "Envoyer WhatsApp": "Send WhatsApp", "Copier": "Copy", "Code PIN requis": "PIN code required", "Code PIN": "PIN code", "Valider": "Confirm", "Application verrouillée": "App locked", "Entre ton code PIN pour continuer": "Enter your PIN to continue", "Déverrouiller": "Unlock", "PIN oublié ?": "Forgot PIN?", "Trier A→Z / Z→A": "Sort A→Z / Z→A", "Nom de l'onglet stock perso": "Personal stock tab name", "Nom de l'onglet compte": "Account tab name", "Supprimer une catégorie": "Delete a category", "Définir / modifier le code PIN": "Set / change PIN code", "Verrouiller l'application maintenant": "Lock the app now", "Forcer la synchronisation": "Force synchronization", "Sauvegarder les données (backup)": "Back up data", "Restaurer depuis une sauvegarde": "Restore from a backup", "À propos de l'application": "About the app", "Articles (toutes catégories)": "Items (all categories)", "En attente de synchronisation": "Waiting to sync", "Connexion": "Connection", "hors ligne": "offline", "en ligne": "online", "À propos": "About", "Dernière mise à jour": "Last update", "Développé pour Boulliwel Service": "Built for Boulliwel Service", "Sauvegarde des données": "Data backup", "Restaurer une sauvegarde": "Restore a backup", "Apparence": "Appearance", "Police": "Font", "Système": "System", "Arrondie": "Rounded", "Défaut": "Default", "Crème": "Cream", "Synchronisé": "Synced", "Synchronisation en cours": "Syncing", "Hors ligne": "Offline", "Erreur de synchronisation": "Sync error", "Données en attente": "Data pending", "en attente": "pending", "Mise à jour": "Update", "Rechercher une mise à jour": "Check for updates", "(disponible)": "(available)", "(vérification…)": "(checking…)", "(à jour ✓)": "(up to date ✓)", "(hors ligne)": "(offline)", "(échec, réessaie)": "(failed, retry)", "Toucher pour synchroniser": "Tap to sync","Supprimer cette opération":"Delete this operation","Opération supprimée":"Operation deleted","Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.":"Permanently delete this operation ({label})?\n\nIt will be removed from stock and amounts. This cannot be undone."};
+  for(const k in add){ if(!(k in I18N.en)) I18N.en[k] = add[k]; }
+  delete I18N.en.__sorted; delete I18N.ff.__sorted;
+})();
+applyGlobalPrefs();
+autoSync();
 </script>
 </body>
 </html>
