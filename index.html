@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.21';
+const APP_VERSION = '6.22';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2268,7 +2268,7 @@ en: {
   "Réception":"Receipt","Attribution":"Assignment","Vente":"Sale","Retour ticket":"Ticket return","Perte":"Loss","Annulation":"Cancellation","Paiement":"Payment",
   "Choisir une personne":"Choose a person","Choisir un type de ticket":"Choose a ticket type","Quantité":"Quantity","Prix unitaire (GNF)":"Unit price (GNF)",
   "Commentaire (optionnel)":"Comment (optional)","Motif (optionnel)":"Reason (optional)","Confirmer l'opération":"Confirm the operation",
-  "Chez moi":"On hand (me)","Reçus du fournisseur":"Received from supplier","Vendus (total)":"Sold (total)",
+  "Disponible":"On hand (me)","Reçus du fournisseur":"Received from supplier","Vendus (total)":"Sold (total)",
   "Stock disponible":"Available stock","Tickets attribués":"Assigned tickets","Tickets vendus":"Sold tickets","Tickets restants":"Remaining tickets",
   "Argent attendu":"Money expected","Argent rendu (payé)":"Money returned (paid)","Dernière attribution":"Last assignment","Aucune":"None",
   "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
@@ -2347,7 +2347,7 @@ ff: {
   "Réception":"𞤍𞤢𞤥𞤢𞤪𞤫","Attribution":"𞤚𞤮𞤼𞤢𞤪𞤫","Vente":"𞤛𞤢𞤥𞤢𞤪𞤫","Retour ticket":"𞤀𞤪𞤼𞤭𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭","Perte":"𞤈𞤢𞤴𞤣𞤫","Annulation":"𞤔𞤭𞤥𞤯𞤭𞤪𞤫","Paiement":"𞤒𞤮𞥅𞤦𞤢𞤪𞤫",
   "Choisir une personne":"𞤖𞤢𞤢𞤢𞤪 𞤲𞤫𞤯𞤯𞤮","Choisir un type de ticket":"𞤖𞤢𞤢𞤢𞤪 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭","Quantité":"𞤈𞤢𞤢𞤪𞤢","Prix unitaire (GNF)":"𞤄𞤢 (𞤄𞤁𞤢) 𞤺𞤮 𞤴𞤭𞥅𞤴𞤢𞤥",
   "Commentaire (optionnel)":"𞤈𞤢𞤪𞤭𞤶𞤢 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Motif (optionnel)":"𞤄𞤢𞤢𞤪𞤣𞤭 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Confirmer l'opération":"𞤀𞤪𞤼𞤭𞤲 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫",
-  "Chez moi":"𞤁𞤮 𞤥𞤭𞥅𞤲","Reçus du fournisseur":"𞤄𞤢𞤢𞤯𞤢𞥄𞤯𞤭 𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Vendus (total)":"𞤛𞤢𞤥𞤢𞥄𞤯𞤭 (𞤫𞥅𞤪𞤫)",
+  "Disponible":"𞤁𞤮 𞤥𞤭𞥅𞤲","Reçus du fournisseur":"𞤄𞤢𞤢𞤯𞤢𞥄𞤯𞤭 𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Vendus (total)":"𞤛𞤢𞤥𞤢𞥄𞤯𞤭 (𞤫𞥅𞤪𞤫)",
   "Stock disponible":"𞤔𞤢𞤺𞤢𞤪𞤢𞥄𞤶𞤭 𞤲𞤮𞥅𞤯𞤭","Tickets attribués":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤼𞤮𞤼𞤢𞥄𞤯𞤫","Tickets vendus":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤛𞤢𞤥𞤢𞥄𞤯𞤫","Tickets restants":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤳𞤢𞤥𞤯𞤭𞤯𞤫",
   "Argent attendu":"𞤖𞤢𞤦𞤣𞤭 𞤺𞤭𞤯𞤮 𞤲𞤢𞤲𞤺𞤭𞥅𞤯𞤮","Argent rendu (payé)":"𞤖𞤢𞤦𞤣𞤭 𞤢𞤪𞤼𞤢𞥄𞤯𞤭 (𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭)","Dernière attribution":"𞤚𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤮","Aucune":"𞤁𞤮𞥅",
   "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
@@ -2981,7 +2981,7 @@ const UI = {
 
     // Alerts
     const alerts = [];
-    DB.people.filter(p=>!p.deletedAt).forEach(p=>{
+    DB.people.filter(p=>!p.deletedAt).sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'})).forEach(p=>{
       const m = personMoney(p.id);
       if(m.reste>0) alerts.push({level:'amber', text:`<span class="wname" style="font-size:12.5px;">${p.name}</span> doit encore ${fmtGNF(m.reste)}`});
     });
@@ -3032,7 +3032,7 @@ const UI = {
     if(!s){ el.innerHTML = `<div class="empty">Aucun type de ticket.</div>`; return; }
     const price = s.type.price||0;
     const perPerson = DB.people.filter(p=>!p.deletedAt).map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
-      .filter(x=>x.restant>0).sort((a,b)=>b.restant-a.restant);
+      .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
       <div class="money-row"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
       ${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}
@@ -3065,7 +3065,7 @@ const UI = {
 
     if(showDeleted){
       if(people.length===0){ list.innerHTML = `<div class="empty">Aucune personne supprimée.</div>`; return; }
-      list.innerHTML = people.slice().sort((a,b)=>(b.deletedAt||'').localeCompare(a.deletedAt||'')).map(p=>{
+      list.innerHTML = people.slice().sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'})).map(p=>{
         const d = new Date(p.deletedAt);
         const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
         const restant = personTotalRestant(p.id);
@@ -3133,7 +3133,10 @@ const UI = {
   },
   async savePerson(){
     const name = document.getElementById('np-name').value.trim();
-    if(!name){ document.getElementById('np-error').innerHTML = `<div class="error-text">Le nom est requis.</div>`; return; }
+    const errEl = document.getElementById('np-error');
+    if(!name){ errEl.innerHTML = `<div class="error-text">Le nom est requis.</div>`; return; }
+    const dup = DB.people.some(p=>!p.deletedAt && p.name.trim().toLowerCase()===name.toLowerCase());
+    if(dup){ errEl.innerHTML = `<div class="error-text">Cette personne existe déjà.</div>`; return; }
     try{
       const { data, error } = await sb.from('people').insert({name, active:true}).select();
       if(error) throw error;
@@ -3229,6 +3232,8 @@ const UI = {
     const p = person(id);
     const name = document.getElementById('ep-name').value.trim();
     if(!name) return;
+    const dup = DB.people.some(x=>x.id!==id && !x.deletedAt && x.name.trim().toLowerCase()===name.toLowerCase());
+    if(dup){ toast('⚠ Une autre personne porte déjà ce nom.'); return; }
     const active = document.getElementById('ep-active').value==='true';
     try{
       const { error } = await sb.from('people').update({name, active}).eq('id', id);
@@ -3276,6 +3281,8 @@ const UI = {
     const p = DB.people.find(x=>x.id===id);
     if(!p) return;
     if(!confirm(tf('Restaurer "{name}" dans les personnes actives ?', {name: p.name}))) return;
+    const dup = DB.people.some(x=>x.id!==id && !x.deletedAt && x.name.trim().toLowerCase()===p.name.trim().toLowerCase());
+    if(dup){ toast('⚠ Une personne active porte déjà ce nom — renommez-la avant de restaurer.'); return; }
     const now = new Date().toISOString();
     try{
       const { error } = await sb.from('people').update({deleted_at: null}).eq('id', id);
@@ -3364,7 +3371,7 @@ const UI = {
       const target = DB.operations.find(o=>o.id===op.correctsOpId);
       title = `Correction — ${target?OP_META[target.opType].label:'?'}`;
     }
-    const nameHtml = `<span class="wname" style="font-size:13px;">${p?p.name:'Chez moi'}</span>`;
+    const nameHtml = `<span class="wname" style="font-size:13px;">${p?p.name:'Disponible'}</span>`;
     let sub = [nameHtml, tt?`<span class="tname">${tt.name}</span>`:null, dateStr].filter(Boolean).join(' · ');
     let qtyStr = op.opType==='PAIEMENT' ? fmtGNF(op.amount) : (op.qty!=null ? (op.qty>=0?'+':'') + fmt(op.qty) : '');
     if(op.opType==='VENTE') qtyStr = `${op.qty} · ${fmtGNF(op.amount)}`;
@@ -3405,7 +3412,7 @@ const UI = {
     DB.operations.forEach((o,i)=>o.num=i+1);
     try{ localStorage.setItem(WIFI_CACHEKEY, JSON.stringify(DB)); }catch(e){}
     const p = op.personId ? person(op.personId) : null, tt = op.typeId ? ticketType(op.typeId) : null;
-    logAudit('DELETE_OPERATION','operation',opId,[label,p?p.name:'Chez moi',tt?tt.name:''].filter(Boolean).join(' — '),op.qty);
+    logAudit('DELETE_OPERATION','operation',opId,[label,p?p.name:'Disponible',tt?tt.name:''].filter(Boolean).join(' — '),op.qty);
     this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
     toast('Opération supprimée');
@@ -3451,7 +3458,7 @@ const UI = {
   renderSuiviAssocies(){
     const el = document.getElementById('suivi-associes');
     if(!el) return;
-    const people = DB.people.filter(p=>!p.deletedAt);
+    const people = DB.people.filter(p=>!p.deletedAt).sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'}));
     if(people.length===0){ el.innerHTML = `<div class="empty">Aucun associé enregistré.</div>`; return; }
     el.innerHTML = people.map(p=>{
       let attribues=0, vendus=0;
@@ -3496,7 +3503,7 @@ const UI = {
     const summary = stockSummary();
     const el = document.getElementById('rapport-content');
     el.innerHTML = summary.map(s=>{
-      const perPerson = DB.people.map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant})).filter(x=>x.restant>0);
+      const perPerson = DB.people.map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant})).filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
       const explained = s.disponible + perPerson.reduce((a,x)=>a+x.restant,0) + s.venduDirect + s.venduPersonnes + s.pertes + s.annulations;
       const ok = explained === s.initial;
       return `
@@ -3506,7 +3513,7 @@ const UI = {
             <span class="chip ${ok?'clear':'due'}">${ok?'Cohérent':'Écart : '+(s.initial-explained)}</span>
           </div>
           <div class="money-row"><span class="label">Reçus du fournisseur</span><span class="amount">${fmt(s.initial)}</span></div>
-          <div class="money-row"><span class="label wname">Chez moi</span><span class="amount">${fmt(s.disponible)}</span></div>
+          <div class="money-row"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)}</span></div>
           ${perPerson.map(x=>`<div class="money-row"><span class="label">Chez <span class="wname" style="font-size:13.5px;">${x.p.name}</span></span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}
           <div class="money-row"><span class="label">Vendus</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
           <div class="money-row"><span class="label">Retournés</span><span class="amount">${fmt(s.retours)}</span></div>
@@ -3697,6 +3704,8 @@ const UI = {
     const initial = Math.max(0, parseInt(document.getElementById('tt-initial').value)||0);
     const errEl = document.getElementById('tt-error');
     if(!name){ toast('Nom requis'); return; }
+    const dupTT = DB.ticketTypes.some(t=>t.name.trim().toLowerCase()===name.toLowerCase());
+    if(dupTT){ errEl.innerHTML = `<div class="error-text">Ce type de ticket existe déjà.</div>`; return; }
     const code = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').slice(0,30) + '-' + Date.now().toString(36).slice(-5);
     try{
       const { data, error } = await sb.from('ticket_types').insert({code, name, price, active:true}).select();
@@ -3755,7 +3764,7 @@ const UI = {
     }
   },
   renderPersonPicker(opType){
-    const activePeople = DB.people.filter(p=>p.active!==false && !p.deletedAt);
+    const activePeople = DB.people.filter(p=>p.active!==false && !p.deletedAt).sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'}));
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
@@ -3769,7 +3778,7 @@ const UI = {
   },
   filterPersonPicker(q){
     q=q.toLowerCase();
-    const activePeople = DB.people.filter(p=>p.active!==false && !p.deletedAt && p.name.toLowerCase().includes(q));
+    const activePeople = DB.people.filter(p=>p.active!==false && !p.deletedAt && p.name.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'}));
     document.getElementById('pp-list').innerHTML = activePeople.map(p=>`<div class="person-row" onclick="UI.selectPerson('${p.id}')"><div class="person-name">${p.name}</div></div>`).join('') || '<div class="empty">Aucun résultat.</div>';
   },
   selectPerson(personId){
