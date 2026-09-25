@@ -1,6 +1,6 @@
 // Version du Service Worker = version de l'app (à garder identique à APP_VERSION dans index.html).
 // Modifier ce fichier (ne serait-ce que ce numéro) suffit pour que les navigateurs détectent la mise à jour.
-const VERSION = '6.17';
+const VERSION = '6.18';
 const CACHE_NAME = 'stock-lcd-v' + VERSION;
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 const CDN_ASSETS = [
