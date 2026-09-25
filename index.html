@@ -196,7 +196,7 @@
 .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:calc(22px * var(--wfs,1));font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:calc(16px * var(--wfs,1));}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:calc(13px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:calc(14.5px * var(--wfs,1));}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView /* Alerts */
 .alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:calc(12.5px * var(--wfs,1));line-height:1.4;}#wifiView .alert + .alert{margin-top:8px;}#wifiView .alert.amber{background:var(--w-amber-soft);color:#7A4A17;}#wifiView .alert.red{background:var(--w-red-soft);color:#7A2621;}#wifiView .alert .dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex:none;}#wifiView .alert.amber .dot{background:var(--w-amber);}#wifiView .alert.red .dot{background:var(--w-red);}#wifiView /* Table (ledger style) */
 table.ledger{width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--wfs,1));}#wifiView table.ledger th{text-align:right;font-weight:500;color:var(--w-ink-soft);font-size:calc(10.5px * var(--wfs,1));padding:0 4px 6px;border-bottom:1px solid var(--w-line);}#wifiView table.ledger th:first-child, #wifiView table.ledger td:first-child{text-align:left;}#wifiView table.ledger td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--w-paper-line);font-family:'IBM Plex Mono',monospace;}#wifiView table.ledger tr:last-child td{border-bottom:none;}#wifiView table.ledger tr.total td{font-weight:700;border-top:1px solid var(--w-ink);padding-top:8px;}#wifiView /* People list */
-.person-row{display:flex;align-items:center;justify-content:space-between;padding:14px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:700;font-size:calc(21px * var(--wfs,1));}#wifiView .wname{font-weight:700;font-size:calc(16px * var(--wfs,1));color:var(--w-ink);}#wifiView .person-sub{font-size:calc(15px * var(--wfs,1));color:var(--w-ink-soft);margin-top:3px;}#wifiView .person-right{text-align:right;}#wifiView .chip{display:inline-block;font-size:calc(13px * var(--wfs,1));padding:3px 9px;border-radius:20px;font-weight:600;}#wifiView .chip.due{background:var(--w-red-soft);color:var(--w-red);}#wifiView .chip.clear{background:var(--w-green-soft);color:var(--w-green);}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
+.person-row{display:flex;align-items:center;justify-content:space-between;padding:14px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:700;font-size:calc(21px * var(--wfs,1));}#wifiView .wname{font-weight:700;font-size:calc(16px * var(--wfs,1));color:var(--w-ink);}#wifiView .tname{font-weight:700;color:var(--w-ink);}#wifiView .person-sub{font-size:calc(15px * var(--wfs,1));color:var(--w-ink-soft);margin-top:3px;}#wifiView .person-right{text-align:right;}#wifiView .chip{display:inline-block;font-size:calc(13px * var(--wfs,1));padding:3px 9px;border-radius:20px;font-weight:600;}#wifiView .chip.due{background:var(--w-red-soft);color:var(--w-red);}#wifiView .chip.clear{background:var(--w-green-soft);color:var(--w-green);}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
 .hist-row{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--w-paper-line);align-items:flex-start;}#wifiView .hist-row:last-child{border-bottom:none;}#wifiView .hist-badge{flex:none;width:8px;height:8px;border-radius:2px;margin-top:5px;}#wifiView .hist-main{flex:1;min-width:0;}#wifiView .hist-title{font-size:calc(13px * var(--wfs,1));font-weight:600;}#wifiView .hist-sub{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:1px;}#wifiView .hist-qty{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--wfs,1));font-weight:600;white-space:nowrap;}#wifiView /* Buttons */
 .btn{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;border:none;border-radius:10px;padding:13px 16px;font-size:calc(16px * var(--wfs,1));font-weight:600;cursor:pointer;width:100%;box-sizing:border-box;text-align:center;white-space:normal;word-break:keep-all;overflow-wrap:normal;line-height:1.3;}#wifiView .btn-primary{background:var(--w-ink);color:var(--w-paper);}#wifiView .btn-secondary{background:var(--w-card);color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-outline{background:transparent;color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-danger{background:var(--w-red);color:#fff;}#wifiView .btn-row{display:flex;gap:8px;}#wifiView .btn-row .btn{width:auto;flex:1;}#wifiView .btn:active{transform:scale(0.98);}#wifiView .btn:disabled{opacity:0.4;cursor:not-allowed;}#wifiView /* Op-type grid (new operation) */
 .op-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}#wifiView .op-tile{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px 12px;text-align:left;cursor:pointer;}#wifiView .op-tile .op-icon{font-size:calc(19px * var(--wfs,1));}#wifiView .op-tile .op-label{display:block;font-weight:600;font-size:calc(13.5px * var(--wfs,1));margin-top:6px;}#wifiView .op-tile .op-desc{display:block;font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);margin-top:2px;}#wifiView /* Bottom nav */
@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.18';
+const APP_VERSION = '6.19';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2938,7 +2938,7 @@ const UI = {
     const grid = document.getElementById('dash-stock');
     grid.innerHTML = summary.map(s=>`
       <div class="stat">
-        <div class="label">${s.type.name}</div>
+        <div class="label tname">${s.type.name}</div>
         <div class="value">${fmt(s.disponible)}</div>
       </div>`).join('');
 
@@ -2960,9 +2960,9 @@ const UI = {
       if(m.reste>0) alerts.push({level:'amber', text:`<span class="wname" style="font-size:12.5px;">${p.name}</span> doit encore ${fmtGNF(m.reste)}`});
     });
     summary.forEach(s=>{
-      if(s.disponible < s.initial*0.1 && s.initial>0) alerts.push({level:'red', text:`Stock faible : ${s.type.name} — ${fmt(s.disponible)} restants chez vous`});
+      if(s.disponible < s.initial*0.1 && s.initial>0) alerts.push({level:'red', text:`Stock faible : <span class="tname">${s.type.name}</span> — ${fmt(s.disponible)} restants chez vous`});
       const explained = s.disponible + s.chezPersonnes + s.venduDirect + s.venduPersonnes + s.pertes + s.annulations;
-      if(explained !== s.initial) alerts.push({level:'red', text:`Écart détecté sur ${s.type.name} : ${fmt(s.initial)} reçus mais ${fmt(explained)} justifiés`});
+      if(explained !== s.initial) alerts.push({level:'red', text:`Écart détecté sur <span class="tname">${s.type.name}</span> : ${fmt(s.initial)} reçus mais ${fmt(explained)} justifiés`});
     });
     const alertsEl = document.getElementById('dash-alerts');
     if(alerts.length===0){
@@ -2982,7 +2982,7 @@ const UI = {
       <tr><th>Type</th><th>Initial</th><th>Remis</th><th>Vendu direct</th><th>Retours</th><th>Pertes</th><th>Disponible</th></tr>
       ${summary.map(s=>`
         <tr>
-          <td>${s.type.name}</td>
+          <td class="tname">${s.type.name}</td>
           <td>${fmt(s.initial)}</td>
           <td>${fmt(s.remis)}</td>
           <td>${fmt(s.venduDirect)}</td>
@@ -3075,7 +3075,7 @@ const UI = {
           const s = personTypeStats(p.id, tt.id);
           if(!s.restant) return '';
           const montant = s.restant * (tt.price||0);
-          return `<div class="person-sub" style="margin-top:3px;">${tt.name} : <strong>${fmt(s.restant)} tickets</strong> — ${fmtGNF(montant)}</div>`;
+          return `<div class="person-sub" style="margin-top:3px;"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong> — ${fmtGNF(montant)}</div>`;
         }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
@@ -3166,7 +3166,7 @@ const UI = {
           ${liveTypes().map(tt=>{
             const tm = personTypeMoney(p.id, tt.id);
             if(tm.du===0 && tm.paye===0) return '';
-            return `<tr><td>${tt.name}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmtGNF(tm.reste)}</strong></td></tr>`;
+            return `<tr><td class="tname">${tt.name}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmtGNF(tm.reste)}</strong></td></tr>`;
           }).join('') || `<tr><td colspan="4" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
           <tr class="total"><td>TOTAL</td><td>${fmtGNF(m.du)}</td><td>${fmtGNF(m.paye)}</td><td>${fmtGNF(m.reste)}</td></tr>
         </table>
@@ -3339,7 +3339,7 @@ const UI = {
       title = `Correction — ${target?OP_META[target.opType].label:'?'}`;
     }
     const nameHtml = `<span class="wname" style="font-size:13px;">${p?p.name:'Chez moi'}</span>`;
-    let sub = [nameHtml, tt?tt.name:null, dateStr].filter(Boolean).join(' · ');
+    let sub = [nameHtml, tt?`<span class="tname">${tt.name}</span>`:null, dateStr].filter(Boolean).join(' · ');
     let qtyStr = op.opType==='PAIEMENT' ? fmtGNF(op.amount) : (op.qty!=null ? (op.qty>=0?'+':'') + fmt(op.qty) : '');
     if(op.opType==='VENTE') qtyStr = `${op.qty} · ${fmtGNF(op.amount)}`;
     return `
@@ -3441,7 +3441,7 @@ const UI = {
         const s = personTypeStats(p.id, tt.id);
         const tm = personTypeMoney(p.id, tt.id);
         if(s.pris===0 && s.vendu===0 && s.restant===0 && tm.du===0 && tm.paye===0) return '';
-        return `<tr><td>${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}">${fmtGNF(tm.reste)}</td></tr>`;
+        return `<tr><td class="tname">${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}">${fmtGNF(tm.reste)}</td></tr>`;
       }).join('');
       return `
         <div class="card" style="margin-bottom:10px;">
@@ -3507,7 +3507,7 @@ const UI = {
     const prices = document.getElementById('settings-prices');
     prices.innerHTML = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>`
       <div class="settings-row">
-        <div><div class="st-label">${tt.name}</div><div class="st-sub">Prix appliqué aux nouvelles ventes</div></div>
+        <div><div class="st-label tname">${tt.name}</div><div class="st-sub">Prix appliqué aux nouvelles ventes</div></div>
         <input type="number" value="${tt.price}" min="0" onchange="UI.updatePrice('${tt.id}', this.value)">
       </div>
     `).join('');
@@ -3520,7 +3520,7 @@ const UI = {
       return `
       <div class="settings-row">
         <div>
-          <div class="st-label">${tt.name}</div>
+          <div class="st-label tname">${tt.name}</div>
           <div class="st-sub">${tt.active!==false?'Actif':'Désactivé'}${closure?' · Clôturé le '+closedStr:''}</div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto;">
@@ -3720,7 +3720,7 @@ const UI = {
         ${types.map(tt=>{
           const closed = opType==='RECEPTION' && isTypeClosed(tt.id);
           return `<button class="btn btn-secondary" style="justify-content:flex-start;gap:10px;" onclick="UI.selectType('${tt.id}')">
-            <span style="flex:1 1 auto;min-width:0;text-align:left;overflow-wrap:break-word;">${tt.name}</span>
+            <span class="tname" style="flex:1 1 auto;min-width:0;text-align:left;overflow-wrap:break-word;">${tt.name}</span>
             ${closed ? `<span style="flex:0 0 auto;white-space:nowrap;font-size:12px;color:var(--w-ink-soft);">clôturé</span>` : ''}
             <span style="flex:0 0 auto;white-space:nowrap;color:var(--ink-soft);font-size:12px;">${tt.price?fmtGNF(tt.price):''}</span>
           </button>`;
@@ -3950,7 +3950,7 @@ const UI = {
       <div style="display:flex;flex-direction:column;gap:8px;">
         ${types.map(tt=>{
           const s = personTypeStats(p.id, tt.id);
-          return `<button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="UI.rrStep1('${tt.id}')">${tt.name} <span style="margin-left:auto;color:var(--w-ink-soft);font-size:12px;">${fmt(s.restant)} en main</span></button>`;
+          return `<button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="UI.rrStep1('${tt.id}')"><span class="tname">${tt.name}</span> <span style="margin-left:auto;color:var(--w-ink-soft);font-size:12px;">${fmt(s.restant)} en main</span></button>`;
         }).join('')}
       </div>
     `);
@@ -3965,7 +3965,7 @@ const UI = {
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Étape 1/2 — Retour d'argent</div>
-      <div class="sheet-sub">${tt.name} · <span class="wname">${p.name}</span> · ${fmt(s.restant)} ticket(s) détenus</div>
+      <div class="sheet-sub"><span class="tname">${tt.name}</span> · <span class="wname">${p.name}</span> · ${fmt(s.restant)} ticket(s) détenus</div>
       <div class="field"><label>Argent rendu (GNF)</label><input type="number" id="rr-amount" min="0" value="${montantAttendu}"></div>
       <div class="help-text">Montant attendu pour les tickets détenus : ${fmtGNF(montantAttendu)}. Modifiable si le montant réellement rendu diffère.</div>
       <div class="field" style="margin-top:10px;"><label>Commentaire (optionnel)</label><textarea id="rr-comment"></textarea></div>
@@ -3984,7 +3984,7 @@ const UI = {
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Étape 2/2 — Nouvelle attribution</div>
-      <div class="sheet-sub">${tt.name} · <span class="wname">${p.name}</span> · l'ancienne attribution (${fmt(rr.oldQty)}) sera clôturée</div>
+      <div class="sheet-sub"><span class="tname">${tt.name}</span> · <span class="wname">${p.name}</span> · l'ancienne attribution (${fmt(rr.oldQty)}) sera clôturée</div>
       <div class="field"><label>Nouvelle quantité à attribuer</label><input type="number" id="rr-newqty" min="0" placeholder="0"></div>
       <div class="help-text">Laissez 0 si aucune nouvelle attribution n'est faite pour l'instant.</div>
       <div id="rr-error2"></div>
