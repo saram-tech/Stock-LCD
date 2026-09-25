@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.19';
+const APP_VERSION = '6.20';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2524,6 +2524,20 @@ function mapSale(s){ return {id:s.id, ts:s.sold_at, personId:s.person_id, typeId
 function mapPayment(p){ return {id:p.id, ts:p.paid_at, personId:p.person_id, typeId:p.ticket_type_id||null, opType:'PAIEMENT', qty:null, unitPrice:null, amount:p.amount, comment:p.comment, correctsOpId:null, reason:null}; }
 function mapCorrection(c){ return {id:c.id, ts:c.corrected_at, personId:null, typeId:null, opType:'CORRECTION', qty:c.delta_quantity, unitPrice:null, amount:c.delta_amount, comment:null, correctsOpId:c.target_id, reason:c.reason}; }
 
+// Personne par défaut "BAH" : créée automatiquement une seule fois (si aucune personne de ce nom
+// n'existe déjà, active ou supprimée), pour que le carnet WiFi ne parte jamais vide. Le nom reste
+// entièrement modifiable ensuite via Personnes → Modifier, comme pour n'importe quelle personne.
+async function ensureDefaultPerson(){
+  if(!DB || !DB.people) return;
+  const exists = DB.people.some(p => (p.name||'').trim().toLowerCase()==='bah');
+  if(exists) return;
+  try{
+    const { data, error } = await sb.from('people').insert({name:'BAH', active:true}).select();
+    if(error) throw error;
+    DB.people.push({id:data[0].id, name:data[0].name, active:data[0].active, createdAt:data[0].created_at, deletedAt:null});
+  }catch(e){ console.warn('ensureDefaultPerson:', e); }
+}
+
 async function loadData(){
   const [tt, pe, rc, mv, sa, pa, co, cl] = await Promise.all([
     sb.from('ticket_types').select('*').order('created_at', {ascending:true}),
@@ -2780,6 +2794,7 @@ const UI = {
   async init(){
     try{
       await loadData();
+      await ensureDefaultPerson();
     }catch(e){
       if(!loadWifiCache()){ document.body.innerHTML = `<div class="empty" style="padding:60px 20px;">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
       return; }
@@ -2869,6 +2884,7 @@ const UI = {
     const labels = {
       DELETE_OPERATION:'Suppression — opération', DELETE_PERSON:'Suppression — personne', RESTORE_PERSON:'Restauration — personne',
       CLOSE_TICKET_TYPE:'Clôture — type de ticket', RESTORE_TICKET_TYPE_CLOSURE:'Réouverture — type de ticket',
+      RENAME_TICKET_TYPE:'Renommage — type de ticket', DELETE_TICKET_TYPE:'Suppression — type de ticket',
       RETOUR_REATTRIBUTION:"Retour d'argent + nouvelle attribution",
     };
     try{
@@ -3008,7 +3024,7 @@ const UI = {
     const perPerson = DB.people.filter(p=>!p.deletedAt).map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
       .filter(x=>x.restant>0).sort((a,b)=>b.restant-a.restant);
     el.innerHTML = `
-      <div class="money-row"><span class="label wname">Chez moi</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
+      <div class="money-row"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
       ${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}
       <div class="money-row"><span class="label">Vendus (total)</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
       <div class="money-row"><span class="label">Retournés</span><span class="amount">${fmt(s.retours)}</span></div>
@@ -3064,7 +3080,7 @@ const UI = {
       list.innerHTML = `<div class="empty">Aucune personne enregistrée.</div>`;
       return;
     }
-    list.innerHTML = people.map(p=>{
+    list.innerHTML = people.slice().sort((a,b)=>a.name.localeCompare(b.name, 'fr', {sensitivity:'base'})).map(p=>{
       const m = personMoney(p.id);
       const restant = personTotalRestant(p.id);
       // Une ligne par type actif — masquée si la quantité détenue est à 0 (uniquement les données
@@ -3524,10 +3540,12 @@ const UI = {
           <div class="st-sub">${tt.active!==false?'Actif':'Désactivé'}${closure?' · Clôturé le '+closedStr:''}</div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto;">
+          <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;white-space:nowrap;" onclick="UI.renameTicketType('${tt.id}')">Renommer</button>
           <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;white-space:nowrap;" onclick="UI.toggleType('${tt.id}')">${tt.active!==false?'Désactiver':'Activer'}</button>
           ${closure
             ? `<button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;color:var(--w-green);white-space:nowrap;" onclick="UI.reopenTicketType('${tt.id}')">Rouvrir</button>`
             : `<button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;color:var(--w-red);white-space:nowrap;" onclick="UI.closeTicketType('${tt.id}')">Clôturer</button>`}
+          <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;color:var(--w-red);white-space:nowrap;" onclick="UI.deleteTicketType('${tt.id}')">Supprimer</button>
         </div>
       </div>`;
     }).join('');
@@ -3610,6 +3628,46 @@ const UI = {
       tt.active = active;
     }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.renderParametres(); this.renderDashboard(); this.renderStock();
+  },
+  async renameTicketType(id){
+    const tt = ticketType(id);
+    if(!tt) return;
+    const name = prompt('Nouveau nom pour ce type de ticket :', tt.name);
+    if(name===null) return;
+    const trimmed = name.trim();
+    if(!trimmed){ toast('Nom requis'); return; }
+    if(trimmed===tt.name) return;
+    const prevName = tt.name;
+    try{
+      const { error } = await sb.from('ticket_types').update({name: trimmed}).eq('id', id);
+      if(error) throw error;
+      tt.name = trimmed;
+      await logAudit('RENAME_TICKET_TYPE', 'ticket_type', id, `${prevName} → ${trimmed}`, null);
+    }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
+    this.renderParametres(); this.renderStock(); this.renderDashboard();
+    if(this.currentView==='situation') this.renderSituation();
+    toast('Type renommé');
+  },
+  // Suppression définitive : uniquement possible si ce type n'a aucun historique (réceptions,
+  // remises, ventes, retours, pertes, annulations, paiements) — sinon la contrainte d'intégrité des
+  // données prime : on invite à désactiver ou clôturer le type plutôt que de perdre son historique.
+  async deleteTicketType(id){
+    const tt = ticketType(id);
+    if(!tt) return;
+    const hasHistory = DB.operations.some(o=>o.typeId===id);
+    if(hasHistory){
+      toast('⚠ Impossible : ce type a un historique (réceptions, ventes, mouvements ou paiements). Désactivez-le ou clôturez-le plutôt.');
+      return;
+    }
+    if(!confirm(tf('Supprimer définitivement le type "{name}" ? Cette action est irréversible.', {name: tt.name}))) return;
+    try{
+      const { error } = await sb.from('ticket_types').delete().eq('id', id);
+      if(error) throw error;
+      await logAudit('DELETE_TICKET_TYPE', 'ticket_type', id, tt.name, null);
+    }catch(e){ toast('⚠ Erreur de suppression : '+(e&&e.message?e.message:'réessayez, ce type est peut-être encore référencé')); return; }
+    DB.ticketTypes = DB.ticketTypes.filter(t=>t.id!==id);
+    this.renderParametres(); this.renderStock(); this.renderDashboard();
+    toast(`${tt.name} supprimé`);
   },
   openAddTicketType(){
     this.openSheet(`
@@ -3793,6 +3851,16 @@ const UI = {
     if(op.opType==='REMISE'){
       const s = stockSummary().find(x=>x.type.id===op.typeId);
       if(!s || qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s?s.disponible:0)} disponibles).</div>`; return; }
+      if(op.personId){
+        const tm = personTypeMoney(op.personId, op.typeId);
+        if(tm.reste>0){ errEl.innerHTML = `<div class="error-text">Impossible : cette personne n'a pas encore payé le ticket précédent de ce type (reste à payer : ${fmtGNF(tm.reste)}).</div>`; return; }
+        const restant = personTypeStats(op.personId, op.typeId).restant;
+        if(restant>0){ errEl.innerHTML = `<div class="error-text">Impossible : cette personne possède déjà ${fmt(restant)} ticket(s) disponible(s) de ce type.</div>`; return; }
+      }
+    }
+    if(op.opType==='RECEPTION'){
+      const s = stockSummary().find(x=>x.type.id===op.typeId);
+      if(s && s.disponible>0){ errEl.innerHTML = `<div class="error-text">Impossible : il reste encore ${fmt(s.disponible)} ticket(s) disponible(s) pour ce type. Épuisez le stock avant une nouvelle réception.</div>`; return; }
     }
 
     let amount=null, unitPrice=null;
@@ -3867,7 +3935,13 @@ const UI = {
     `);
   },
   correctionRowHtml(op){
-    return `<div class="hist-row" style="cursor:pointer;" onclick="UI.selectOpToCorrect('${op.id}')">${this.histRowHtml(op)}</div>`.replace('<div class="hist-row">','<div>');
+    // Les lignes de cette liste servent uniquement à choisir l'opération à corriger : la ligne
+    // entière est cliquable (onclick plus bas). Le bouton supprimer 🗑️ de histRowHtml n'a pas de
+    // stopPropagation (il n'en a pas besoin ailleurs, où la ligne n'est pas cliquable) : ici il
+    // faisait remonter le clic jusqu'au conteneur et déclenchait AUSSI selectOpToCorrect juste après
+    // une suppression (ou une annulation de suppression) — d'où le retiré ci-dessous.
+    const rowHtml = this.histRowHtml(op).replace(/<button type="button" title="Supprimer cette opération"[\s\S]*?<\/button>/, '');
+    return `<div class="hist-row" style="cursor:pointer;" onclick="UI.selectOpToCorrect('${op.id}')">${rowHtml}</div>`.replace('<div class="hist-row">','<div>');
   },
   filterCorrectionList(q){
     q=q.toLowerCase();
