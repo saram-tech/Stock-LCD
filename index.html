@@ -193,7 +193,7 @@
 }#wifiView .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:nowrap;}#wifiView .topbar .syncBadge,#wifiView .topbar .verBadge,#wifiView .topbar .date-chip{white-space:nowrap;font-size:calc(10.5px * var(--wfs,1));}#wifiView .topbar .verBadge{padding:1px 6px;}#wifiView .brand{font-weight:700;font-size:calc(16px * var(--wfs,1));letter-spacing:-0.01em;white-space:nowrap;line-height:1.2;}#wifiView .brand small{display:block;font-weight:400;font-size:calc(13.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:1px;}@media (max-width:520px){#wifiView .brand small{display:none;}}#wifiView .date-chip{font-family:'IBM Plex Mono',monospace;font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView /* Views */
 .view{display:none;padding:14px 16px 24px;max-width:640px;margin:0 auto;}#wifiView .view.active{display:block;animation:fade .18s ease;}#wifiView h2.section-title{font-size:calc(16px * var(--wfs,1));font-weight:600;color:var(--w-ink-soft);margin:22px 0 10px;text-transform:none;}#wifiView h2.section-title:first-child{margin-top:2px;}#wifiView /* Cards */
 .card{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px;box-shadow:var(--w-shadow);}#wifiView .card + .card{margin-top:10px;}#wifiView /* Dashboard grid */
-.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:calc(22px * var(--wfs,1));font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:calc(16px * var(--wfs,1));}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:calc(13px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:calc(14.5px * var(--wfs,1));}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView /* Alerts */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:calc(22px * var(--wfs,1));font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:calc(16px * var(--wfs,1));}#wifiView .stat .pages-hint{font-size:calc(10.5px * var(--wfs,1));color:var(--w-ink-soft);opacity:.75;margin-top:2px;}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:calc(13px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:calc(14.5px * var(--wfs,1));}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView /* Alerts */
 .alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:calc(12.5px * var(--wfs,1));line-height:1.4;}#wifiView .alert + .alert{margin-top:8px;}#wifiView .alert.amber{background:var(--w-amber-soft);color:#7A4A17;}#wifiView .alert.red{background:var(--w-red-soft);color:#7A2621;}#wifiView .alert .dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex:none;}#wifiView .alert.amber .dot{background:var(--w-amber);}#wifiView .alert.red .dot{background:var(--w-red);}#wifiView /* Table (ledger style) */
 table.ledger{width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--wfs,1));}#wifiView table.ledger th{text-align:right;font-weight:500;color:var(--w-ink-soft);font-size:calc(10.5px * var(--wfs,1));padding:0 4px 6px;border-bottom:1px solid var(--w-line);}#wifiView table.ledger th:first-child, #wifiView table.ledger td:first-child{text-align:left;}#wifiView table.ledger td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--w-paper-line);font-family:'IBM Plex Mono',monospace;}#wifiView table.ledger tr:last-child td{border-bottom:none;}#wifiView table.ledger tr.total td{font-weight:700;border-top:1px solid var(--w-ink);padding-top:8px;}#wifiView /* People list */
 .person-row{display:flex;align-items:center;justify-content:space-between;padding:14px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:700;font-size:calc(21px * var(--wfs,1));}#wifiView .wname{font-weight:700;font-size:calc(16px * var(--wfs,1));color:var(--w-ink);}#wifiView .tname{font-weight:700;color:var(--w-ink);}#wifiView .person-sub{font-size:calc(15px * var(--wfs,1));color:var(--w-ink-soft);margin-top:3px;}#wifiView .person-right{text-align:right;}#wifiView .chip{display:inline-block;font-size:calc(13px * var(--wfs,1));padding:3px 9px;border-radius:20px;font-weight:600;}#wifiView .chip.due{background:var(--w-red-soft);color:var(--w-red);}#wifiView .chip.clear{background:var(--w-green-soft);color:var(--w-green);}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.22';
+const APP_VERSION = '6.23';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2270,6 +2270,7 @@ en: {
   "Commentaire (optionnel)":"Comment (optional)","Motif (optionnel)":"Reason (optional)","Confirmer l'opération":"Confirm the operation",
   "Disponible":"On hand (me)","Reçus du fournisseur":"Received from supplier","Vendus (total)":"Sold (total)",
   "Stock disponible":"Available stock","Tickets attribués":"Assigned tickets","Tickets vendus":"Sold tickets","Tickets restants":"Remaining tickets",
+  "page":"page","pages":"pages",
   "Argent attendu":"Money expected","Argent rendu (payé)":"Money returned (paid)","Dernière attribution":"Last assignment","Aucune":"None",
   "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
@@ -2349,6 +2350,7 @@ ff: {
   "Commentaire (optionnel)":"𞤈𞤢𞤪𞤭𞤶𞤢 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Motif (optionnel)":"𞤄𞤢𞤢𞤪𞤣𞤭 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Confirmer l'opération":"𞤀𞤪𞤼𞤭𞤲 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫",
   "Disponible":"𞤁𞤮 𞤥𞤭𞥅𞤲","Reçus du fournisseur":"𞤄𞤢𞤢𞤯𞤢𞥄𞤯𞤭 𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Vendus (total)":"𞤛𞤢𞤥𞤢𞥄𞤯𞤭 (𞤫𞥅𞤪𞤫)",
   "Stock disponible":"𞤔𞤢𞤺𞤢𞤪𞤢𞥄𞤶𞤭 𞤲𞤮𞥅𞤯𞤭","Tickets attribués":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤼𞤮𞤼𞤢𞥄𞤯𞤫","Tickets vendus":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤛𞤢𞤥𞤢𞥄𞤯𞤫","Tickets restants":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤳𞤢𞤥𞤯𞤭𞤯𞤫",
+  "page":"𞤨𞤢𞤶","pages":"𞤨𞤢𞤶𞤭𞤯𞤫",
   "Argent attendu":"𞤖𞤢𞤦𞤣𞤭 𞤺𞤭𞤯𞤮 𞤲𞤢𞤲𞤺𞤭𞥅𞤯𞤮","Argent rendu (payé)":"𞤖𞤢𞤦𞤣𞤭 𞤢𞤪𞤼𞤢𞥄𞤯𞤭 (𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭)","Dernière attribution":"𞤚𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤮","Aucune":"𞤁𞤮𞥅",
   "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ 𞤒𞤢𞤤𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 (JSON)",
@@ -2791,6 +2793,17 @@ function moneyTotals(){
 }
 function fmt(n){ return (n||0).toLocaleString('fr-FR'); }
 function fmtGNF(n){ return fmt(n) + ' GNF'; }
+// 1 page = 40 tickets. N tickets -> pages pleines + 1 page partielle si reste > 0.
+function ticketPagesCount(qty){
+  qty = Math.max(0, Math.floor(qty||0));
+  if(qty===0) return 0;
+  return Math.ceil(qty/40);
+}
+function ticketPagesLabel(qty){
+  const n = ticketPagesCount(qty);
+  if(n===0) return '';
+  return n + ' ' + t(n===1 ? 'page' : 'pages');
+}
 
 /* ============================================================
    UI CONTROLLER
@@ -2966,6 +2979,7 @@ const UI = {
       <div class="stat">
         <div class="label tname">${s.type.name}</div>
         <div class="value">${fmt(s.disponible)}</div>
+        ${ticketPagesCount(s.disponible)>0 ? `<div class="pages-hint">${ticketPagesLabel(s.disponible)}</div>` : ''}
       </div>`).join('');
 
     document.getElementById('dash-people-count').textContent = DB.people.filter(p=>!p.deletedAt).length;
