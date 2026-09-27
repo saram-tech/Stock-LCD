@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.26';
+const APP_VERSION = '6.27';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -988,6 +988,33 @@ function wifiSetStatus(state){
   el.title = 'Toucher pour synchroniser';
 }
 function wifiSchedule(ms){ clearTimeout(wifiTimer); wifiTimer = setTimeout(() => wifiSync(), ms); }
+// ---- Opérations définitivement invalides dans la file d'attente hors ligne ----
+// Une erreur RÉSEAU (coupure, timeout, serveur temporairement injoignable) doit être réessayée
+// indéfiniment : c'est déjà le comportement de wifiSync (isNetworkError → throw → statut "offline").
+// Une erreur de VALIDATION/CONTRAINTE côté serveur (colonne obligatoire manquante, contrainte CHECK,
+// valeur mal formée) donnera exactement le même refus à chaque nouvelle tentative : la retenter en
+// boucle ne sert à rien et bloque toute la file pour toujours (c'est ce qui bloquait la synchro WiFi
+// avec l'erreur "Une raison est obligatoire pour un mouvement de type ANNULATION"). On ne reconnaît
+// ICI que des codes PostgreSQL sans ambiguïté — toute autre erreur (droits Supabase, clé étrangère,
+// erreur inconnue) continue d'être réessayée comme avant : par prudence, on préfère bloquer la file
+// plutôt que supprimer par erreur une opération légitime.
+//   23502 = NOT NULL violation · 23514 = CHECK constraint violation · 22P02 = valeur mal formée
+const WIFI_PERMANENT_ERROR_CODES = ['23502', '23514', '22P02'];
+function isPermanentSyncError(e){
+  const code = e && e.code ? String(e.code) : '';
+  return WIFI_PERMANENT_ERROR_CODES.includes(code);
+}
+// Journal local (jamais silencieux) des opérations retirées de la file car définitivement invalides :
+// consultable/vérifiable après coup, ce n'est jamais une suppression "muette".
+const WIFI_QUARANTINE_KEY = 'wifi_quarantined_ops';
+function wifiQuarantine(q, reasonText){
+  let list = []; try{ list = JSON.parse(localStorage.getItem(WIFI_QUARANTINE_KEY) || '[]'); }catch(e){ list = []; }
+  list.push({table: q.table, payload: q.payload, reason: reasonText, removedAt: new Date().toISOString()});
+  try{ localStorage.setItem(WIFI_QUARANTINE_KEY, JSON.stringify(list)); }catch(e){}
+  wifiQ = wifiQ.filter(x => x.payload.id !== q.payload.id); wifiSaveQ();
+  logAudit('WIFI_QUEUE_QUARANTINE', q.table, q.payload.id, reasonText, null);
+  toast('⚠ Une opération en attente était invalide et irrécupérable — retirée de la file (voir journal) : ' + reasonText);
+}
 // Purge définitive des types d'opération supprimés (Retour, Perte, Annulation) : exclut toute
 // donnée historique qui pourrait encore traîner côté serveur (Supabase), en cache local, ou dans
 // la file d'attente hors ligne, ainsi que les corrections qui les ciblaient. Appliquée à chaque
@@ -1045,9 +1072,24 @@ async function wifiSync(manual){
     wifiSetStatus('syncing');
     let failed = 0;
     for(const q of [...wifiQ]){
+      // Résidu d'un ancien type de mouvement totalement retiré de l'application (Retour/Perte/
+      // Annulation, cf. REMOVED_OP_TYPES) : il échouera systématiquement côté serveur (ex. "reason"
+      // obligatoire pour ANNULATION) et n'a plus aucune place dans l'app actuelle. Inutile même
+      // d'essayer l'envoi réseau — mise en quarantaine directe.
+      if(q.table==='stock_movements' && REMOVED_OP_TYPES.includes(q.payload.movement_type)){
+        wifiQuarantine(q, "type de mouvement retiré de l'application (" + q.payload.movement_type + ")");
+        continue;
+      }
       const { error } = await sb.from(q.table).insert(q.payload);
       if(error && error.code !== '23505'){           // 23505 = déjà enregistrée (réessai) → succès
         if(isNetworkError(error)) throw error;
+        if(isPermanentSyncError(error)){
+          // Violation de contrainte/validation définitive : une nouvelle tentative donnerait
+          // exactement le même refus. On retire CETTE opération précise de la file, et elle seule —
+          // les autres opérations en attente ne sont ni touchées ni supprimées.
+          wifiQuarantine(q, error.message || ('violation de contrainte serveur (code ' + error.code + ')'));
+          continue;
+        }
         failed++; wifiErr = error.message || 'refus du serveur';
         continue;
       }
