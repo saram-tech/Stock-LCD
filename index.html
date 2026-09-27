@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.24';
+const APP_VERSION = '6.25';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -4015,6 +4015,7 @@ const UI = {
     `);
   },
   async submitCorrection(targetId){
+    if(this._corSubmitting) return; // anti-doublon : empêche un double-clic d'envoyer 2 corrections
     const target = DB.operations.find(o=>o.id===targetId);
     const delta = parseInt(document.getElementById('cor-delta').value);
     const reason = document.getElementById('cor-reason').value.trim();
@@ -4030,6 +4031,33 @@ const UI = {
     const deltaQuantity = target.opType==='PAIEMENT' ? null : delta;
     const deltaAmount = target.opType==='PAIEMENT' ? delta : (target.opType==='VENTE' ? delta*(target.unitPrice||0) : null);
 
+    // Vérification de cohérence AVANT écriture : on simule la correction (ex. réduire une remise
+    // excessive) en l'ajoutant temporairement à DB.operations, on recalcule la situation de la
+    // personne et du stock avec les fonctions habituelles, puis on retire la simulation. Si le
+    // résultat contient une quantité négative (ex. réduction plus grande que ce que la personne a
+    // encore en main), on bloque avec un message clair au lieu de créer une incohérence.
+    const hypo = {id:'__hypo_correction__', ts:new Date().toISOString(), personId:null, typeId:null,
+      opType:'CORRECTION', qty:deltaQuantity, unitPrice:null, amount:deltaAmount, comment:null,
+      correctsOpId:target.id, reason};
+    DB.operations.push(hypo);
+    let invalidMsg = '';
+    try{
+      if(target.personId && target.typeId){
+        const s = personTypeStats(target.personId, target.typeId);
+        if(s.pris<0) invalidMsg = "Cette réduction dépasse la quantité remise à cette personne.";
+        else if(s.restant<0) invalidMsg = "Cette réduction dépasse les tickets que cette personne a encore en main.";
+        else if(s.vendu<0 || s.retour<0 || s.perte<0 || s.annule<0) invalidMsg = "Cette correction rendrait la situation de cette personne incohérente.";
+      }
+      if(!invalidMsg && target.typeId){
+        const sum = stockSummary().find(x=>x.type.id===target.typeId);
+        if(sum && (sum.disponible<0 || sum.chezPersonnes<0)) invalidMsg = "Cette correction rendrait le stock incohérent (valeur négative).";
+      }
+    } finally {
+      DB.operations.pop();
+    }
+    if(invalidMsg){ errEl.innerHTML = `<div class="error-text">${invalidMsg}</div>`; return; }
+
+    this._corSubmitting = true;
     try{
       await insertOp('corrections', {
         target_table: targetTable, target_id: target.id,
@@ -4038,6 +4066,8 @@ const UI = {
     }catch(e){
       errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
       return;
+    } finally {
+      this._corSubmitting = false;
     }
     this.closeSheet(); this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
