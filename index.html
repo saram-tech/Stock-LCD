@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.23';
+const APP_VERSION = '6.24';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2659,7 +2659,7 @@ function typeAggregate(typeId){
     if(op.opType==='CORRECTION'){
       const target = DB.operations.find(o=>o.id===op.correctsOpId);
       if(!target || target.typeId!==typeId) return;
-      if(!opInPeriod(op, typeId)) return;
+      if(!opInPeriod(target, typeId)) return;
       const q = op.qty||0;
       if(target.opType==='RECEPTION') received += q;
       else if(target.opType==='REMISE') remitted += q;
@@ -2694,16 +2694,27 @@ function stockSummary(){
     // disponible chez moi = reçus - remis + retours - vendu direct - pertes(moi) - annulations(moi)
     let lostMe=0, cancelMe=0, lostPeople=0, cancelPeople=0;
     DB.operations.forEach(op=>{
+      // Même routage que dans typeAggregate()/personTypeStats() : une CORRECTION a toujours
+      // typeId=null sur elle-même, donc le filtre "op.typeId!==tt.id" ci-dessous l'excluait
+      // TOUJOURS avant même d'atteindre le bloc CORRECTION — les corrections de PERTE/ANNULATION
+      // n'avaient donc jamais d'effet réel sur le stock (bug corrigé). La période appliquée est
+      // celle de l'opération corrigée (target), pas celle de la correction elle-même, pour qu'une
+      // correction sur une opération d'une période déjà clôturée n'aille pas polluer la période
+      // en cours.
+      if(op.opType==='CORRECTION'){
+        const target = DB.operations.find(o=>o.id===op.correctsOpId);
+        if(!target || target.typeId!==tt.id) return;
+        if(!opInPeriod(target, tt.id)) return;
+        const q=op.qty||0;
+        if(target.opType==='PERTE'){ if(target.personId) lostPeople+=q; else lostMe+=q; }
+        if(target.opType==='ANNULATION'){ if(target.personId) cancelPeople+=q; else cancelMe+=q; }
+        return;
+      }
       if(op.typeId!==tt.id) return;
       if(!opInPeriod(op, tt.id)) return;
       const q=op.qty||0;
       if(op.opType==='PERTE'){ if(op.personId) lostPeople+=q; else lostMe+=q; }
       if(op.opType==='ANNULATION'){ if(op.personId) cancelPeople+=q; else cancelMe+=q; }
-      if(op.opType==='CORRECTION'){
-        const target = DB.operations.find(o=>o.id===op.correctsOpId);
-        if(target && target.opType==='PERTE'){ if(target.personId) lostPeople+=q; else lostMe+=q; }
-        if(target && target.opType==='ANNULATION'){ if(target.personId) cancelPeople+=q; else cancelMe+=q; }
-      }
     });
     const disponible = agg.received - agg.remitted + agg.returned - agg.soldDirect - lostMe - cancelMe;
     const chezPersonnes = agg.remitted - agg.returned - agg.soldByPeople - lostPeople - cancelPeople;
@@ -2734,7 +2745,7 @@ function personTypeStats(personId, typeId){
       if(!target || target.personId!==personId || target.typeId!==typeId) return;
       const q=op.qty||0;
       if(target.opType==='VENTE') montantVentes += (op.amount||0);
-      if(!opInPeriod(op, typeId)) return;
+      if(!opInPeriod(target, typeId)) return;
       if(target.opType==='REMISE') pris+=q;
       else if(target.opType==='VENTE') vendu+=q;
       else if(target.opType==='RETOUR') retour+=q;
