@@ -988,6 +988,20 @@ function wifiSetStatus(state){
   el.title = 'Toucher pour synchroniser';
 }
 function wifiSchedule(ms){ clearTimeout(wifiTimer); wifiTimer = setTimeout(() => wifiSync(), ms); }
+// Purge définitive des types d'opération supprimés (Retour, Perte, Annulation) : exclut toute
+// donnée historique qui pourrait encore traîner côté serveur (Supabase), en cache local, ou dans
+// la file d'attente hors ligne, ainsi que les corrections qui les ciblaient. Appliquée à chaque
+// chargement (loadData et loadWifiCache) pour garantir qu'aucune trace ne réapparaisse à l'affichage,
+// dans les calculs, ou dans l'historique — même si les lignes existent encore en base.
+const REMOVED_OP_TYPES = ['RETOUR','PERTE','ANNULATION'];
+function stripRemovedOpTypes(ops){
+  const removedIds = new Set(ops.filter(o=>REMOVED_OP_TYPES.includes(o.opType)).map(o=>o.id));
+  return ops.filter(o=>{
+    if(REMOVED_OP_TYPES.includes(o.opType)) return false;
+    if(o.opType==='CORRECTION' && removedIds.has(o.correctsOpId)) return false;
+    return true;
+  });
+}
 function mergeWifiQueue(ops){
   wifiQ.forEach(q => { if(!ops.some(o => o.id === q.payload.id) && WIFI_MAPPERS[q.table]) ops.push(WIFI_MAPPERS[q.table](q.payload)); });
   return ops;
@@ -997,6 +1011,7 @@ function loadWifiCache(){
     const c = JSON.parse(localStorage.getItem(WIFI_CACHEKEY) || 'null');
     if(!c || !c.ticketTypes) return false;
     DB = c; mergeWifiQueue(DB.operations);
+    DB.operations = stripRemovedOpTypes(DB.operations);
     DB.operations.sort((a,b) => (a.ts||'').localeCompare(b.ts||'')); DB.operations.forEach((o,i) => o.num = i+1);
     mirrorClosures(); wifiSetStatus('offline'); return true;
   }catch(e){ return false; }
@@ -2265,7 +2280,7 @@ en: {
   "Ajouter":"Add","Retour":"Back","Supprimée le":"Deleted on",
   "Accueil":"Home","Stock":"Stock","Personnes":"People","Historique":"History","Plus":"More","Rapports":"Reports","Paramètres":"Settings",
   "+ Nouvelle opération":"+ New operation","Nouvelle opération":"New operation",
-  "Réception":"Receipt","Attribution":"Assignment","Vente":"Sale","Retour ticket":"Ticket return","Perte":"Loss","Annulation":"Cancellation","Paiement":"Payment",
+  "Réception":"Receipt","Attribution":"Assignment","Vente":"Sale","Paiement":"Payment",
   "Choisir une personne":"Choose a person","Choisir un type de ticket":"Choose a ticket type","Quantité":"Quantity","Prix unitaire (GNF)":"Unit price (GNF)",
   "Commentaire (optionnel)":"Comment (optional)","Motif (optionnel)":"Reason (optional)","Confirmer l'opération":"Confirm the operation",
   "Disponible":"On hand (me)","Reçus du fournisseur":"Received from supplier","Vendus (total)":"Sold (total)",
@@ -2345,7 +2360,7 @@ ff: {
   "Ajouter":"𞤄𞤫𞤴𞤢𞤲","Retour":"𞤀𞤪𞤼𞤭𞥅𞤪𞤢","Supprimée le":"𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮 𞤲𞤣𞤫𞥅",
   "Accueil":"𞤀𞤪𞤣𞤭𞤲𞤣𞤫","Stock":"𞤔𞤢𞤺𞤢𞤪𞤢𞥄𞤶𞤭","Personnes":"𞤒𞤭𞥅𞤯𞤯𞤮","Historique":"𞤚𞤢𞤪𞤭𞤺𞤮","Plus":"𞤖𞤫𞤯𞤭","Rapports":"𞤖𞤢𞤦𞤢𞤪𞤫","Paramètres":"𞤙𞤭𞥅𞤴𞤢𞥄𞤼𞤢",
   "+ Nouvelle opération":"+ 𞤄𞤢𞤯𞤭𞥅𞤪𞤫 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫","Nouvelle opération":"𞤄𞤢𞤯𞤭𞥅𞤪𞤫 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫",
-  "Réception":"𞤍𞤢𞤥𞤢𞤪𞤫","Attribution":"𞤚𞤮𞤼𞤢𞤪𞤫","Vente":"𞤛𞤢𞤥𞤢𞤪𞤫","Retour ticket":"𞤀𞤪𞤼𞤭𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭","Perte":"𞤈𞤢𞤴𞤣𞤫","Annulation":"𞤔𞤭𞤥𞤯𞤭𞤪𞤫","Paiement":"𞤒𞤮𞥅𞤦𞤢𞤪𞤫",
+  "Réception":"𞤍𞤢𞤥𞤢𞤪𞤫","Attribution":"𞤚𞤮𞤼𞤢𞤪𞤫","Vente":"𞤛𞤢𞤥𞤢𞤪𞤫","Paiement":"𞤒𞤮𞥅𞤦𞤢𞤪𞤫",
   "Choisir une personne":"𞤖𞤢𞤢𞤢𞤪 𞤲𞤫𞤯𞤯𞤮","Choisir un type de ticket":"𞤖𞤢𞤢𞤢𞤪 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭","Quantité":"𞤈𞤢𞤢𞤪𞤢","Prix unitaire (GNF)":"𞤄𞤢 (𞤄𞤁𞤢) 𞤺𞤮 𞤴𞤭𞥅𞤴𞤢𞤥",
   "Commentaire (optionnel)":"𞤈𞤢𞤪𞤭𞤶𞤢 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Motif (optionnel)":"𞤄𞤢𞤢𞤪𞤣𞤭 (𞤲𞤢𞤲 𞤱𞤢𞤶𞤭𞤦𞤢𞥄𞤯𞤭)","Confirmer l'opération":"𞤀𞤪𞤼𞤭𞤲 𞤼𞤢𞤦𞤭𞤼𞤫𞤪𞤫",
   "Disponible":"𞤁𞤮 𞤥𞤭𞥅𞤲","Reçus du fournisseur":"𞤄𞤢𞤢𞤯𞤢𞥄𞤯𞤭 𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Vendus (total)":"𞤛𞤢𞤥𞤢𞥄𞤯𞤭 (𞤫𞥅𞤪𞤫)",
@@ -2564,21 +2579,22 @@ async function loadData(){
   const firstError = [tt,pe,rc,mv,sa,pa,co,cl].find(r => r.error);
   if(firstError && firstError.error) throw firstError.error;
 
-  const ops = [
+  const ops = stripRemovedOpTypes([
     ...(rc.data||[]).map(mapReceipt),
     ...(mv.data||[]).map(mapMovement),
     ...(sa.data||[]).map(mapSale),
     ...(pa.data||[]).map(mapPayment),
     ...(co.data||[]).map(mapCorrection),
-  ];
+  ]);
   mergeWifiQueue(ops);
-  ops.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
-  ops.forEach((o,i) => o.num = i+1); // numérotation d'affichage recalculée (pas de compteur partagé multi-appareils)
+  const finalOps = stripRemovedOpTypes(ops);
+  finalOps.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+  finalOps.forEach((o,i) => o.num = i+1); // numérotation d'affichage recalculée (pas de compteur partagé multi-appareils)
 
   DB = {
     ticketTypes: (tt.data||[]).map(t => ({id:t.id, name:t.name, price:Number(t.price), active:t.active})),
     people: (pe.data||[]).map(p => ({id:p.id, name:p.name, active:p.active, createdAt:p.created_at, deletedAt:p.deleted_at||null})),
-    operations: ops,
+    operations: finalOps,
     closures: (cl.data||[]).map(c => ({id:c.id, ticketTypeId:c.ticket_type_id, closedAt:c.closed_at, restoredAt:c.restored_at||null})),
     meta: {initialized:true}
   };
@@ -2651,7 +2667,7 @@ function person(id){ return DB.people.find(p=>p.id===id); }
 
 // Aggregate quantities for a type across all people + me (personId=null)
 function typeAggregate(typeId){
-  let received=0, remitted=0, soldDirect=0, soldByPeople=0, returned=0, lost=0, cancelled=0;
+  let received=0, remitted=0, soldDirect=0, soldByPeople=0;
   DB.operations.forEach(op=>{
     // Une CORRECTION porte toujours personId=null/typeId=null sur elle-même (elle référence
     // l'opération corrigée via correctsOpId) : il faut donc la router via sa cible AVANT tout
@@ -2664,9 +2680,6 @@ function typeAggregate(typeId){
       if(target.opType==='RECEPTION') received += q;
       else if(target.opType==='REMISE') remitted += q;
       else if(target.opType==='VENTE'){ if(target.personId) soldByPeople+=q; else soldDirect+=q; }
-      else if(target.opType==='RETOUR') returned += q;
-      else if(target.opType==='PERTE') lost += q;
-      else if(target.opType==='ANNULATION') cancelled += q;
       return;
     }
     if(op.typeId!==typeId) return;
@@ -2675,53 +2688,21 @@ function typeAggregate(typeId){
     if(op.opType==='RECEPTION') received += q;
     else if(op.opType==='REMISE') remitted += q;
     else if(op.opType==='VENTE'){ if(op.personId) soldByPeople+=q; else soldDirect+=q; }
-    else if(op.opType==='RETOUR') returned += q;
-    else if(op.opType==='PERTE') lost += q;
-    else if(op.opType==='ANNULATION') cancelled += q;
   });
-  const withMe = received - remitted + returned - soldDirect - lost - cancelled;
-  const withPeople = remitted - returned - soldByPeople - lostWithPeopleFor(typeId);
-  return {received, remitted, soldDirect, soldByPeople, returned, lost, cancelled, withMe};
-}
-function lostWithPeopleFor(typeId){
-  // portion of "lost"/"cancelled" already counted globally; kept simple: perte/annulation always reduce person holding when personId set
-  return 0; // included via person-level calc separately; global withMe/withPeople reconciled in stockSummary()
+  const withMe = received - remitted - soldDirect;
+  const withPeople = remitted - soldByPeople;
+  return {received, remitted, soldDirect, soldByPeople, withMe};
 }
 
 function stockSummary(){
   return liveTypes().map(tt=>{
     const agg = typeAggregate(tt.id);
-    // disponible chez moi = reçus - remis + retours - vendu direct - pertes(moi) - annulations(moi)
-    let lostMe=0, cancelMe=0, lostPeople=0, cancelPeople=0;
-    DB.operations.forEach(op=>{
-      // Même routage que dans typeAggregate()/personTypeStats() : une CORRECTION a toujours
-      // typeId=null sur elle-même, donc le filtre "op.typeId!==tt.id" ci-dessous l'excluait
-      // TOUJOURS avant même d'atteindre le bloc CORRECTION — les corrections de PERTE/ANNULATION
-      // n'avaient donc jamais d'effet réel sur le stock (bug corrigé). La période appliquée est
-      // celle de l'opération corrigée (target), pas celle de la correction elle-même, pour qu'une
-      // correction sur une opération d'une période déjà clôturée n'aille pas polluer la période
-      // en cours.
-      if(op.opType==='CORRECTION'){
-        const target = DB.operations.find(o=>o.id===op.correctsOpId);
-        if(!target || target.typeId!==tt.id) return;
-        if(!opInPeriod(target, tt.id)) return;
-        const q=op.qty||0;
-        if(target.opType==='PERTE'){ if(target.personId) lostPeople+=q; else lostMe+=q; }
-        if(target.opType==='ANNULATION'){ if(target.personId) cancelPeople+=q; else cancelMe+=q; }
-        return;
-      }
-      if(op.typeId!==tt.id) return;
-      if(!opInPeriod(op, tt.id)) return;
-      const q=op.qty||0;
-      if(op.opType==='PERTE'){ if(op.personId) lostPeople+=q; else lostMe+=q; }
-      if(op.opType==='ANNULATION'){ if(op.personId) cancelPeople+=q; else cancelMe+=q; }
-    });
-    const disponible = agg.received - agg.remitted + agg.returned - agg.soldDirect - lostMe - cancelMe;
-    const chezPersonnes = agg.remitted - agg.returned - agg.soldByPeople - lostPeople - cancelPeople;
+    // disponible chez moi = reçus - remis - vendu direct
+    const disponible = agg.received - agg.remitted - agg.soldDirect;
+    const chezPersonnes = agg.remitted - agg.soldByPeople;
     return {
       type: tt, initial: initialReceived(tt.id), remis: agg.remitted, venduDirect: agg.soldDirect,
-      venduPersonnes: agg.soldByPeople, retours: agg.returned, pertes: lostMe+lostPeople,
-      annulations: cancelMe+cancelPeople, disponible, chezPersonnes
+      venduPersonnes: agg.soldByPeople, disponible, chezPersonnes
     };
   });
 }
@@ -2733,10 +2714,10 @@ function initialReceived(typeId){
 
 // Per-person, per-type situation.
 // Important : une clôture de type de ticket ne remet à 0 QUE la quantité "en cours" (pris/vendu/
-// retour/perte/restant). L'argent dû (montantVentes) continue toujours de cumuler TOUTES les ventes,
+// restant). L'argent dû (montantVentes) continue toujours de cumuler TOUTES les ventes,
 // clôturées ou non, pour ne jamais effacer une dette réelle.
 function personTypeStats(personId, typeId){
-  let pris=0, vendu=0, retour=0, perte=0, annule=0, montantVentes=0;
+  let pris=0, vendu=0, montantVentes=0;
   DB.operations.forEach(op=>{
     // Même correction que dans typeAggregate() : router les CORRECTION via leur cible AVANT
     // le filtre personId/typeId (qui sont null sur la correction elle-même).
@@ -2748,9 +2729,6 @@ function personTypeStats(personId, typeId){
       if(!opInPeriod(target, typeId)) return;
       if(target.opType==='REMISE') pris+=q;
       else if(target.opType==='VENTE') vendu+=q;
-      else if(target.opType==='RETOUR') retour+=q;
-      else if(target.opType==='PERTE') perte+=q;
-      else if(target.opType==='ANNULATION') annule+=q;
       return;
     }
     if(op.personId!==personId || op.typeId!==typeId) return;
@@ -2759,12 +2737,9 @@ function personTypeStats(personId, typeId){
     if(!opInPeriod(op, typeId)) return; // au-delà de ce point : uniquement les quantités de la période en cours
     if(op.opType==='REMISE') pris+=q;
     else if(op.opType==='VENTE') vendu+=q;
-    else if(op.opType==='RETOUR') retour+=q;
-    else if(op.opType==='PERTE') perte+=q;
-    else if(op.opType==='ANNULATION') annule+=q;
   });
-  const restant = pris - vendu - retour - perte - annule;
-  return {pris, vendu, retour, perte, annule, restant, montantVentes};
+  const restant = pris - vendu;
+  return {pris, vendu, restant, montantVentes};
 }
 function personMoney(personId){
   let du=0, paye=0;
@@ -3012,7 +2987,7 @@ const UI = {
     });
     summary.forEach(s=>{
       if(s.disponible < s.initial*0.1 && s.initial>0) alerts.push({level:'red', text:`Stock faible : <span class="tname">${s.type.name}</span> — ${fmt(s.disponible)} restants chez vous`});
-      const explained = s.disponible + s.chezPersonnes + s.venduDirect + s.venduPersonnes + s.pertes + s.annulations;
+      const explained = s.disponible + s.chezPersonnes + s.venduDirect + s.venduPersonnes;
       if(explained !== s.initial) alerts.push({level:'red', text:`Écart détecté sur <span class="tname">${s.type.name}</span> : ${fmt(s.initial)} reçus mais ${fmt(explained)} justifiés`});
     });
     const alertsEl = document.getElementById('dash-alerts');
@@ -3030,15 +3005,13 @@ const UI = {
     const summary = stockSummary();
     const tbl = document.getElementById('stock-table');
     tbl.innerHTML = `
-      <tr><th>Type</th><th>Initial</th><th>Remis</th><th>Vendu direct</th><th>Retours</th><th>Pertes</th><th>Disponible</th></tr>
+      <tr><th>Type</th><th>Initial</th><th>Remis</th><th>Vendu direct</th><th>Disponible</th></tr>
       ${summary.map(s=>`
         <tr>
           <td class="tname">${s.type.name}</td>
           <td>${fmt(s.initial)}</td>
           <td>${fmt(s.remis)}</td>
           <td>${fmt(s.venduDirect)}</td>
-          <td>${fmt(s.retours)}</td>
-          <td>${fmt(s.pertes)}</td>
           <td><strong>${fmt(s.disponible)}</strong></td>
         </tr>`).join('')}
     `;
@@ -3062,10 +3035,7 @@ const UI = {
       <div class="money-row"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
       ${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}
       <div class="money-row"><span class="label">Vendus (total)</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
-      <div class="money-row"><span class="label">Retournés</span><span class="amount">${fmt(s.retours)}</span></div>
-      <div class="money-row"><span class="label">Perdus</span><span class="amount">${fmt(s.pertes)}</span></div>
-      <div class="money-row"><span class="label">Annulés</span><span class="amount">${fmt(s.annulations)}</span></div>
-      <div class="money-row total" style="border-top:1px solid var(--ink);margin-top:4px;padding-top:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes+s.pertes+s.annulations)}</span></div>
+      <div class="money-row total" style="border-top:1px solid var(--ink);margin-top:4px;padding-top:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
     `;
   },
 
@@ -3326,7 +3296,7 @@ const UI = {
   async hardDeletePerson(personId, {skipRefresh=false}={}){
     const p = DB.people.find(x=>x.id===personId);
     if(!p) return {ok:false};
-    const opIds = DB.operations.filter(o=>o.personId===personId && ['VENTE','PAIEMENT','REMISE','RETOUR','PERTE','ANNULATION'].includes(o.opType)).map(o=>o.id);
+    const opIds = DB.operations.filter(o=>o.personId===personId && ['VENTE','PAIEMENT','REMISE'].includes(o.opType)).map(o=>o.id);
     try{
       if(opIds.length>0){
         for(const id of opIds){
@@ -3529,7 +3499,7 @@ const UI = {
     const el = document.getElementById('rapport-content');
     el.innerHTML = summary.map(s=>{
       const perPerson = DB.people.map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant})).filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
-      const explained = s.disponible + perPerson.reduce((a,x)=>a+x.restant,0) + s.venduDirect + s.venduPersonnes + s.pertes + s.annulations;
+      const explained = s.disponible + perPerson.reduce((a,x)=>a+x.restant,0) + s.venduDirect + s.venduPersonnes;
       const ok = explained === s.initial;
       return `
         <div class="card">
@@ -3541,9 +3511,6 @@ const UI = {
           <div class="money-row"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)}</span></div>
           ${perPerson.map(x=>`<div class="money-row"><span class="label">Chez <span class="wname" style="font-size:13.5px;">${x.p.name}</span></span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}
           <div class="money-row"><span class="label">Vendus</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
-          <div class="money-row"><span class="label">Retournés</span><span class="amount">${fmt(s.retours)}</span></div>
-          <div class="money-row"><span class="label">Perdus</span><span class="amount">${fmt(s.pertes)}</span></div>
-          <div class="money-row"><span class="label">Annulés</span><span class="amount">${fmt(s.annulations)}</span></div>
         </div>`;
     }).join('');
   },
@@ -3691,7 +3658,7 @@ const UI = {
     toast('Type renommé');
   },
   // Suppression définitive : uniquement possible si ce type n'a aucun historique (réceptions,
-  // remises, ventes, retours, pertes, annulations, paiements) — sinon la contrainte d'intégrité des
+  // remises, ventes, paiements) — sinon la contrainte d'intégrité des
   // données prime : on invite à désactiver ou clôturer le type plutôt que de perdre son historique.
   async deleteTicketType(id){
     const tt = ticketType(id);
@@ -3767,7 +3734,6 @@ const UI = {
       <div class="op-grid">
         <button class="op-tile" onclick="UI.opStep1('REMISE')"><span class="op-icon">📦</span><span class="op-label">Remise</span><span class="op-desc">Donner des tickets</span></button>
         <button class="op-tile" onclick="UI.opStep1('VENTE')"><span class="op-icon">💳</span><span class="op-label">Vente</span><span class="op-desc">Enregistrer une vente</span></button>
-        <button class="op-tile" onclick="UI.opStep1('ANNULATION')"><span class="op-icon">✕</span><span class="op-label">Annulation</span><span class="op-desc">Tickets inutilisables</span></button>
         <button class="op-tile" onclick="UI.opStep1('PAIEMENT')"><span class="op-icon">💰</span><span class="op-label">Paiement</span><span class="op-desc">Argent versé</span></button>
         <button class="op-tile" onclick="UI.opStep1('RECEPTION')"><span class="op-icon">🚚</span><span class="op-label">Réception</span><span class="op-desc">Du fournisseur</span></button>
         <button class="op-tile" onclick="UI.openCorrection()"><span class="op-icon">✎</span><span class="op-label">Correction</span><span class="op-desc">Corriger une opération</span></button>
@@ -3842,8 +3808,6 @@ const UI = {
     const p = op.personId ? person(op.personId) : null;
     let maxAvail = null;
     if(op.opType==='VENTE' && p){ maxAvail = personTypeStats(p.id, tt.id).restant; }
-    if(op.opType==='RETOUR' && p){ maxAvail = personTypeStats(p.id, tt.id).restant; }
-    if(op.opType==='PERTE' && p){ maxAvail = personTypeStats(p.id, tt.id).restant; }
 
     const context = p ? p.name : 'Moi';
     this.openSheet(`
@@ -3856,7 +3820,6 @@ const UI = {
         <input type="number" id="op-qty" min="1" ${maxAvail!=null?'max="'+maxAvail+'"':''} placeholder="0" oninput="UI.updateQtyPreview()">
       </div>
       ${op.opType==='VENTE' ? `<div class="field"><label>Prix unitaire (GNF)</label><input type="number" id="op-price" min="0" value="${tt.price}"></div>` : ''}
-      ${(op.opType==='PERTE'||op.opType==='ANNULATION') ? `<div class="field"><label>Raison (optionnel)</label><input type="text" id="op-reason" placeholder="Ex. carte endommagée" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false" name="op_note_libre" data-lpignore="true" data-1p-ignore="true" data-bwignore="true"></div>` : ''}
       <div class="field"><label>Commentaire (optionnel)</label><textarea id="op-comment"></textarea></div>
       <div id="op-preview" class="help-text"></div>
       <div id="op-error"></div>
@@ -3877,13 +3840,12 @@ const UI = {
     const tt = ticketType(op.typeId);
     const qty = parseInt(document.getElementById('op-qty').value)||0;
     const comment = document.getElementById('op-comment')?.value.trim() || null;
-    const reason = document.getElementById('op-reason')?.value.trim() || null;
     const errEl = document.getElementById('op-error');
     errEl.innerHTML='';
 
     if(qty<=0){ errEl.innerHTML = `<div class="error-text">La quantité doit être supérieure à zéro.</div>`; return; }
 
-    if(op.personId && ['VENTE','RETOUR','PERTE'].includes(op.opType)){
+    if(op.personId && ['VENTE'].includes(op.opType)){
       const avail = personTypeStats(op.personId, op.typeId).restant;
       if(qty>avail){ errEl.innerHTML = `<div class="error-text">Impossible : seulement ${fmt(avail)} tickets disponibles chez cette personne.</div>`; return; }
     }
@@ -3919,8 +3881,8 @@ const UI = {
       } else if(op.opType==='VENTE'){
         await insertOp('sales', {person_id: op.personId||null, ticket_type_id: op.typeId, quantity: qty, unit_price: unitPrice, comment}, mapSale);
       } else {
-        // REMISE / RETOUR / PERTE / ANNULATION
-        await insertOp('stock_movements', {movement_type: op.opType, ticket_type_id: op.typeId, person_id: op.personId||null, quantity: qty, comment, reason}, mapMovement);
+        // REMISE
+        await insertOp('stock_movements', {movement_type: op.opType, ticket_type_id: op.typeId, person_id: op.personId||null, quantity: qty, comment}, mapMovement);
       }
     }catch(e){
       errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
@@ -4009,7 +3971,6 @@ const UI = {
         <label>Ajustement ${target.opType==='PAIEMENT'?'(GNF, + ou -)':'(quantité, + ou -)'}</label>
         <input type="number" id="cor-delta" placeholder="Ex. -2 ou +2">
       </div>
-      <div class="field"><label>Raison de la correction (optionnel)</label><input type="text" id="cor-reason" placeholder="Ex. quantité erronée" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false" name="cor_note_libre" data-lpignore="true" data-1p-ignore="true" data-bwignore="true"></div>
       <div id="cor-error"></div>
       <button class="btn btn-primary" onclick="UI.submitCorrection('${target.id}')">Valider la correction</button>
     `);
@@ -4018,13 +3979,11 @@ const UI = {
     if(this._corSubmitting) return; // anti-doublon : empêche un double-clic d'envoyer 2 corrections
     const target = DB.operations.find(o=>o.id===targetId);
     const delta = parseInt(document.getElementById('cor-delta').value);
-    const reason = document.getElementById('cor-reason').value.trim() || null;
     const errEl = document.getElementById('cor-error');
     if(!delta){ errEl.innerHTML = `<div class="error-text">Indiquez un ajustement différent de zéro.</div>`; return; }
 
     const targetTableByOpType = {
-      RECEPTION:'stock_receipts', REMISE:'stock_movements', RETOUR:'stock_movements',
-      PERTE:'stock_movements', ANNULATION:'stock_movements', VENTE:'sales', PAIEMENT:'payments'
+      RECEPTION:'stock_receipts', REMISE:'stock_movements', VENTE:'sales', PAIEMENT:'payments'
     };
     const targetTable = targetTableByOpType[target.opType];
     const deltaQuantity = target.opType==='PAIEMENT' ? null : delta;
@@ -4037,7 +3996,7 @@ const UI = {
     // encore en main), on bloque avec un message clair au lieu de créer une incohérence.
     const hypo = {id:'__hypo_correction__', ts:new Date().toISOString(), personId:null, typeId:null,
       opType:'CORRECTION', qty:deltaQuantity, unitPrice:null, amount:deltaAmount, comment:null,
-      correctsOpId:target.id, reason};
+      correctsOpId:target.id, reason:null};
     DB.operations.push(hypo);
     let invalidMsg = '';
     try{
@@ -4045,7 +4004,7 @@ const UI = {
         const s = personTypeStats(target.personId, target.typeId);
         if(s.pris<0) invalidMsg = "Cette réduction dépasse la quantité remise à cette personne.";
         else if(s.restant<0) invalidMsg = "Cette réduction dépasse les tickets que cette personne a encore en main.";
-        else if(s.vendu<0 || s.retour<0 || s.perte<0 || s.annule<0) invalidMsg = "Cette correction rendrait la situation de cette personne incohérente.";
+        else if(s.vendu<0) invalidMsg = "Cette correction rendrait la situation de cette personne incohérente.";
       }
       if(!invalidMsg && target.typeId){
         const sum = stockSummary().find(x=>x.type.id===target.typeId);
@@ -4060,7 +4019,7 @@ const UI = {
     try{
       await insertOp('corrections', {
         target_table: targetTable, target_id: target.id,
-        delta_quantity: deltaQuantity, delta_amount: deltaAmount, reason
+        delta_quantity: deltaQuantity, delta_amount: deltaAmount
       }, mapCorrection);
     }catch(e){
       errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
@@ -4076,7 +4035,8 @@ const UI = {
   /* ---------- RETOUR D'ARGENT + NOUVELLE ATTRIBUTION ----------
      Permet à un associé, avant épuisement de ses tickets d'un type donné, de :
      1) rendre l'argent correspondant aux tickets détenus (enregistré comme paiement) ;
-     2) clôturer l'ancienne attribution (les tickets détenus reviennent au stock via un RETOUR) ;
+     2) clôturer l'ancienne attribution (les tickets détenus reviennent au stock via une REMISE
+        négative qui annule la remise d'origine) ;
      3) demander une nouvelle quantité ;
      4) recevoir la nouvelle attribution (REMISE).
      Utilise uniquement les tables Supabase existantes (payments, stock_movements) : aucune donnée
@@ -4157,10 +4117,10 @@ const UI = {
         await insertOp('payments', {person_id: rr.personId, ticket_type_id: rr.typeId, amount: rr.amount, comment: rr.comment || "Retour d'argent — clôture d'attribution ("+tt.name+")"}, mapPayment);
       }
       if(rr.oldQty>0){
-        await insertOp('stock_movements', {movement_type:'RETOUR', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: rr.oldQty, comment:"Clôture de l'ancienne attribution", reason:null}, mapMovement);
+        await insertOp('stock_movements', {movement_type:'REMISE', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: -rr.oldQty, comment:"Clôture de l'ancienne attribution"}, mapMovement);
       }
       if(newQty>0){
-        await insertOp('stock_movements', {movement_type:'REMISE', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: newQty, comment:'Nouvelle attribution', reason:null}, mapMovement);
+        await insertOp('stock_movements', {movement_type:'REMISE', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: newQty, comment:'Nouvelle attribution'}, mapMovement);
       }
       await logAudit('RETOUR_REATTRIBUTION', 'person', rr.personId, `${p.name} — ${tt.name} (ancienne : ${rr.oldQty}, rendu : ${fmt(rr.amount)} GNF, nouvelle : ${newQty})`, newQty);
     }catch(e){
@@ -4241,14 +4201,11 @@ const UI = {
   },
 };
 
-const OP_TABLE = {RECEPTION:'stock_receipts', REMISE:'stock_movements', RETOUR:'stock_movements', PERTE:'stock_movements', ANNULATION:'stock_movements', VENTE:'sales', PAIEMENT:'payments', CORRECTION:'corrections'};
+const OP_TABLE = {RECEPTION:'stock_receipts', REMISE:'stock_movements', VENTE:'sales', PAIEMENT:'payments', CORRECTION:'corrections'};
 const OP_META = {
   RECEPTION:  {label:'Réception', color:'#2F6F5E'},
   REMISE:     {label:'Remise', color:'#1B2A4A'},
   VENTE:      {label:'Vente', color:'#C97A2B'},
-  RETOUR:     {label:'Retour', color:'#5B7DB1'},
-  PERTE:      {label:'Perte', color:'#B23A34'},
-  ANNULATION: {label:'Annulation', color:'#8A8A8A'},
   CORRECTION: {label:'Correction', color:'#7A4EAB'},
   PAIEMENT:   {label:'Paiement', color:'#2F6F5E'},
 };
