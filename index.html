@@ -765,7 +765,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.25';
+const APP_VERSION = '6.26';
 const APP_UPDATED = '25/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3856,7 +3856,7 @@ const UI = {
         <input type="number" id="op-qty" min="1" ${maxAvail!=null?'max="'+maxAvail+'"':''} placeholder="0" oninput="UI.updateQtyPreview()">
       </div>
       ${op.opType==='VENTE' ? `<div class="field"><label>Prix unitaire (GNF)</label><input type="number" id="op-price" min="0" value="${tt.price}"></div>` : ''}
-      ${(op.opType==='PERTE'||op.opType==='ANNULATION') ? `<div class="field"><label>Raison</label><input type="text" id="op-reason" placeholder="Ex. carte endommagée"></div>` : ''}
+      ${(op.opType==='PERTE'||op.opType==='ANNULATION') ? `<div class="field"><label>Raison (optionnel)</label><input type="text" id="op-reason" placeholder="Ex. carte endommagée" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false" name="op_note_libre" data-lpignore="true" data-1p-ignore="true" data-bwignore="true"></div>` : ''}
       <div class="field"><label>Commentaire (optionnel)</label><textarea id="op-comment"></textarea></div>
       <div id="op-preview" class="help-text"></div>
       <div id="op-error"></div>
@@ -4009,7 +4009,7 @@ const UI = {
         <label>Ajustement ${target.opType==='PAIEMENT'?'(GNF, + ou -)':'(quantité, + ou -)'}</label>
         <input type="number" id="cor-delta" placeholder="Ex. -2 ou +2">
       </div>
-      <div class="field"><label>Raison de la correction</label><input type="text" id="cor-reason" placeholder="Obligatoire"></div>
+      <div class="field"><label>Raison de la correction (optionnel)</label><input type="text" id="cor-reason" placeholder="Ex. quantité erronée" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false" name="cor_note_libre" data-lpignore="true" data-1p-ignore="true" data-bwignore="true"></div>
       <div id="cor-error"></div>
       <button class="btn btn-primary" onclick="UI.submitCorrection('${target.id}')">Valider la correction</button>
     `);
@@ -4018,10 +4018,9 @@ const UI = {
     if(this._corSubmitting) return; // anti-doublon : empêche un double-clic d'envoyer 2 corrections
     const target = DB.operations.find(o=>o.id===targetId);
     const delta = parseInt(document.getElementById('cor-delta').value);
-    const reason = document.getElementById('cor-reason').value.trim();
+    const reason = document.getElementById('cor-reason').value.trim() || null;
     const errEl = document.getElementById('cor-error');
     if(!delta){ errEl.innerHTML = `<div class="error-text">Indiquez un ajustement différent de zéro.</div>`; return; }
-    if(!reason){ errEl.innerHTML = `<div class="error-text">La raison est obligatoire.</div>`; return; }
 
     const targetTableByOpType = {
       RECEPTION:'stock_receipts', REMISE:'stock_movements', RETOUR:'stock_movements',
