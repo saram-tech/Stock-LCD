@@ -235,6 +235,30 @@ html[data-app-theme="contraste"]{--bg:#000;--card:#000;--border:#fff;--text:#fff
 #wifiView .bottomnav{max-width:100vw}
 #wifiView .view{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 @media (max-width:340px){#wifiView .bottomnav .navbtn{font-size:min(calc(9.5px * var(--wfs,1)),10.5px)}#wifiView .bottomnav .fab{width:46px;height:46px;margin:0 2px}}
+#wifiView .sheet{position:relative}
+#wifiView .clock-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 12px;margin-top:6px;padding-top:6px;border-top:1px solid var(--w-paper-line);font-size:calc(13px * var(--wfs,1));font-weight:700;color:var(--w-ink);line-height:1.3}
+#wifiView .clock-row strong{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+#wifiView .topbar .verBadge{font-weight:700}
+#wifiView .sheet-title{padding-right:38px}
+#wifiView .sheet-close{top:8px;right:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;z-index:2}
+#wifiView .btn-sm{width:auto;flex:0 0 auto;padding:7px 12px;font-size:calc(13px * var(--wfs,1));white-space:nowrap}
+#wifiView .btn.danger{border-color:var(--w-red);color:var(--w-red)}
+#wifiView .hist-qty{text-align:right}
+#wifiView .hist-amt{font-size:calc(11px * var(--wfs,1));font-weight:500;color:var(--w-ink-soft);white-space:nowrap}
+#wifiView .hist-actions{display:flex;align-items:center;flex:none}
+#wifiView .ico-btn{background:none;border:none;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;cursor:pointer;color:var(--w-ink-soft)}
+#wifiView .ico-btn.danger{color:var(--w-red)}
+#wifiView .seg{display:flex;gap:6px;margin-bottom:12px}
+#wifiView .seg button{flex:1;border:1px solid var(--w-line);background:var(--w-card);color:var(--w-ink);border-radius:10px;padding:11px 8px;font-size:calc(15px * var(--wfs,1));font-weight:600;cursor:pointer}
+#wifiView .seg button.active{background:var(--w-ink);color:var(--w-paper);border-color:var(--w-ink)}
+#wifiView .seg button.neg.active{background:var(--w-red);border-color:var(--w-red);color:#fff}
+#wifiView .seg button.pos.active{background:var(--w-green);border-color:var(--w-green);color:#fff}
+#wifiView .plus-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+#wifiView .plus-item{display:flex;align-items:center;gap:12px;width:100%;background:var(--w-card);border:1px solid var(--w-line);border-radius:12px;padding:15px 14px;font-size:calc(16px * var(--wfs,1));font-weight:600;color:var(--w-ink);cursor:pointer;text-align:left}
+#wifiView .plus-item .pi-ic{font-size:20px;flex:none}
+#wifiView .plus-item .pi-t{flex:1;min-width:0}
+#wifiView .plus-item .pi-arrow{color:var(--w-ink-soft);flex:none}
+#wifiView .hist-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:calc(13px * var(--wfs,1));color:var(--w-ink-soft)}
 /* ===== Préférences globales : thème / police / taille (Stock + WiFi) ===== */
 html[data-app-theme="creme"]{--bg:#FAF7EF;--card:#fff;--border:#e2dccb;--text:#1B2A4A;--muted:#6b7280;--inset:#f3efe3;--sumbg:#fff;color-scheme:light}
 html[data-app-theme="blanc"]{--bg:#fff;--card:#f6f7f9;--border:#dfe2e8;--text:#111827;--muted:#6b7280;--inset:#eef0f4;--sumbg:#f6f7f9;color-scheme:light}
@@ -322,8 +346,11 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
       <span class="syncBadge" id="wifiSyncBadge" onclick="wifiSync(true)"></span>
       <button type="button" title="Actualiser WiFi" aria-label="Actualiser WiFi" onclick="UI.refreshWifi()"
         style="background:none;border:none;font-size:15px;line-height:1;padding:2px;cursor:pointer;color:var(--w-ink);">🔄</button>
-      <div class="date-chip" id="today-chip">—</div>
     </div>
+  </div>
+  <div class="clock-row" data-noi18n>
+    <strong id="today-chip">—</strong>
+    <strong id="wifi-ver-line">Version —</strong>
   </div>
 </div>
 
@@ -360,6 +387,9 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   <div class="help-text" style="margin-bottom:8px;">Sélectionnez un type pour voir la répartition complète.</div>
   <div class="filter-row" id="stock-type-pills"></div>
   <div class="card" id="stock-breakdown"></div>
+  <div style="margin-top:12px;">
+    <button class="btn btn-outline" onclick="UI.openCorrection({opType:'RECEPTION'})">✎ Corriger une réception</button>
+  </div>
 </div>
 
 <!-- PERSONNES -->
@@ -367,14 +397,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   <div class="search-bar">
     <input type="text" id="people-search" placeholder="Rechercher une personne...">
   </div>
-  <div class="filter-row" id="people-filter-row"></div>
   <div class="card" id="people-list"></div>
-  <div style="margin-top:12px;" id="people-add-btn-wrap">
-    <button class="btn btn-secondary" onclick="UI.openAddPerson()">+ Ajouter une personne</button>
-  </div>
-  <div style="margin-top:12px;display:none;" id="people-empty-btn-wrap">
-    <button class="btn btn-outline" style="border-color:var(--w-red);color:var(--w-red);" onclick="UI.emptyDeletedPeople()">🗑️ Vider les personnes supprimées</button>
-  </div>
 </div>
 
 <!-- SITUATION (detail person) -->
@@ -385,29 +408,22 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 
 <!-- HISTORIQUE -->
 <div class="view" id="view-historique">
-  <div class="search-bar">
+  <div class="seg" id="hist-mode"></div>
+  <div class="search-bar" id="hist-search-wrap">
     <input type="text" id="hist-search" placeholder="Rechercher (personne, type, commentaire)...">
   </div>
   <div class="filter-row" id="hist-filters"></div>
-  <div style="margin-bottom:10px;">
-    <button class="btn btn-outline" style="width:auto;padding:8px 12px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.openJournal()">🗂 Journal (suppressions &amp; clôtures) — Vider</button>
-  </div>
+  <div class="hist-toolbar" id="hist-toolbar"></div>
   <div class="card" id="hist-list"></div>
 </div>
 
 <!-- RAPPORTS -->
 <div class="view" id="view-rapports">
   <h2 class="section-title">Suivi par associé</h2>
-  <div class="help-text" style="margin-bottom:10px;">Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.</div>
   <div id="suivi-associes"></div>
 
   <h2 class="section-title" style="margin-top:24px;">Rapport fournisseur</h2>
-  <div class="help-text" style="margin-bottom:10px;">Justification complète des tickets reçus, type par type.</div>
-  <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="UI.openReception()">🚚 + Nouvelle réception du fournisseur</button>
   <div id="rapport-content"></div>
-  <div style="margin-top:14px;">
-    <button class="btn btn-secondary" onclick="UI.exportBackup()">⇩ Exporter une sauvegarde (JSON)</button>
-  </div>
 </div>
 
 <!-- PARAMETRES -->
@@ -432,7 +448,15 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
     <div class="filter-row" id="lang-picker" style="margin-bottom:0;"></div>
   </div>
 
+  <h2 class="section-title">Personnes</h2>
+  <div class="card" id="settings-people"></div>
+  <div style="margin-top:8px;">
+    <button class="btn btn-secondary" onclick="UI.openAddPerson()">+ Ajouter une personne</button>
+  </div>
+  <div id="settings-people-deleted"></div>
+
   <h2 class="section-title">Prix des tickets</h2>
+  <div class="help-text" style="margin:-4px 0 8px;">Appliqué aux nouvelles ventes.</div>
   <div class="card" id="settings-prices"></div>
 
   <h2 class="section-title">Types de tickets</h2>
@@ -444,17 +468,9 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   <h2 class="section-title">Sauvegarde</h2>
   <div class="card">
     <div class="settings-row">
-      <div><div class="st-label">Exporter les données</div><div class="st-sub">Personnes, stock, ventes, paiements, historique</div></div>
-      <button class="btn btn-outline" style="width:auto;" onclick="UI.exportBackup()">Exporter</button>
+      <div><div class="st-label">Exporter les données</div></div>
+      <button class="btn btn-outline btn-sm" onclick="UI.exportBackup()">Exporter</button>
     </div>
-    <div class="settings-row">
-      <div><div class="st-label">Restaurer une sauvegarde</div><div class="st-sub">Non disponible en mode Supabase — chaque opération est déjà enregistrée en temps réel, aucun import global n'est nécessaire</div></div>
-    </div>
-  </div>
-
-  <h2 class="section-title">Base de données</h2>
-  <div class="card">
-    <div class="help-text">Cette application est connectée à Supabase (types de tickets, personnes, réceptions, mouvements, ventes, paiements, corrections, clôtures de type de ticket, journal d'audit). Toutes les opérations sont enregistrées en temps réel et synchronisées entre tous les appareils.</div>
   </div>
 </div>
 
@@ -765,8 +781,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.29';
-const APP_UPDATED = '27/09/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.31';
+const APP_UPDATED = '28/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -1111,7 +1127,17 @@ async function wifiSync(manual){
 
 // ---- Mises à jour ----
 let updateAvailable = null, swReg = null, _reloading = false, _updTimer = null;
+function updateClock(){
+  const el = document.getElementById('today-chip');
+  if(!el) return;
+  const d = new Date();
+  el.textContent = d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' · ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+let _clockTimer = null;
+function startClock(){ updateClock(); clearInterval(_clockTimer); _clockTimer = setInterval(updateClock, 1000); }
 function refreshBadges(){
+  const vl = document.getElementById('wifi-ver-line');
+  if(vl) vl.textContent = 'Version ' + APP_VERSION;
   document.querySelectorAll('.verBadge').forEach(b => {
     b.textContent = updateAvailable ? '⟳ Mise à jour' + (/^\d/.test(updateAvailable) ? ' v' + updateAvailable : '') : 'v' + APP_VERSION;
     b.classList.toggle('upd', !!updateAvailable);
@@ -2706,6 +2732,28 @@ async function insertOp(table, payload, mapper){
 
 function ticketType(id){ return DB.ticketTypes.find(t=>t.id===id); }
 function person(id){ return DB.people.find(p=>p.id===id); }
+function sgn(n){ n = n||0; return (n>=0?'+':'') + fmt(n); }
+// Une CORRECTION n'a ni personne ni type propres : elle hérite de ceux de l'opération corrigée.
+function opContext(op){
+  let base = op;
+  if(op.opType==='CORRECTION'){ const tg = DB.operations.find(o=>o.id===op.correctsOpId); if(tg) base = tg; }
+  return {person: base.personId?person(base.personId):null, type: base.typeId?ticketType(base.typeId):null, target: base};
+}
+// Valeur actuelle d'une opération = valeur d'origine + toutes ses corrections (dans les deux sens).
+function opNet(op){
+  let qty = op.qty, amount = op.amount;
+  DB.operations.forEach(c=>{
+    if(c.opType==='CORRECTION' && c.correctsOpId===op.id){
+      if(qty!=null) qty += (c.qty||0);
+      if(amount!=null) amount += (c.amount||0);
+    }
+  });
+  return {qty, amount};
+}
+function saleUnitPrice(op){
+  if(op.unitPrice!=null) return Number(op.unitPrice)||0;
+  return op.qty ? (Number(op.amount)||0)/op.qty : 0;
+}
 
 // Aggregate quantities for a type across all people + me (personId=null)
 function typeAggregate(typeId){
@@ -2839,6 +2887,7 @@ function ticketPagesLabel(qty){
 const UI = {
   currentView: 'accueil',
   histFilter: 'all',
+  histMode: 'ops',
   stockPillType: null,
   peopleFilter: 'active',
 
@@ -2850,7 +2899,7 @@ const UI = {
       if(!loadWifiCache()){ document.body.innerHTML = `<div class="empty" style="padding:60px 20px;">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
       return; }
     }
-    document.getElementById('today-chip').textContent = new Date().toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short'});
+    startClock();
     document.getElementById('people-search').addEventListener('input', ()=>this.renderPeople());
     document.getElementById('hist-search').addEventListener('input', ()=>this.renderHistory());
     this.renderAll();
@@ -2913,27 +2962,25 @@ const UI = {
 
   openMore(){
     this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Plus</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-        <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('historique')">📜 Historique</button>
-        <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('rapports')">📊 Rapports</button>
-        <button class="btn btn-secondary" onclick="UI.closeSheet();UI.goto('parametres')">⚙ Paramètres</button>
-        <button class="btn btn-secondary" onclick="UI.openJournal()">🗂 Journal (suppressions &amp; clôtures)</button>
+      <div class="plus-list">
+        <button type="button" class="plus-item" onclick="UI.histMode='ops';UI.goto('historique')"><span class="pi-ic">📜</span><span class="pi-t">Historique</span><span class="pi-arrow">›</span></button>
+        <button type="button" class="plus-item" onclick="UI.goto('rapports')"><span class="pi-ic">📊</span><span class="pi-t">Rapports</span><span class="pi-arrow">›</span></button>
+        <button type="button" class="plus-item" onclick="UI.goto('parametres')"><span class="pi-ic">⚙</span><span class="pi-t">Paramètres</span><span class="pi-arrow">›</span></button>
       </div>
     `);
   },
-  async openJournal(){
-    this.openSheet(`
-      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
-      <div class="sheet-handle"></div>
-      <div class="sheet-title">Journal des suppressions &amp; clôtures</div>
-      <div id="journal-list" style="max-height:60vh;overflow-y:auto;">Chargement…</div>
-      <button class="btn btn-outline" style="margin-top:12px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.clearAuditJournal()">🗑️ Vider l'historique du journal</button>
-      <div class="help-text" style="margin-top:6px;">Vide uniquement ce journal d'actions administratives. Les ventes, paiements, mouvements de stock et attributions restent conservés en permanence — ce sont des données actives, jamais supprimées.</div>
-    `);
+  // Le journal est maintenant un onglet de l'Historique (plus de fenêtre séparée).
+  openJournal(){ this.histMode = 'journal'; this.goto('historique'); },
+  async renderJournal(){
+    const list = document.getElementById('hist-list');
+    const toolbar = document.getElementById('hist-toolbar');
+    list.innerHTML = `<div class="empty">Chargement…</div>`;
+    toolbar.innerHTML = '';
     const labels = {
-      DELETE_OPERATION:'Suppression — opération', DELETE_PERSON:'Suppression — personne', RESTORE_PERSON:'Restauration — personne',
+      DELETE_OPERATION:'Suppression — opération', CLEAR_HISTORY:'Historique vidé', DELETE_PERSON:'Suppression — personne', RESTORE_PERSON:'Restauration — personne',
       CLOSE_TICKET_TYPE:'Clôture — type de ticket', RESTORE_TICKET_TYPE_CLOSURE:'Réouverture — type de ticket',
       RENAME_TICKET_TYPE:'Renommage — type de ticket', DELETE_TICKET_TYPE:'Suppression — type de ticket',
       RETOUR_REATTRIBUTION:"Retour d'argent + nouvelle attribution",
@@ -2941,6 +2988,7 @@ const UI = {
     try{
       const { data, error } = await sb.from('audit_log').select('*').order('occurred_at', {ascending:false}).limit(100);
       if(error) throw error;
+      if(this.histMode!=='journal') return;
       const rows = (data||[]).map(a=>{
         const d = new Date(a.occurred_at);
         const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -2951,18 +2999,16 @@ const UI = {
               <div class="hist-sub">${a.entity_label||''} · ${dateStr}</div>
             </div>
             ${a.quantity!=null?`<div class="hist-qty">${fmt(a.quantity)}</div>`:''}
-            <button type="button" title="Supprimer cette ligne du journal" aria-label="Supprimer cette ligne du journal"
-              onclick="UI.deleteJournalEntry('${a.id}')"
-              style="background:none;border:none;color:var(--w-red);font-size:16px;line-height:1;padding:4px 2px;cursor:pointer;margin-left:6px;">🗑️</button>
+            <div class="hist-actions"><button type="button" class="ico-btn danger" title="Supprimer cette ligne" aria-label="Supprimer cette ligne" onclick="UI.deleteJournalEntry('${a.id}')">🗑️</button></div>
           </div>`;
-      }).join('') || `<div class="empty">Aucune action enregistrée.</div>`;
-      document.getElementById('journal-list').innerHTML = rows;
+      }).join('');
+      toolbar.innerHTML = `<span>${(data||[]).length} ligne(s)</span>` + ((data||[]).length ? `<button type="button" class="btn btn-outline btn-sm danger" onclick="UI.clearAuditJournal()">🗑 Vider le journal</button>` : '');
+      list.innerHTML = rows || `<div class="empty">Journal vide.</div>`;
     }catch(e){
-      document.getElementById('journal-list').innerHTML = `<div class="empty">⚠ Impossible de charger le journal${e&&e.message?' : '+e.message:''}.</div>`;
+      list.innerHTML = `<div class="empty">⚠ Impossible de charger le journal${e&&e.message?' : '+e.message:''}.</div>`;
     }
   },
-  // Suppression individuelle d'une ligne du journal (jamais des ventes/paiements/mouvements —
-  // ce journal ne contient que des traces d'actions administratives).
+  // Suppression d'une ligne du journal (jamais des ventes/paiements/mouvements : simple trace administrative).
   async deleteJournalEntry(entryId){
     if(!confirm(t('Supprimer définitivement cette ligne du journal ?'))) return;
     try{
@@ -2970,24 +3016,21 @@ const UI = {
       if(error) throw error;
       if(!data || !data.length) throw new Error("le serveur n'a rien supprimé (droits Supabase ?)");
     }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible')); return; }
-    toast('Ligne du journal supprimée');
-    this.openJournal();
+    toast('Ligne supprimée');
+    this.renderHistory();
   },
-  // Vide uniquement le journal d'audit (suppressions/restaurations de personnes, clôtures/réouvertures
-  // de types de tickets, retours+réattributions). Ne touche JAMAIS aux ventes, paiements, mouvements
-  // de stock ni réceptions : ce sont des données actives dont la suppression physique est interdite
-  // (intégrité des données > tout le reste).
+  // Vide uniquement le journal d'audit (traces). Les opérations restent intactes.
   async clearAuditJournal(){
-    if(!confirm(t(`Vider l'historique du journal (suppressions & clôtures) ?\n\nCette action est irréversible mais ne touche à AUCUNE donnée active : ventes, paiements, mouvements de stock et attributions restent intacts.`))) return;
+    if(!confirm(t(`Vider le journal ?\n\nSeules les traces sont effacées : ventes, paiements et stock restent intacts.`))) return;
     try{
       const { error } = await sb.from('audit_log').delete().not('id','is',null);
       if(error) throw error;
-      const chk = await sb.from('audit_log').select('id').limit(1);   // vérification réelle : plus rien ne doit rester
+      const chk = await sb.from('audit_log').select('id').limit(1);
       if(chk.error) throw chk.error;
       if(chk.data && chk.data.length) throw new Error('le serveur a refusé la suppression (droits Supabase ?)');
     }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'impossible de vider le journal')); return; }
     toast('Journal vidé');
-    this.openJournal();
+    this.renderHistory();
   },
 
   renderAll(){
@@ -3082,57 +3125,19 @@ const UI = {
   },
 
   /* ---------- PERSONNES ---------- */
-  setPeopleFilter(f){ this.peopleFilter=f; this.renderPeople(); },
   renderPeople(){
     const q = (document.getElementById('people-search').value||'').toLowerCase();
-    const deletedCount = DB.people.filter(p=>p.deletedAt).length;
-    const filterRow = document.getElementById('people-filter-row');
-    filterRow.innerHTML = `
-      <button class="filter-pill ${this.peopleFilter!=='deleted'?'active':''}" onclick="UI.setPeopleFilter('active')">Actives</button>
-      <button class="filter-pill ${this.peopleFilter==='deleted'?'active':''}" onclick="UI.setPeopleFilter('deleted')">Supprimées (${deletedCount})</button>
-    `;
-    document.getElementById('people-add-btn-wrap').style.display = this.peopleFilter==='deleted' ? 'none' : '';
-
     const list = document.getElementById('people-list');
-    const showDeleted = this.peopleFilter==='deleted';
-    const people = DB.people.filter(p => (showDeleted ? !!p.deletedAt : !p.deletedAt) && p.name.toLowerCase().includes(q));
-
-    const emptyBtnWrap = document.getElementById('people-empty-btn-wrap');
-    if(emptyBtnWrap) emptyBtnWrap.style.display = (showDeleted && deletedCount>0) ? '' : 'none';
-
-    if(showDeleted){
-      if(people.length===0){ list.innerHTML = `<div class="empty">Aucune personne supprimée.</div>`; return; }
-      list.innerHTML = people.slice().sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'})).map(p=>{
-        const d = new Date(p.deletedAt);
-        const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-        const restant = personTotalRestant(p.id);
-        const reste = personMoney(p.id).reste;
-        return `
-          <div class="person-row">
-            <div>
-              <div class="person-name wname">${p.name}</div>
-              <div class="person-sub">Supprimée le ${dateStr}</div>
-              ${(restant>0||reste>0) ? `<div class="person-sub" style="color:var(--w-red);">${restant>0?fmt(restant)+' ticket(s) en main · ':''}${reste>0?'doit '+fmtGNF(reste):''}</div>` : ''}
-            </div>
-            <div class="person-right" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-              <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;" onclick="UI.restorePerson('${p.id}')">Restaurer</button>
-              <button class="btn btn-outline" style="width:auto;padding:6px 10px;font-size:12px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.deletePersonForever('${p.id}')">Supprimer définitivement</button>
-            </div>
-          </div>`;
-      }).join('');
-      return;
-    }
-
+    const people = DB.people.filter(p => !p.deletedAt && p.name.toLowerCase().includes(q));
+    this.renderPeopleSettings();
     if(people.length===0){
-      list.innerHTML = `<div class="empty">Aucune personne enregistrée.</div>`;
+      list.innerHTML = `<div class="empty">${q ? 'Aucun résultat.' : 'Aucune personne. Ajoutez-en depuis Plus → Paramètres.'}</div>`;
       return;
     }
     list.innerHTML = people.slice().sort((a,b)=>a.name.localeCompare(b.name, 'fr', {sensitivity:'base'})).map(p=>{
       const m = personMoney(p.id);
       const restant = personTotalRestant(p.id);
-      // Une ligne par type actif — masquée si la quantité détenue est à 0 (uniquement les données
-      // réellement en main), au format "Type : N tickets — MONTANT GNF", jamais fusionné sur une
-      // seule ligne avec des séparateurs "|".
+      // Une ligne par type actif — masquée si la quantité détenue est à 0.
       const breakdownLines = liveTypes()
         .map(tt => {
           const s = personTypeStats(p.id, tt.id);
@@ -3147,14 +3152,44 @@ const UI = {
             <div class="person-sub">${fmt(restant)} tickets en main</div>
             ${breakdownLines}
           </div>
-          <div class="person-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <div class="person-right">
             ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
-            <button type="button" title="Supprimer ${p.name}" aria-label="Supprimer ${p.name}"
-              onclick="event.stopPropagation();UI.deletePerson('${p.id}')"
-              style="background:none;border:none;color:var(--w-red);font-size:19px;line-height:1;padding:4px 2px;cursor:pointer;">🗑️</button>
           </div>
         </div>`;
     }).join('');
+  },
+  // Ajout / suppression / restauration des personnes : UNIQUEMENT ici (Plus → Paramètres).
+  renderPeopleSettings(){
+    const el = document.getElementById('settings-people');
+    if(!el) return;
+    const byName = (a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'});
+    const active = DB.people.filter(p=>!p.deletedAt).sort(byName);
+    const deleted = DB.people.filter(p=>p.deletedAt).sort(byName);
+    el.innerHTML = active.length ? active.map(p=>`
+      <div class="settings-row">
+        <div><div class="st-label wname">${p.name}</div></div>
+        <button type="button" class="btn btn-outline btn-sm danger" onclick="UI.deletePerson('${p.id}')">Supprimer</button>
+      </div>`).join('') : `<div class="empty">Aucune personne.</div>`;
+    const dw = document.getElementById('settings-people-deleted');
+    if(!dw) return;
+    if(!deleted.length){ dw.innerHTML = ''; return; }
+    dw.innerHTML = `
+      <h2 class="section-title">Personnes supprimées (${deleted.length})</h2>
+      <div class="card">
+        ${deleted.map(p=>{
+          const d = new Date(p.deletedAt);
+          const dateStr = d.toLocaleDateString('fr-FR');
+          return `
+          <div class="settings-row">
+            <div><div class="st-label wname">${p.name}</div><div class="st-sub">Supprimée le ${dateStr}</div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="UI.restorePerson('${p.id}')">Restaurer</button>
+              <button type="button" class="btn btn-outline btn-sm danger" onclick="UI.deletePersonForever('${p.id}')">Effacer</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:8px;"><button type="button" class="btn btn-outline danger" onclick="UI.emptyDeletedPeople()">🗑 Vider les personnes supprimées</button></div>`;
   },
 
   openAddPerson(){
@@ -3204,7 +3239,7 @@ const UI = {
     const totalRestant = personTotalRestant(p.id);
     const totalValeur = liveTypes().reduce((sum,tt)=>sum + personTypeStats(p.id,tt.id).restant*(tt.price||0), 0);
 
-    const recentOps = DB.operations.filter(o=>o.personId===p.id).sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,8);
+    const recentOps = DB.operations.filter(o=>opContext(o).target.personId===p.id).sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,8);
 
     document.getElementById('situation-content').innerHTML = `
       <div class="card">
@@ -3245,6 +3280,7 @@ const UI = {
 
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
         <button class="btn btn-secondary" onclick="UI.openNewOp('${p.id}')">+ Nouvelle opération pour ${p.name.split(' ')[0]}</button>
+        <button class="btn btn-outline" onclick="UI.openCorrection({personId:'${p.id}'})">✎ Corriger une opération</button>
         ${totalRestant>0 ? `<button class="btn btn-outline" onclick="UI.openReturnReassign('${p.id}')">🔁 Retour d'argent + nouvelle attribution</button>` : ''}
       </div>
     `;
@@ -3261,8 +3297,6 @@ const UI = {
         <select id="ep-active"><option value="true" ${p.active!==false?'selected':''}>Actif</option><option value="false" ${p.active===false?'selected':''}>Inactif</option></select>
       </div>
       <button class="btn btn-primary" onclick="UI.saveEditPerson('${p.id}')">Enregistrer</button>
-      <button class="btn btn-outline" style="margin-top:8px;border-color:var(--w-red);color:var(--w-red);" onclick="UI.deletePerson('${p.id}')">Supprimer cette personne</button>
-      <div class="help-text" style="margin-top:10px;">La personne sera retirée des listes actives. Son historique est intégralement conservé et elle reste restaurable depuis Personnes → « Supprimées ».</div>
     `);
   },
   async saveEditPerson(id){
@@ -3309,10 +3343,8 @@ const UI = {
       await logAudit('DELETE_PERSON', 'person', id, p.name, null);
     }catch(e){ toast('⚠ Erreur de sauvegarde : '+(e&&e.message?e.message:'réessayez')); return; }
     this.closeSheet();
-    this.goto('personnes');
-    this.peopleFilter = 'active';
     this.renderPeople(); this.renderDashboard(); this.renderStock(); this.renderHistory(); this.renderRapports();
-    toast('Personne supprimée — restaurable depuis "Supprimées"');
+    toast('Personne supprimée — restaurable depuis Paramètres');
   },
   async restorePerson(id){
     const p = DB.people.find(x=>x.id===id);
@@ -3397,74 +3429,84 @@ const UI = {
   },
 
   /* ---------- HISTORIQUE ---------- */
-  histRowHtml(op){
-    const meta = OP_META[op.opType];
-    const p = op.personId ? person(op.personId) : null;
-    const tt = op.typeId ? ticketType(op.typeId) : null;
+  histRowHtml(op, opts){
+    opts = opts || {};
+    const meta = OP_META[op.opType] || {label:op.opType, color:'#999'};
+    const c = opContext(op);
+    const p = c.person, tt = c.type;
     const d = new Date(op.ts);
     const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     let title = meta.label;
     if(op.opType==='CORRECTION'){
-      const target = DB.operations.find(o=>o.id===op.correctsOpId);
-      title = `Correction — ${target?OP_META[target.opType].label:'?'}`;
+      title = `Correction — ${c.target!==op && OP_META[c.target.opType] ? OP_META[c.target.opType].label : '?'}`;
     }
     const nameHtml = `<span class="wname" style="font-size:13px;">${p?p.name:'Disponible'}</span>`;
-    let sub = [nameHtml, tt?`<span class="tname">${tt.name}</span>`:null, dateStr].filter(Boolean).join(' · ');
-    let qtyStr = op.opType==='PAIEMENT' ? fmtGNF(op.amount) : (op.qty!=null ? (op.qty>=0?'+':'') + fmt(op.qty) : '');
-    if(op.opType==='VENTE') qtyStr = `${op.qty} · ${fmtGNF(op.amount)}`;
+    const sub = [nameHtml, tt?`<span class="tname">${tt.name}</span>`:null, dateStr].filter(Boolean).join(' · ');
+    let qtyStr = '';
+    if(op.opType==='PAIEMENT') qtyStr = fmtGNF(op.amount);
+    else if(op.opType==='VENTE') qtyStr = `${fmt(op.qty)}<div class="hist-amt">${fmtGNF(op.amount)}</div>`;
+    else if(op.opType==='CORRECTION'){
+      if(c.target.opType==='PAIEMENT') qtyStr = sgn(op.amount) + ' GNF';
+      else { qtyStr = sgn(op.qty); if(c.target.opType==='VENTE' && op.amount) qtyStr += `<div class="hist-amt">${sgn(op.amount)} GNF</div>`; }
+    } else if(op.qty!=null) qtyStr = sgn(op.qty);
+    const actions = opts.pick ? '' : `
+        <div class="hist-actions">
+          ${op.opType!=='CORRECTION' ? `<button type="button" class="ico-btn" title="Corriger cette opération" aria-label="Corriger cette opération" onclick="event.stopPropagation();UI.selectOpToCorrect('${op.id}')">✎</button>` : ''}
+          <button type="button" class="ico-btn danger" title="Supprimer cette opération" aria-label="Supprimer cette opération" onclick="event.stopPropagation();UI.deleteOperation('${op.id}')">🗑️</button>
+        </div>`;
+    const pickAttr = opts.pick ? ` style="cursor:pointer;" onclick="UI.selectOpToCorrect('${op.id}')"` : '';
     return `
-      <div class="hist-row">
+      <div class="hist-row"${pickAttr}>
         <div class="hist-badge" style="background:${meta.color}"></div>
         <div class="hist-main">
           <div class="hist-title">${title}</div>
           <div class="hist-sub">${sub}${op.comment?' · '+op.comment:''}</div>
         </div>
-        <div class="hist-qty">${qtyStr}</div>
-        <button type="button" title="Supprimer cette opération" aria-label="Supprimer cette opération" onclick="UI.deleteOperation('${op.id}')"
-          style="background:none;border:none;color:var(--w-red);font-size:16px;line-height:1;padding:4px 2px;cursor:pointer;margin-left:6px;">🗑️</button>
+        <div class="hist-qty">${qtyStr}</div>${actions}
       </div>`;
   },
-  // Suppression définitive d'UNE opération de l'historique (et des corrections qui la visent).
-  // Vérifiée côté serveur par relecture ; une opération encore en file d'attente est simplement retirée de la file.
+  // Suppression réelle d'opérations (et des corrections qui les visent), vérifiée côté serveur par
+  // relecture. Rien n'est retiré localement tant que le serveur n'a pas confirmé. Une opération encore
+  // en file d'attente (jamais envoyée) est simplement retirée de la file.
+  async _purgeOps(list){
+    const ids = new Set(list.map(o=>o.id));
+    DB.operations.forEach(c=>{ if(c.opType==='CORRECTION' && ids.has(c.correctsOpId)) ids.add(c.id); });
+    const all = DB.operations.filter(o=>ids.has(o.id));
+    const queued = new Set(wifiQ.filter(q=>ids.has(q.payload.id)).map(q=>q.payload.id));
+    const remote = all.filter(o=>!queued.has(o.id));
+    const chunk = (arr, n=80)=>{ const out=[]; for(let i=0;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; };
+    const parentIds = remote.filter(o=>o.opType!=='CORRECTION').map(o=>o.id);
+    for(const c of chunk(parentIds)){ const r = await sb.from('corrections').delete().in('target_id', c); if(r.error) throw r.error; }
+    const byTable = {};
+    remote.forEach(o=>{ const tb = OP_TABLE[o.opType]; if(tb) (byTable[tb] = byTable[tb] || []).push(o.id); });
+    for(const tb of ['corrections','sales','payments','stock_movements','stock_receipts']){
+      for(const c of chunk(byTable[tb]||[])){
+        const d = await sb.from(tb).delete().in('id', c); if(d.error) throw d.error;
+        const chk = await sb.from(tb).select('id').in('id', c); if(chk.error) throw chk.error;
+        if(chk.data && chk.data.length) throw new Error('le serveur a refusé la suppression (droits Supabase ?)');
+      }
+    }
+    if(queued.size){ wifiQ = wifiQ.filter(q=>!ids.has(q.payload.id)); wifiSaveQ(); }
+    DB.operations = DB.operations.filter(o=>!ids.has(o.id));
+    DB.operations.forEach((o,i)=>o.num=i+1);
+    try{ localStorage.setItem(WIFI_CACHEKEY, JSON.stringify(DB)); }catch(e){}
+    return all;
+  },
   async deleteOperation(opId){
     const op = DB.operations.find(o=>o.id===opId);
     if(!op) return;
     const label = OP_META[op.opType].label;
     if(!confirm(tf('Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.', {label}))) return;
-    const related = op.opType==='CORRECTION' ? [] : DB.operations.filter(o=>o.opType==='CORRECTION' && o.correctsOpId===opId);
-    const ids = new Set([opId, ...related.map(o=>o.id)]);
-    try{
-      const queued = wifiQ.filter(q=>ids.has(q.payload.id));
-      if(queued.length){ wifiQ = wifiQ.filter(q=>!ids.has(q.payload.id)); wifiSaveQ(); }
-      if(!queued.some(q=>q.payload.id===opId)){
-        if(related.length){ const c = await sb.from('corrections').delete().eq('target_id', opId); if(c.error) throw c.error; }
-        const d = await sb.from(OP_TABLE[op.opType]).delete().eq('id', opId);
-        if(d.error) throw d.error;
-        const chk = await sb.from(OP_TABLE[op.opType]).select('id').eq('id', opId);
-        if(chk.error) throw chk.error;
-        if(chk.data && chk.data.length) throw new Error('le serveur a refusé la suppression (droits Supabase ?)');
-      }
-    }catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible')); return; }
-    DB.operations = DB.operations.filter(o=>!ids.has(o.id));
-    DB.operations.forEach((o,i)=>o.num=i+1);
-    try{ localStorage.setItem(WIFI_CACHEKEY, JSON.stringify(DB)); }catch(e){}
-    const p = op.personId ? person(op.personId) : null, tt = op.typeId ? ticketType(op.typeId) : null;
-    logAudit('DELETE_OPERATION','operation',opId,[label,p?p.name:'Disponible',tt?tt.name:''].filter(Boolean).join(' — '),op.qty);
+    const c = opContext(op);
+    try{ await this._purgeOps([op]); }
+    catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible')); return; }
+    logAudit('DELETE_OPERATION','operation',opId,[label,c.person?c.person.name:'Disponible',c.type?c.type.name:''].filter(Boolean).join(' — '),op.qty);
     this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
     toast('Opération supprimée');
   },
-  renderHistory(){
+  filteredHistoryOps(){
     const q = (document.getElementById('hist-search').value||'').toLowerCase();
-    const filters = document.getElementById('hist-filters');
-    const filterDefs = [
-      {id:'all', label:'Tout'},
-      {id:'today', label:"Aujourd'hui"},
-      {id:'week', label:'Cette semaine'},
-      {id:'month', label:'Ce mois'},
-    ];
-    filters.innerHTML = filterDefs.map(f=>`<button class="filter-pill ${this.histFilter===f.id?'active':''}" onclick="UI.setHistFilter('${f.id}')">${f.label}</button>`).join('');
-
     let ops = [...DB.operations].sort((a,b)=>b.ts.localeCompare(a.ts));
     const now = new Date();
     ops = ops.filter(op=>{
@@ -3476,16 +3518,64 @@ const UI = {
     });
     if(q){
       ops = ops.filter(op=>{
-        const p = op.personId?person(op.personId):null;
-        const tt = op.typeId?ticketType(op.typeId):null;
-        const hay = [p?p.name:'', tt?tt.name:'', op.comment||'', OP_META[op.opType].label].join(' ').toLowerCase();
+        const c = opContext(op);
+        const hay = [c.person?c.person.name:'', c.type?c.type.name:'', op.comment||'', OP_META[op.opType].label].join(' ').toLowerCase();
         return hay.includes(q);
       });
     }
+    return ops;
+  },
+  renderHistory(){
+    const mode = this.histMode==='journal' ? 'journal' : 'ops';
+    document.getElementById('hist-mode').innerHTML =
+      `<button type="button" class="${mode==='ops'?'active':''}" onclick="UI.setHistMode('ops')">Opérations</button>` +
+      `<button type="button" class="${mode==='journal'?'active':''}" onclick="UI.setHistMode('journal')">Journal</button>`;
+    const searchWrap = document.getElementById('hist-search-wrap');
+    const filters = document.getElementById('hist-filters');
+    const toolbar = document.getElementById('hist-toolbar');
     const list = document.getElementById('hist-list');
+    if(mode==='journal'){
+      searchWrap.style.display = 'none'; filters.style.display = 'none';
+      if(this.currentView==='historique') this.renderJournal();
+      return;
+    }
+    searchWrap.style.display = ''; filters.style.display = '';
+    const filterDefs = [
+      {id:'all', label:'Tout'},
+      {id:'today', label:"Aujourd'hui"},
+      {id:'week', label:'Cette semaine'},
+      {id:'month', label:'Ce mois'},
+    ];
+    filters.innerHTML = filterDefs.map(f=>`<button class="filter-pill ${this.histFilter===f.id?'active':''}" onclick="UI.setHistFilter('${f.id}')">${f.label}</button>`).join('');
+    const ops = this.filteredHistoryOps();
+    const narrowed = this.histFilter!=='all' || !!(document.getElementById('hist-search').value||'').trim();
+    toolbar.innerHTML = `<span>${ops.length} opération(s)${ops.length>150?' · 150 affichées':''}</span>` +
+      (ops.length ? `<button type="button" class="btn btn-outline btn-sm danger" onclick="UI.clearHistory()">🗑 ${narrowed?'Vider la sélection':"Vider l'historique"}</button>` : '');
     list.innerHTML = ops.length ? ops.slice(0,150).map(op=>this.histRowHtml(op)).join('') : `<div class="empty">Aucune opération trouvée.</div>`;
   },
   setHistFilter(id){ this.histFilter=id; this.renderHistory(); },
+  setHistMode(m){ this.histMode=m; this.renderHistory(); },
+  // Vide l'historique affiché (selon le filtre/la recherche en cours ; « Tout » = tout l'historique).
+  async clearHistory(){
+    const ops = this.filteredHistoryOps();
+    if(!ops.length){ toast('Rien à supprimer'); return; }
+    const narrowed = this.histFilter!=='all' || !!(document.getElementById('hist-search').value||'').trim();
+    const n = ops.length;
+    const head = narrowed ? tf('Supprimer définitivement ces {n} opération(s) ?', {n}) : tf("Vider TOUT l'historique ({n} opérations) ?", {n});
+    if(!confirm(head + '\n\n' + t('Elles seront retirées du stock, des tickets en main et des montants. Action irréversible.'))) return;
+    if(!narrowed && !confirm(t('Dernière confirmation : toutes les opérations seront effacées. Continuer ?'))) return;
+    try{ await this._purgeOps(ops); }
+    catch(e){
+      toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible'));
+      await this.refreshWifi(true);
+      return;
+    }
+    const rid = (typeof crypto!=='undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('h-'+Date.now());
+    logAudit('CLEAR_HISTORY','operation',rid,narrowed?`Sélection supprimée (${n} opérations)`:`Historique vidé (${n} opérations)`,n);
+    this.renderAll();
+    if(this.currentView==='situation') this.renderSituation();
+    toast(`${n} opération(s) supprimée(s)`);
+  },
 
   /* ---------- RAPPORTS ---------- */
   // Vue de suivi consolidée : pour chaque associé actif, tout ce qui doit être "immédiatement
@@ -3571,10 +3661,11 @@ const UI = {
   /* ---------- PARAMETRES ---------- */
   renderParametres(){
     this.renderDisplayPrefs();
+    this.renderPeopleSettings();
     const prices = document.getElementById('settings-prices');
     prices.innerHTML = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>`
       <div class="settings-row">
-        <div><div class="st-label tname">${tt.name}</div><div class="st-sub">Prix appliqué aux nouvelles ventes</div></div>
+        <div><div class="st-label tname">${tt.name}</div></div>
         <input type="number" value="${tt.price}" min="0" onchange="UI.updatePrice('${tt.id}', this.value)">
       </div>
     `).join('');
@@ -3970,72 +4061,125 @@ const UI = {
   },
 
   /* ---------- CORRECTION ---------- */
-  openCorrection(){
-    const recent = [...DB.operations].filter(o=>o.opType!=='CORRECTION').sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,30);
+  openCorrection(opts){
+    this._corFilter = opts || {};
+    const f = this._corFilter;
+    let sub = "Choisissez l'opération, puis indiquez de combien l'augmenter ou la diminuer.";
+    if(f.personId){ const pp = person(f.personId); if(pp) sub = pp.name + ' — ' + sub; }
+    else if(f.opType && OP_META[f.opType]) sub = OP_META[f.opType].label + ' — ' + sub;
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Corriger une opération</div>
-      <div class="field"><input type="text" id="cor-search" placeholder="Rechercher l'opération à corriger..." oninput="UI.filterCorrectionList(this.value)"></div>
-      <div id="cor-list" style="max-height:44vh;overflow-y:auto;">
-        ${recent.map(op=>this.correctionRowHtml(op)).join('')}
-      </div>
+      <div class="sheet-sub">${sub}</div>
+      <div class="field"><input type="text" id="cor-search" placeholder="Rechercher…" oninput="UI.filterCorrectionList(this.value)"></div>
+      <div id="cor-list" style="max-height:52vh;overflow-y:auto;"></div>
     `);
+    this.filterCorrectionList('');
   },
-  correctionRowHtml(op){
-    // Les lignes de cette liste servent uniquement à choisir l'opération à corriger : la ligne
-    // entière est cliquable (onclick plus bas). Le bouton supprimer 🗑️ de histRowHtml n'a pas de
-    // stopPropagation (il n'en a pas besoin ailleurs, où la ligne n'est pas cliquable) : ici il
-    // faisait remonter le clic jusqu'au conteneur et déclenchait AUSSI selectOpToCorrect juste après
-    // une suppression (ou une annulation de suppression) — d'où le retiré ci-dessous.
-    const rowHtml = this.histRowHtml(op).replace(/<button type="button" title="Supprimer cette opération"[\s\S]*?<\/button>/, '');
-    return `<div class="hist-row" style="cursor:pointer;" onclick="UI.selectOpToCorrect('${op.id}')">${rowHtml}</div>`.replace('<div class="hist-row">','<div>');
+  correctionCandidates(q){
+    q = (q||'').toLowerCase();
+    const f = this._corFilter || {};
+    return DB.operations.filter(o=>o.opType!=='CORRECTION')
+      .filter(o=>!f.personId || o.personId===f.personId)
+      .filter(o=>!f.opType || o.opType===f.opType)
+      .filter(op=>{
+        if(!q) return true;
+        const c = opContext(op);
+        return [c.person?c.person.name:'', c.type?c.type.name:'', op.comment||'', OP_META[op.opType].label].join(' ').toLowerCase().includes(q);
+      })
+      .sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,40);
   },
+  correctionRowHtml(op){ return this.histRowHtml(op, {pick:true}); },
   filterCorrectionList(q){
-    q=q.toLowerCase();
-    const matches = DB.operations.filter(o=>o.opType!=='CORRECTION').filter(op=>{
-      const p = op.personId?person(op.personId):null;
-      const tt = op.typeId?ticketType(op.typeId):null;
-      const hay=[p?p.name:'',tt?tt.name:'',op.comment||'',OP_META[op.opType].label].join(' ').toLowerCase();
-      return hay.includes(q);
-    }).sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,40);
-    document.getElementById('cor-list').innerHTML = matches.map(op=>this.correctionRowHtml(op)).join('') || '<div class="empty">Aucun résultat.</div>';
+    const el = document.getElementById('cor-list');
+    if(!el) return;
+    el.innerHTML = this.correctionCandidates(q).map(op=>this.correctionRowHtml(op)).join('') || '<div class="empty">Aucun résultat.</div>';
   },
   selectOpToCorrect(opId){
     const target = DB.operations.find(o=>o.id===opId);
+    if(!target || target.opType==='CORRECTION') return;
     const meta = OP_META[target.opType];
+    const c = opContext(target);
+    const net = opNet(target);
+    const isPay = target.opType==='PAIEMENT';
+    this._corSign = 0;
+    this._corTargetId = target.id;
+    const cur = isPay ? fmtGNF(net.amount) : fmt(net.qty) + ' tickets';
+    const orig = isPay ? fmtGNF(target.amount) : fmt(target.qty) + ' tickets';
+    const changed = isPay ? net.amount!==target.amount : net.qty!==target.qty;
+    const ctxLine = [c.person?c.person.name:null, c.type?c.type.name:null, new Date(target.ts).toLocaleString('fr-FR')].filter(Boolean).join(' · ');
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Correction — ${meta.label}</div>
-      <div class="sheet-sub">Opération d'origine : ${target.qty!=null?fmt(target.qty)+' unités':fmtGNF(target.amount)} · ${new Date(target.ts).toLocaleString('fr-FR')}</div>
-      <div class="field">
-        <label>Ajustement ${target.opType==='PAIEMENT'?'(GNF, + ou -)':'(quantité, + ou -)'}</label>
-        <input type="number" id="cor-delta" placeholder="Ex. -2 ou +2" autocomplete="off">
+      <div class="sheet-sub">${ctxLine}<br>Actuellement : <strong>${cur}</strong>${changed?` (à l'origine : ${orig})`:''}</div>
+      <div class="seg">
+        <button type="button" class="neg" id="cor-neg" onclick="UI.setCorSign(-1)">− Diminuer</button>
+        <button type="button" class="pos" id="cor-pos" onclick="UI.setCorSign(1)">+ Augmenter</button>
       </div>
+      <div class="field">
+        <label>${isPay?'Montant (GNF)':'Quantité'}</label>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="cor-delta" placeholder="Ex. 2" autocomplete="off" oninput="this.value=this.value.replace(/[^0-9]/g,'');UI.updateCorPreview()">
+      </div>
+      <div id="cor-preview" class="help-text" style="margin:-4px 0 10px;"></div>
       <div id="cor-error"></div>
       <button class="btn btn-primary" onclick="UI.submitCorrection('${target.id}')">Valider la correction</button>
     `);
   },
+  setCorSign(sg){
+    this._corSign = sg;
+    const neg = document.getElementById('cor-neg'), pos = document.getElementById('cor-pos');
+    if(neg) neg.classList.toggle('active', sg<0);
+    if(pos) pos.classList.toggle('active', sg>0);
+    const errEl = document.getElementById('cor-error'); if(errEl) errEl.innerHTML = '';
+    this.updateCorPreview();
+  },
+  updateCorPreview(){
+    const el = document.getElementById('cor-preview');
+    if(!el) return;
+    const target = DB.operations.find(o=>o.id===this._corTargetId);
+    const n = parseInt((document.getElementById('cor-delta')||{}).value, 10);
+    if(!target || !this._corSign || !n){ el.innerHTML = ''; return; }
+    const delta = this._corSign * n;
+    const net = opNet(target);
+    if(target.opType==='PAIEMENT') el.innerHTML = `Nouveau montant : <strong>${fmtGNF(net.amount+delta)}</strong>`;
+    else {
+      let html = `Nouvelle quantité : <strong>${fmt(net.qty+delta)}</strong>`;
+      if(target.opType==='VENTE') html += ` · montant : <strong>${fmtGNF(net.amount + delta*saleUnitPrice(target))}</strong>`;
+      el.innerHTML = html;
+    }
+  },
   async submitCorrection(targetId){
     if(this._corSubmitting) return; // anti-doublon : empêche un double-clic d'envoyer 2 corrections
     const target = DB.operations.find(o=>o.id===targetId);
-    const delta = parseInt(document.getElementById('cor-delta').value);
     const errEl = document.getElementById('cor-error');
-    if(!delta){ errEl.innerHTML = `<div class="error-text">Indiquez un ajustement différent de zéro.</div>`; return; }
+    if(!target) return;
+    const showErr = (m)=>{ errEl.innerHTML = `<div class="error-text">${m}</div>`; };
+    if(!this._corSign){ showErr("Choisissez d'abord : Diminuer ou Augmenter."); return; }
+    const n = parseInt(document.getElementById('cor-delta').value, 10);
+    if(!n || n<=0){ showErr('Indiquez une valeur supérieure à zéro.'); return; }
+    const delta = this._corSign * n;
+    const isPay = target.opType==='PAIEMENT';
 
-    const targetTableByOpType = {
-      RECEPTION:'stock_receipts', REMISE:'stock_movements', VENTE:'sales', PAIEMENT:'payments'
-    };
+    // Borne : une correction ne peut jamais retourner l'opération d'origine au-delà de zéro
+    // (ex. diminuer de 100 une remise de 80). Vaut dans les deux sens.
+    const net = opNet(target);
+    const base = isPay ? target.amount : target.qty;
+    const cur = isPay ? net.amount : net.qty;
+    if((base>=0 && cur+delta<0) || (base<0 && cur+delta>0)){
+      showErr(isPay ? `Cette diminution dépasse le montant de ce paiement (${fmtGNF(cur)}).` : `Cette diminution dépasse la quantité de cette opération (${fmt(cur)}).`);
+      return;
+    }
+
+    const targetTableByOpType = { RECEPTION:'stock_receipts', REMISE:'stock_movements', VENTE:'sales', PAIEMENT:'payments' };
     const targetTable = targetTableByOpType[target.opType];
-    const deltaQuantity = target.opType==='PAIEMENT' ? null : delta;
-    const deltaAmount = target.opType==='PAIEMENT' ? delta : (target.opType==='VENTE' ? delta*(target.unitPrice||0) : null);
+    if(!targetTable){ showErr('Cette opération ne peut pas être corrigée.'); return; }
+    const deltaQuantity = isPay ? null : delta;
+    const deltaAmount = isPay ? delta : (target.opType==='VENTE' ? delta*saleUnitPrice(target) : null);
 
-    // Vérification de cohérence AVANT écriture : on simule la correction (ex. réduire une remise
-    // excessive) en l'ajoutant temporairement à DB.operations, on recalcule la situation de la
-    // personne et du stock avec les fonctions habituelles, puis on retire la simulation. Si le
-    // résultat contient une quantité négative (ex. réduction plus grande que ce que la personne a
-    // encore en main), on bloque avec un message clair au lieu de créer une incohérence.
+    // Vérification de cohérence AVANT écriture : on simule la correction dans DB.operations, on
+    // recalcule personne + stock avec les fonctions habituelles, puis on retire la simulation.
     const hypo = {id:'__hypo_correction__', ts:new Date().toISOString(), personId:null, typeId:null,
       opType:'CORRECTION', qty:deltaQuantity, unitPrice:null, amount:deltaAmount, comment:null,
       correctsOpId:target.id, reason:null};
@@ -4043,10 +4187,11 @@ const UI = {
     let invalidMsg = '';
     try{
       if(target.personId && target.typeId){
-        const s = personTypeStats(target.personId, target.typeId);
-        if(s.pris<0) invalidMsg = "Cette réduction dépasse la quantité remise à cette personne.";
-        else if(s.restant<0) invalidMsg = "Cette réduction dépasse les tickets que cette personne a encore en main.";
-        else if(s.vendu<0) invalidMsg = "Cette correction rendrait la situation de cette personne incohérente.";
+        const st = personTypeStats(target.personId, target.typeId);
+        const w = delta<0 ? 'Cette diminution' : 'Cette augmentation';
+        if(st.pris<0) invalidMsg = w + " dépasse la quantité remise à cette personne.";
+        else if(st.restant<0) invalidMsg = w + (delta<0 ? " dépasse les tickets que cette personne a encore en main." : " dépasse les tickets que cette personne a en main.");
+        else if(st.vendu<0) invalidMsg = "Cette correction rendrait la situation de cette personne incohérente.";
       }
       if(!invalidMsg && target.typeId){
         const sum = stockSummary().find(x=>x.type.id===target.typeId);
@@ -4055,16 +4200,17 @@ const UI = {
     } finally {
       DB.operations.pop();
     }
-    if(invalidMsg){ errEl.innerHTML = `<div class="error-text">${invalidMsg}</div>`; return; }
+    if(invalidMsg){ showErr(invalidMsg); return; }
 
     this._corSubmitting = true;
     try{
+      // « reason » : colonne obligatoire côté base ; valeur automatique, l'utilisateur n'a jamais de raison à saisir.
       await insertOp('corrections', {
         target_table: targetTable, target_id: target.id,
-        delta_quantity: deltaQuantity, delta_amount: deltaAmount, reason: ''
+        delta_quantity: deltaQuantity, delta_amount: deltaAmount, reason: 'Correction'
       }, mapCorrection);
     }catch(e){
-      errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
+      showErr(`Erreur d'enregistrement : ${e.message||e}`);
       return;
     } finally {
       this._corSubmitting = false;
