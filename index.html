@@ -344,7 +344,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 
   <div class="tabsBar" id="tabsBar" data-noi18n></div>
   <div class="toolbar">
-    <input class="search" id="search" placeholder="Rechercher un article...">
+    <input autocomplete="off" class="search" id="search" placeholder="Rechercher un article...">
     <button class="sortBtn" id="infosBtn" onclick="openInfos()">ℹ️ Infos</button>
     <button class="sortBtn active" id="sortBtn" onclick="toggleSort()">A→Z</button>
   </div>
@@ -411,12 +411,15 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   <div style="margin-top:12px;">
     <button class="btn btn-outline" onclick="UI.openCorrection({opType:'RECEPTION'})">✎ Corriger une réception</button>
   </div>
+  <div style="margin-top:12px;">
+    <button class="btn btn-outline" onclick="UI.openCorrection({opType:'REMISE'})">✎ Corriger une remise</button>
+  </div>
 </div>
 
 <!-- PERSONNES -->
 <div class="view" id="view-personnes">
   <div class="search-bar">
-    <input type="text" id="people-search" placeholder="Rechercher une personne...">
+    <input autocomplete="off" type="text" id="people-search" placeholder="Rechercher une personne...">
   </div>
   <div class="card" id="people-list"></div>
 </div>
@@ -431,7 +434,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 <div class="view" id="view-historique">
   <div class="seg" id="hist-mode"></div>
   <div class="search-bar" id="hist-search-wrap">
-    <input type="text" id="hist-search" placeholder="Rechercher (personne, type, commentaire)...">
+    <input autocomplete="off" type="text" id="hist-search" placeholder="Rechercher (personne, type, commentaire)...">
   </div>
   <div class="filter-row" id="hist-filters"></div>
   <div class="hist-toolbar" id="hist-toolbar"></div>
@@ -456,7 +459,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
       <button class="btn btn-outline" style="width:auto;padding:10px 16px;font-size:18px;" onclick="UI.adjustFontScale(-0.05)">−</button>
-      <input type="range" id="fontscale-slider" min="0.8" max="1.6" step="0.05" value="1" style="flex:1;" oninput="UI.setFontScale(this.value)">
+      <input autocomplete="off" type="range" id="fontscale-slider" min="0.8" max="1.6" step="0.05" value="1" style="flex:1;" oninput="UI.setFontScale(this.value)">
       <button class="btn btn-outline" style="width:auto;padding:10px 16px;font-size:18px;" onclick="UI.adjustFontScale(0.05)">+</button>
     </div>
   </div>
@@ -542,7 +545,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 <!-- BASE DE PRIX -->
 <div id="view-db" style="display:none">
   <div class="card">
-    <div class="search-wrap"><i class="ti ti-search" aria-hidden="true"></i><input type="text" id="dbSearch" placeholder="Rechercher une pièce..." oninput="renderDB()"></div>
+    <div class="search-wrap"><i class="ti ti-search" aria-hidden="true"></i><input autocomplete="off" type="text" id="dbSearch" placeholder="Rechercher une pièce..." oninput="renderDB()"></div>
     <div class="db-wrap">
       <table class="db-table">
         <thead><tr><th style="width:55%">Désignation</th><th style="width:35%">Prix unitaire GNF</th><th style="width:10%"></th></tr></thead>
@@ -550,8 +553,8 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
       </table>
     </div>
     <div class="row-bar" style="margin-top:12px">
-      <input type="text" id="dbNewDesig" placeholder="Nom de la pièce" style="width:200px">
-      <input type="number" id="dbNewPrix" placeholder="Prix GNF" min="0" style="width:120px">
+      <input autocomplete="off" type="text" id="dbNewDesig" placeholder="Nom de la pièce" style="width:200px">
+      <input autocomplete="off" type="number" id="dbNewPrix" placeholder="Prix GNF" min="0" style="width:120px">
       <button class="btn-success" onclick="addDBEntry()"><i class="ti ti-plus" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>Ajouter</button>
       <span class="status" id="dbStatus"></span>
     </div>
@@ -590,11 +593,11 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
     </div>
   </div>
   <div class="row-bar" style="margin-top:12px">
-    <input type="date" id="newDate" style="width:128px">
-    <input type="number" id="newRec" placeholder="N° réc." min="1" style="width:64px">
-    <input type="text" id="newDesig" placeholder="Désignation" style="width:155px" oninput="autoFillPriceField()">
-    <input type="number" id="newQty" placeholder="Qté" min="1" value="1" style="width:46px">
-    <input type="number" id="newPrix" placeholder="Prix GNF" min="0" value="0" style="width:100px">
+    <input autocomplete="off" type="date" id="newDate" style="width:128px">
+    <input autocomplete="off" type="number" id="newRec" placeholder="N° réc." min="1" style="width:64px">
+    <input autocomplete="off" type="text" id="newDesig" placeholder="Désignation" style="width:155px" oninput="autoFillPriceField()">
+    <input autocomplete="off" type="number" id="newQty" placeholder="Qté" min="1" value="1" style="width:46px">
+    <input autocomplete="off" type="number" id="newPrix" placeholder="Prix GNF" min="0" value="0" style="width:100px">
     <button onclick="addManualRow()"><i class="ti ti-plus" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>Ajouter</button>
     <button class="btn-green" onclick="openWAModal()" style="white-space:nowrap"><i class="ti ti-brand-whatsapp" aria-hidden="true" style="font-size:14px;margin-right:4px"></i>Envoyer via WhatsApp</button>
     <button onclick="exportCSV()" style="margin-left:auto"><i class="ti ti-download" aria-hidden="true" style="font-size:13px;margin-right:3px"></i>CSV</button>
@@ -627,7 +630,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 
   <label>Catégorie</label>
   <select id="fCategory" onchange="onCategoryChange()"></select>
-  <input id="fNewCategory" placeholder="Nom de la nouvelle catégorie" style="display:none;">
+  <input autocomplete="off" id="fNewCategory" placeholder="Nom de la nouvelle catégorie" style="display:none;">
 
   <label id="fNameLabel">Nom / modèle</label>
   <input id="fName" placeholder="ex: LCD Redmi Note 10" list="fNameSuggestions" autocomplete="off">
@@ -635,27 +638,27 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 
   <div id="fMcFields" style="display:none;">
     <label>Numéro de téléphone</label>
-    <input id="fPhone" placeholder="ex: +224 664 53 58 17">
+    <input autocomplete="off" id="fPhone" placeholder="ex: +224 664 53 58 17">
   </div>
 
   <div id="fFullFields">
     <label>Référence (optionnel)</label>
-    <input id="fRef" placeholder="ex: RN10-LCD">
+    <input autocomplete="off" id="fRef" placeholder="ex: RN10-LCD">
 
     <div class="fieldRow">
       <div>
         <label>Quantité en stock</label>
-        <input id="fQty" type="number" min="0" value="0">
+        <input autocomplete="off" id="fQty" type="number" min="0" value="0">
       </div>
       <div>
         <label>Seuil d'alerte</label>
-        <input id="fThreshold" type="number" min="0" value="2">
+        <input autocomplete="off" id="fThreshold" type="number" min="0" value="2">
       </div>
     </div>
   </div>
 
   <label id="fPriceLabel">Prix d'achat unitaire (GNF, optionnel — rempli quand connu)</label>
-  <input id="fPrice" type="number" min="0" step="any" placeholder="Sera rempli par le fournisseur">
+  <input autocomplete="off" id="fPrice" type="number" min="0" step="any" placeholder="Sera rempli par le fournisseur">
 
   <div class="row">
     <button class="cancel" onclick="dlg.close()">Annuler</button>
@@ -667,7 +670,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:8px;">Commande fournisseur</label>
   <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Articles au seuil d'alerte ou épuisés, tous types confondus (hors onglet stock perso). Tu peux modifier le texte avant d'envoyer.</p>
   <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">📅 Date et heure exacte de livraison souhaitée</label>
-  <input id="orderDeliveryDT" type="datetime-local" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:14px; margin-bottom:10px;" onchange="buildOrderText()">
+  <input autocomplete="off" id="orderDeliveryDT" type="datetime-local" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:14px; margin-bottom:10px;" onchange="buildOrderText()">
   <textarea id="orderText" data-noi18n class="backupArea" style="min-height:260px;"></textarea>
   <div class="row" style="margin-bottom:10px;">
     <button class="cancel" onclick="copyOrderText()">📋 Copier</button>
@@ -691,7 +694,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 <dialog id="lockDlg">
   <label style="display:block; font-weight:700; font-size:18px; margin-bottom:6px; text-align:center;">🔒 Application verrouillée</label>
   <p style="font-size:12px; color:var(--muted); margin-bottom:14px; text-align:center;">Entre ton code PIN pour continuer</p>
-  <input id="lockPinInput" name="app-pin" type="password" placeholder="Code PIN" autocomplete="current-password" style="letter-spacing:6px; text-align:center; font-size:22px;">
+  <input id="lockPinInput" name="app-pin" type="password" placeholder="Code PIN" autocomplete="off" style="letter-spacing:6px; text-align:center; font-size:22px;">
   <div class="row" style="margin-top:14px;">
     <button class="save" id="lockOkBtn" style="width:100%;">Déverrouiller</button>
   </div>
@@ -760,9 +763,9 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 <dialog id="mcEditDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px;">Modifier l'entrée</label>
   <label>Désignation</label>
-  <input id="mcName">
+  <input autocomplete="off" id="mcName">
   <label style="margin-top:8px;">Numéro de téléphone</label>
-  <input id="mcPhone" placeholder="ex: +224 664 53 58 17">
+  <input autocomplete="off" id="mcPhone" placeholder="ex: +224 664 53 58 17">
   <p style="font-size:13px; margin:12px 0 8px 0;">Montant actuel : <b id="mcCurrentAmount">0</b> GNF</p>
   <div class="row">
     <button class="cancel" onclick="adjustMcAmount(-1)" style="font-size:20px;">−</button>
@@ -802,7 +805,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.38';
+const APP_VERSION = '6.39';
 const APP_UPDATED = '28/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3265,7 +3268,7 @@ const UI = {
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Ajouter une personne</div>
-      <div class="field"><label>Nom</label><input type="text" id="np-name" placeholder="Ex. M. A-DIALLO"></div>
+      <div class="field"><label>Nom</label><input autocomplete="off" type="text" id="np-name" placeholder="Ex. M. A-DIALLO"></div>
       <div id="np-error"></div>
       <button class="btn btn-primary" onclick="UI.savePerson()">Enregistrer</button>
     `);
@@ -3366,7 +3369,7 @@ const UI = {
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Modifier ${p.name}</div>
-      <div class="field"><label>Nom</label><input type="text" id="ep-name" value="${p.name.replace(/"/g,'&quot;')}"></div>
+      <div class="field"><label>Nom</label><input autocomplete="off" type="text" id="ep-name" value="${p.name.replace(/"/g,'&quot;')}"></div>
       <div class="field">
         <label>Statut</label>
         <select id="ep-active"><option value="true" ${p.active!==false?'selected':''}>Actif</option><option value="false" ${p.active===false?'selected':''}>Inactif</option></select>
@@ -3830,7 +3833,7 @@ const UI = {
     prices.innerHTML = DB.ticketTypes.filter(t=>t.active!==false).map(tt=>`
       <div class="settings-row">
         <div><div class="st-label tname">${tt.name}</div></div>
-        <input type="number" value="${tt.price}" min="0" onchange="UI.updatePrice('${tt.id}', this.value)">
+        <input autocomplete="off" type="number" value="${tt.price}" min="0" onchange="UI.updatePrice('${tt.id}', this.value)">
       </div>
     `).join('');
 
@@ -3980,9 +3983,9 @@ const UI = {
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Nouveau type de ticket</div>
-      <div class="field"><label>Nom</label><input type="text" id="tt-name" placeholder="Ex. 15 jours"></div>
-      <div class="field"><label>Prix (GNF)</label><input type="number" id="tt-price" min="0" placeholder="0"></div>
-      <div class="field"><label>Stock initial (optionnel)</label><input type="number" id="tt-initial" min="0" placeholder="0"></div>
+      <div class="field"><label>Nom</label><input autocomplete="off" type="text" id="tt-name" placeholder="Ex. 15 jours"></div>
+      <div class="field"><label>Prix (GNF)</label><input autocomplete="off" type="number" id="tt-price" min="0" placeholder="0"></div>
+      <div class="field"><label>Stock initial (optionnel)</label><input autocomplete="off" type="number" id="tt-initial" min="0" placeholder="0"></div>
       <div id="tt-error"></div>
       <button class="btn btn-primary" onclick="UI.saveTicketType()">Créer</button>
     `);
@@ -4058,7 +4061,7 @@ const UI = {
       <div class="sheet-handle"></div>
       <div class="sheet-title">${OP_META[opType].label} — Choisir la personne</div>
       ${opType==='VENTE' ? `<button class="btn btn-outline" style="margin-bottom:10px;" onclick="UI.selectPerson(null)">Vente directe (moi-même)</button>` : ''}
-      <div class="field"><input type="text" id="pp-search" placeholder="Rechercher..." oninput="UI.filterPersonPicker(this.value)"></div>
+      <div class="field"><input autocomplete="off" type="text" id="pp-search" placeholder="Rechercher..." oninput="UI.filterPersonPicker(this.value)"></div>
       <div id="pp-list" style="max-height:38vh;overflow-y:auto;">
         ${activePeople.map(p=>`<div class="person-row" onclick="UI.selectPerson('${p.id}')"><div class="person-name">${p.name}</div></div>`).join('') || '<div class="empty">Aucune personne. Ajoutez-en une avant de continuer.</div>'}
       </div>
@@ -4156,9 +4159,9 @@ const UI = {
       <div class="sheet-sub">${context}${maxAvail!=null ? ' · disponible : '+fmt(maxAvail) : ''}</div>
       <div class="field">
         <label>Quantité</label>
-        <input type="number" id="op-qty" min="1" ${maxAvail!=null?'max="'+maxAvail+'"':''} placeholder="0" oninput="UI.updateQtyPreview()">
+        <input autocomplete="off" type="number" id="op-qty" min="1" ${maxAvail!=null?'max="'+maxAvail+'"':''} placeholder="0" oninput="UI.updateQtyPreview()">
       </div>
-      ${op.opType==='VENTE' ? `<div class="field"><label>Prix unitaire (GNF)</label><input type="number" id="op-price" min="0" value="${tt.price}"></div>` : ''}
+      ${op.opType==='VENTE' ? `<div class="field"><label>Prix unitaire (GNF)</label><input autocomplete="off" type="number" id="op-price" min="0" value="${tt.price}"></div>` : ''}
       <div class="field"><label>Commentaire (optionnel)</label><textarea id="op-comment"></textarea></div>
       <div id="op-preview" class="help-text"></div>
       <div id="op-error"></div>
@@ -4248,7 +4251,7 @@ const UI = {
       <div class="sheet-handle"></div>
       <div class="sheet-title">Paiement — ${tt.name}</div>
       <div class="sheet-sub"><span class="wname">${p.name}</span> · Reste à payer pour ce type : ${fmtGNF(tm.reste)}</div>
-      <div class="field"><label>Montant versé (GNF)</label><input type="number" id="pay-amount" min="1" placeholder="0"></div>
+      <div class="field"><label>Montant versé (GNF)</label><input autocomplete="off" type="number" id="pay-amount" min="1" placeholder="0"></div>
       <div class="field"><label>Commentaire (optionnel)</label><textarea id="pay-comment"></textarea></div>
       <div id="pay-error"></div>
       <button class="btn btn-primary" onclick="UI.submitPayment('${p.id}')">Enregistrer le paiement</button>
@@ -4284,7 +4287,7 @@ const UI = {
       <div class="sheet-handle"></div>
       <div class="sheet-title">Corriger une opération</div>
       <div class="sheet-sub">${sub}</div>
-      <div class="field"><input type="text" id="cor-search" placeholder="Rechercher…" oninput="UI.filterCorrectionList(this.value)"></div>
+      <div class="field"><input autocomplete="off" type="text" id="cor-search" placeholder="Rechercher…" oninput="UI.filterCorrectionList(this.value)"></div>
       <div id="cor-list" style="max-height:52vh;overflow-y:auto;"></div>
     `);
     this.filterCorrectionList('');
@@ -4473,7 +4476,7 @@ const UI = {
       <div class="sheet-handle"></div>
       <div class="sheet-title">Étape 1/2 — Retour d'argent</div>
       <div class="sheet-sub"><span class="tname">${tt.name}</span> · <span class="wname">${p.name}</span> · ${fmt(s.restant)} ticket(s) détenus</div>
-      <div class="field"><label>Argent rendu (GNF)</label><input type="number" id="rr-amount" min="0" value="${montantAttendu}"></div>
+      <div class="field"><label>Argent rendu (GNF)</label><input autocomplete="off" type="number" id="rr-amount" min="0" value="${montantAttendu}"></div>
       <div class="help-text">Montant attendu pour les tickets détenus : ${fmtGNF(montantAttendu)}. Modifiable si le montant réellement rendu diffère.</div>
       <div class="field" style="margin-top:10px;"><label>Commentaire (optionnel)</label><textarea id="rr-comment"></textarea></div>
       <div id="rr-error"></div>
@@ -4492,7 +4495,7 @@ const UI = {
       <div class="sheet-handle"></div>
       <div class="sheet-title">Étape 2/2 — Nouvelle attribution</div>
       <div class="sheet-sub"><span class="tname">${tt.name}</span> · <span class="wname">${p.name}</span> · l'ancienne attribution (${fmt(rr.oldQty)}) sera clôturée</div>
-      <div class="field"><label>Nouvelle quantité à attribuer</label><input type="number" id="rr-newqty" min="0" placeholder="0"></div>
+      <div class="field"><label>Nouvelle quantité à attribuer</label><input autocomplete="off" type="number" id="rr-newqty" min="0" placeholder="0"></div>
       <div class="help-text">Laissez 0 si aucune nouvelle attribution n'est faite pour l'instant.</div>
       <div id="rr-error2"></div>
       <button class="btn btn-primary" style="margin-top:6px;" onclick="UI.submitReturnReassign()">Valider le retour + la nouvelle attribution</button>
@@ -4828,9 +4831,9 @@ function recRender(){
       <td style="color:#999;font-size:11px">${globalOrder}</td>
       <td style="color:#555;font-weight:500">${recLocalOrder}</td>
       <td style="font-size:11px;color:#777">${fmtDate(r.date)}</td>
-      <td><input value="${r.desig.replace(/"/g,'&quot;')}" onchange="updateRow('${r.id}','desig',this.value)"></td>
-      <td><input type="number" min="1" value="${r.qty}" onchange="updateRow('${r.id}','qty',+this.value)" style="width:42px"></td>
-      <td><input type="number" min="0" value="${r.prix}" class="${priceClass}" onchange="updateRow('${r.id}','prix',+this.value);rows.find(x=>x.id=='${r.id}').autoPrice=false;" placeholder="0"></td>
+      <td><input autocomplete="off" value="${r.desig.replace(/"/g,'&quot;')}" onchange="updateRow('${r.id}','desig',this.value)"></td>
+      <td><input autocomplete="off" type="number" min="1" value="${r.qty}" onchange="updateRow('${r.id}','qty',+this.value)" style="width:42px"></td>
+      <td><input autocomplete="off" type="number" min="0" value="${r.prix}" class="${priceClass}" onchange="updateRow('${r.id}','prix',+this.value);rows.find(x=>x.id=='${r.id}').autoPrice=false;" placeholder="0"></td>
       <td class="num" id="t${r.id}">${recFmtGNF(total)}</td>
       <td><button class="del-btn" onclick="delRow('${r.id}')" aria-label="Supprimer"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
     `;
@@ -4930,8 +4933,8 @@ function renderDB(){
   filtered.forEach(e=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td><input value="${e.desig.replace(/"/g,'&quot;')}" onchange="updateDB('${e.id}','desig',this.value)"></td>
-      <td><input type="number" min="0" value="${e.prix}" onchange="updateDB('${e.id}','prix',+this.value)"></td>
+      <td><input autocomplete="off" value="${e.desig.replace(/"/g,'&quot;')}" onchange="updateDB('${e.id}','desig',this.value)"></td>
+      <td><input autocomplete="off" type="number" min="0" value="${e.prix}" onchange="updateDB('${e.id}','prix',+this.value)"></td>
       <td><button class="del-btn" onclick="delDB('${e.id}')" aria-label="Supprimer"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
     `;
     tbody.appendChild(tr);
