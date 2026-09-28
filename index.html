@@ -802,7 +802,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.37';
+const APP_VERSION = '6.38';
 const APP_UPDATED = '28/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3288,8 +3288,14 @@ const UI = {
 
   openSituation(personId){
     this.pIdView = personId;
-    this.goto('situation');
+    // goto() ne connaît pas la vue « situation » (elle restait invisible) : on l'affiche ici, comme le fait déjà
+    // refreshWifi() pour la restaurer, avec le bouton « ‹ Personnes » prévu pour en sortir.
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-situation').classList.add('active');
+    this.currentView = 'situation';
+    this.closeSheet();
     this.renderSituation();
+    window.scrollTo(0,0);
   },
   renderSituation(){
     const p = person(this.pIdView);
@@ -3347,6 +3353,7 @@ const UI = {
       </div>
 
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-secondary" onclick="UI.openRemiseFor('${p.id}')">📦 Attribuer des tickets (tous les types)</button>
         <button class="btn btn-secondary" onclick="UI.openNewOp('${p.id}')">+ Nouvelle opération pour ${p.name.split(' ')[0]}</button>
         <button class="btn btn-outline" onclick="UI.openCorrection({personId:'${p.id}'})">✎ Corriger une opération</button>
         ${totalRestant>0 ? `<button class="btn btn-outline" onclick="UI.openReturnReassign('${p.id}')">🔁 Retour d'argent + nouvelle attribution</button>` : ''}
@@ -3510,7 +3517,8 @@ const UI = {
     if(op.opType==='CORRECTION'){
       title = `Correction — ${c.target!==op && OP_META[c.target.opType] ? OP_META[c.target.opType].label : '?'}`;
     }
-    const nameHtml = `<span class="wname" style="font-size:13px;">${p?p.name:'Disponible'}</span>`;
+    if(op.opType==='REMISE' && p) title = `${meta.label} <span style="font-weight:400;">→</span> <span class="wname">${p.name}</span>`;
+    const nameHtml = (op.opType==='REMISE' && p) ? null : `<span class="wname" style="font-size:13px;">${p?p.name:'Disponible'}</span>`;
     const sub = [nameHtml, tt?`<span class="tname">${tt.name}</span>`:null, dateStr].filter(Boolean).join(' · ');
     let qtyStr = '';
     if(op.opType==='PAIEMENT') qtyStr = fmtGNF(op.amount);
@@ -4066,7 +4074,49 @@ const UI = {
     this.renderTypePicker(this.newOp.opType);
   },
 
+  // Remise à une personne : liste de tous les types, avec ce qui est déjà attribué pendant cette session, et les types
+  // impossibles à attribuer (mêmes règles que submitOp) grisés avec la raison. On reste ici jusqu'à « Terminer ».
+  remiseBlockReason(personId, typeId){
+    const s = stockSummary().find(x=>x.type.id===typeId);
+    if(!s || s.disponible<=0) return t('stock épuisé');
+    const tm = personTypeMoney(personId, typeId);
+    if(tm.reste>0) return t('reste à payer')+' : '+fmtGNF(tm.reste);
+    const restant = personTypeStats(personId, typeId).restant;
+    if(restant>0) return t('déjà')+' '+fmt(restant)+' '+t('en main');
+    return '';
+  },
+  openRemiseFor(personId){
+    this.newOp = {personId, opType:'REMISE', given:[]};
+    this.renderTypePicker('REMISE');
+  },
+  renderRemisePicker(){
+    const op = this.newOp; const p = person(op.personId);
+    const given = op.given || [];
+    const types = liveTypes();
+    const rows = types.map(tt=>{
+      const g = given.filter(x=>x.typeId===tt.id).reduce((a,x)=>a+x.qty,0);
+      const why = g ? '' : this.remiseBlockReason(p.id, tt.id);
+      const s = stockSummary().find(x=>x.type.id===tt.id);
+      const info = g ? `<span style="flex:0 0 auto;white-space:nowrap;font-size:12px;color:var(--w-green,#2F6F5E);font-weight:700;">✓ ${fmt(g)} ${t('attribués')}</span>`
+        : (why ? `<span style="flex:0 0 auto;white-space:nowrap;font-size:12px;color:var(--w-ink-soft);">${why}</span>`
+               : `<span style="flex:0 0 auto;white-space:nowrap;font-size:12px;color:var(--w-ink-soft);">${t('disponible')} : ${fmt(s?s.disponible:0)}</span>`);
+      const off = !g && why;
+      return `<button class="btn btn-secondary" style="justify-content:flex-start;gap:10px;${off?'opacity:.45;':''}" ${off?'disabled':''} onclick="UI.selectType('${tt.id}')">
+          <span class="tname" style="flex:1 1 auto;min-width:0;text-align:left;overflow-wrap:break-word;">${tt.name}</span>${info}
+          <span style="flex:0 0 auto;white-space:nowrap;color:var(--ink-soft);font-size:12px;">${tt.price?fmtGNF(tt.price):''}</span>
+        </button>`;
+    }).join('') || '<div class="empty">Aucun type de ticket actif. Créez-en un dans Paramètres.</div>';
+    this.openSheet(`
+      <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${OP_META.REMISE.label} — Type de ticket</div>
+      <div class="sheet-sub">${t('Attribuer à')} <span class="wname">${p.name}</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">${rows}</div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="UI.closeSheet()">${given.length?t('Terminer'):t('Fermer')}</button>
+    `);
+  },
   renderTypePicker(opType){
+    if(opType==='REMISE' && this.newOp && this.newOp.personId && person(this.newOp.personId)){ this.renderRemisePicker(); return; }
     // Réception fournisseur : tous les types actifs, y compris clôturés (une réception rouvre une nouvelle période).
     const types = opType==='RECEPTION' ? DB.ticketTypes.filter(t=>t.active!==false) : liveTypes();
     this.openSheet(`
@@ -4098,7 +4148,7 @@ const UI = {
     let maxAvail = null;
     if(op.opType==='VENTE' && p){ maxAvail = personTypeStats(p.id, tt.id).restant; }
 
-    const context = p ? p.name : 'Moi';
+    const context = p ? (op.opType==='REMISE' ? `${t('Attribuer à')} <span class="wname">${p.name}</span>` : p.name) : 'Moi';
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
@@ -4177,9 +4227,15 @@ const UI = {
       errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
       return;
     }
-    this.closeSheet();
     this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
+    if(op.opType==='REMISE' && op.personId && person(op.personId)){
+      (op.given = op.given || []).push({typeId: op.typeId, qty});
+      toast(`${OP_META.REMISE.label} → ${person(op.personId).name} : ${fmt(qty)} × ${ticketType(op.typeId).name}`);
+      this.renderRemisePicker();   // on reste dans la fiche : un autre type peut être attribué tout de suite
+      return;
+    }
+    this.closeSheet();
     toast(`${OP_META[op.opType].label} enregistrée`);
   },
 
@@ -4961,7 +5017,7 @@ window.initReceptionApp = async function(){
 
 // Traductions ajoutées (uniquement si absentes du dictionnaire existant)
 (function(){
-  const add = {"Choisis ton espace": "Choose your space", "Commande fournisseur (WhatsApp)": "Supplier order (WhatsApp)", "Commande fournisseur": "Supplier order", "disponible(s)": "available", "valeur du stock (GNF)": "stock value (GNF)", "Rechercher un article...": "Search an item...", "+ Ajouter un article": "+ Add an item", "Aucun article dans cette catégorie. Ajoutez-en un.": "No item in this category. Add one.", "Nom / modèle": "Name / model", "Numéro de téléphone": "Phone number", "Référence (optionnel)": "Reference (optional)", "Quantité en stock": "Quantity in stock", "Seuil d'alerte par défaut": "Default alert threshold", "Seuil d'alerte": "Alert threshold", "Prix d'achat unitaire (GNF, optionnel — rempli quand connu)": "Unit purchase price (GNF, optional — filled when known)", "Désignation": "Designation", "Montant (GNF)": "Amount (GNF)", "Envoyer WhatsApp": "Send WhatsApp", "Copier": "Copy", "Code PIN requis": "PIN code required", "Code PIN": "PIN code", "Valider": "Confirm", "Application verrouillée": "App locked", "Entre ton code PIN pour continuer": "Enter your PIN to continue", "Déverrouiller": "Unlock", "PIN oublié ?": "Forgot PIN?", "Trier A→Z / Z→A": "Sort A→Z / Z→A", "Nom de l'onglet stock perso": "Personal stock tab name", "Nom de l'onglet compte": "Account tab name", "Supprimer une catégorie": "Delete a category", "Définir / modifier le code PIN": "Set / change PIN code", "Verrouiller l'application maintenant": "Lock the app now", "Forcer la synchronisation": "Force synchronization", "Sauvegarder les données (backup)": "Back up data", "Restaurer depuis une sauvegarde": "Restore from a backup", "À propos de l'application": "About the app", "Articles (toutes catégories)": "Items (all categories)", "En attente de synchronisation": "Waiting to sync", "Connexion": "Connection", "hors ligne": "offline", "en ligne": "online", "À propos": "About", "Dernière mise à jour": "Last update", "Développé pour Boulliwel Service": "Built for Boulliwel Service", "Sauvegarde des données": "Data backup", "Restaurer une sauvegarde": "Restore a backup", "Apparence": "Appearance", "Police": "Font", "Système": "System", "Arrondie": "Rounded", "Défaut": "Default", "Crème": "Cream", "Synchronisé": "Synced", "Synchronisation en cours": "Syncing", "Hors ligne": "Offline", "Erreur de synchronisation": "Sync error", "Données en attente": "Data pending", "en attente": "pending", "Mise à jour": "Update", "Rechercher une mise à jour": "Check for updates", "(disponible)": "(available)", "(vérification…)": "(checking…)", "(à jour ✓)": "(up to date ✓)", "(hors ligne)": "(offline)", "(échec, réessaie)": "(failed, retry)", "Toucher pour synchroniser": "Tap to sync","Océan":"Ocean","Forêt":"Forest","Sépia":"Sepia","Contraste élevé":"High contrast","Supprimer cette opération":"Delete this operation","Opération supprimée":"Operation deleted","Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.":"Permanently delete this operation ({label})?\n\nIt will be removed from stock and amounts. This cannot be undone."};
+  const add = {"Attribuer à": "Assign to", "attribués": "assigned", "Terminer": "Done", "Fermer": "Close", "stock épuisé": "out of stock", "reste à payer": "left to pay", "en main": "on hand", "Attribuer des tickets (tous les types)": "Assign tickets (all types)", "📦 Attribuer des tickets (tous les types)": "📦 Assign tickets (all types)", "Choisis ton espace": "Choose your space", "Commande fournisseur (WhatsApp)": "Supplier order (WhatsApp)", "Commande fournisseur": "Supplier order", "disponible(s)": "available", "valeur du stock (GNF)": "stock value (GNF)", "Rechercher un article...": "Search an item...", "+ Ajouter un article": "+ Add an item", "Aucun article dans cette catégorie. Ajoutez-en un.": "No item in this category. Add one.", "Nom / modèle": "Name / model", "Numéro de téléphone": "Phone number", "Référence (optionnel)": "Reference (optional)", "Quantité en stock": "Quantity in stock", "Seuil d'alerte par défaut": "Default alert threshold", "Seuil d'alerte": "Alert threshold", "Prix d'achat unitaire (GNF, optionnel — rempli quand connu)": "Unit purchase price (GNF, optional — filled when known)", "Désignation": "Designation", "Montant (GNF)": "Amount (GNF)", "Envoyer WhatsApp": "Send WhatsApp", "Copier": "Copy", "Code PIN requis": "PIN code required", "Code PIN": "PIN code", "Valider": "Confirm", "Application verrouillée": "App locked", "Entre ton code PIN pour continuer": "Enter your PIN to continue", "Déverrouiller": "Unlock", "PIN oublié ?": "Forgot PIN?", "Trier A→Z / Z→A": "Sort A→Z / Z→A", "Nom de l'onglet stock perso": "Personal stock tab name", "Nom de l'onglet compte": "Account tab name", "Supprimer une catégorie": "Delete a category", "Définir / modifier le code PIN": "Set / change PIN code", "Verrouiller l'application maintenant": "Lock the app now", "Forcer la synchronisation": "Force synchronization", "Sauvegarder les données (backup)": "Back up data", "Restaurer depuis une sauvegarde": "Restore from a backup", "À propos de l'application": "About the app", "Articles (toutes catégories)": "Items (all categories)", "En attente de synchronisation": "Waiting to sync", "Connexion": "Connection", "hors ligne": "offline", "en ligne": "online", "À propos": "About", "Dernière mise à jour": "Last update", "Développé pour Boulliwel Service": "Built for Boulliwel Service", "Sauvegarde des données": "Data backup", "Restaurer une sauvegarde": "Restore a backup", "Apparence": "Appearance", "Police": "Font", "Système": "System", "Arrondie": "Rounded", "Défaut": "Default", "Crème": "Cream", "Synchronisé": "Synced", "Synchronisation en cours": "Syncing", "Hors ligne": "Offline", "Erreur de synchronisation": "Sync error", "Données en attente": "Data pending", "en attente": "pending", "Mise à jour": "Update", "Rechercher une mise à jour": "Check for updates", "(disponible)": "(available)", "(vérification…)": "(checking…)", "(à jour ✓)": "(up to date ✓)", "(hors ligne)": "(offline)", "(échec, réessaie)": "(failed, retry)", "Toucher pour synchroniser": "Tap to sync","Océan":"Ocean","Forêt":"Forest","Sépia":"Sepia","Contraste élevé":"High contrast","Supprimer cette opération":"Delete this operation","Opération supprimée":"Operation deleted","Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.":"Permanently delete this operation ({label})?\n\nIt will be removed from stock and amounts. This cannot be undone."};
   for(const k in add){ if(!(k in I18N.en)) I18N.en[k] = add[k]; }
   delete I18N.en.__sorted; delete I18N.ff.__sorted;
 })();
