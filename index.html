@@ -276,6 +276,34 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 @keyframes pulseUpd{50%{opacity:.5}}
 .syncBadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer}
 .syncBadge i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* ===== Lignes/bandes compactes (WiFi) : hauteur = padding proportionnel à --wfs, aucune hauteur fixe => rien de coupé ===== */
+#wifiView{--w-rowpad:calc(5px * var(--wfs,1));--w-rowpad-lg:calc(7px * var(--wfs,1))}
+#wifiView .person-row{padding:var(--w-rowpad-lg) 2px;line-height:1.2}
+#wifiView .person-sub{margin-top:1px;line-height:1.2}
+#wifiView .hist-row{padding:var(--w-rowpad) 2px;line-height:1.2;gap:8px}
+#wifiView .hist-sub{margin-top:0;line-height:1.2}
+#wifiView .hist-badge{margin-top:calc(4px * var(--wfs,1))}
+#wifiView .money-row{padding:var(--w-rowpad) 0;line-height:1.2}
+#wifiView table.ledger td{padding:calc(4px * var(--wfs,1)) 4px;line-height:1.2}
+#wifiView table.ledger tr.total td{padding-top:calc(5px * var(--wfs,1))}
+#wifiView .settings-row{padding:var(--w-rowpad-lg) 2px;gap:4px 10px;line-height:1.2}
+#wifiView .alert{padding:calc(6px * var(--wfs,1)) 12px;line-height:1.3}
+#wifiView .alert + .alert{margin-top:5px}
+#wifiView .plus-item{padding:calc(9px * var(--wfs,1)) 14px;line-height:1.2}
+#wifiView .plus-list{gap:5px}
+#wifiView .seg button{padding:calc(7px * var(--wfs,1)) 8px;line-height:1.2}
+#wifiView .filter-pill{padding:calc(5px * var(--wfs,1)) 12px;line-height:1.2}
+#wifiView .filter-row{margin-bottom:8px}
+#wifiView .navbtn{padding:calc(5px * var(--wfs,1)) 2px calc(4px * var(--wfs,1));gap:1px;line-height:1.15}
+#wifiView .topbar{padding-top:calc(3px * var(--wfs,1));padding-bottom:calc(3px * var(--wfs,1))}
+#wifiView .clock-row{margin-top:3px;padding-top:3px;line-height:1.2}
+#wifiView .btn{padding:calc(9px * var(--wfs,1)) 14px;line-height:1.2}
+#wifiView .btn-sm{padding:calc(5px * var(--wfs,1)) 10px}
+#wifiView .field input,#wifiView .field select{padding:calc(7px * var(--wfs,1)) 10px;line-height:1.25}
+#wifiView .search-bar input{padding:calc(7px * var(--wfs,1)) 10px;line-height:1.25}
+#wifiView .hist-toolbar{margin-bottom:5px}
+#wifiView .ico-btn{width:calc(28px * var(--wfs,1));height:calc(28px * var(--wfs,1));min-width:28px;min-height:28px}
 </style>
 </head>
 <body>
@@ -781,7 +809,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.31';
+const APP_VERSION = '6.32';
 const APP_UPDATED = '28/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
