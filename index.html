@@ -802,7 +802,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.34';
+const APP_VERSION = '6.37';
 const APP_UPDATED = '28/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1066,6 +1066,13 @@ function stripRemovedOpTypes(ops){
     return true;
   });
 }
+// Opérations supprimées définitivement pendant cette session : garde-fou contre toute réapparition
+// (lecture serveur commencée avant la suppression, envoi de la file d'attente déjà en cours...).
+const wifiPurged = new Set();
+let wifiPurging = false, wifiPurgeEpoch = 0; // suppression d'historique en cours / compteur (une lecture qui la chevauche est refaite)
+// Historique : les lignes sont réellement supprimées de Supabase (voir UI._purgeHistory). Leur effet net
+// sur le stock / les tickets en main / les montants est repris, dans la même transaction, dans la table
+// ledger_baseline (DB.baseline) : les calculs lisent opérations + report, donc rien ne bouge à la suppression.
 function mergeWifiQueue(ops){
   wifiQ.forEach(q => { if(!ops.some(o => o.id === q.payload.id) && WIFI_MAPPERS[q.table]) ops.push(WIFI_MAPPERS[q.table](q.payload)); });
   return ops;
@@ -1074,7 +1081,7 @@ function loadWifiCache(){
   try{
     const c = JSON.parse(localStorage.getItem(WIFI_CACHEKEY) || 'null');
     if(!c || !c.ticketTypes) return false;
-    DB = c; mergeWifiQueue(DB.operations);
+    DB = c; DB.baseline = DB.baseline || []; mergeWifiQueue(DB.operations);
     DB.operations = stripRemovedOpTypes(DB.operations);
     DB.operations.sort((a,b) => (a.ts||'').localeCompare(b.ts||'')); DB.operations.forEach((o,i) => o.num = i+1);
     mirrorClosures(); wifiSetStatus('offline'); return true;
@@ -1097,7 +1104,7 @@ function isTypeClosed(typeId){
   const cutoff = activeClosureCutoff(typeId);
   if(cutoff === null) return false;
   const t = Date.parse(cutoff);
-  return !DB.operations.some(o => o.typeId===typeId && o.opType==='RECEPTION' && Date.parse(o.ts||'') > t);
+  return !ledgerOps().some(o => o.typeId===typeId && o.opType==='RECEPTION' && Date.parse(o.ts||'') > t);
 }
 function liveTypes(){ return DB.ticketTypes.filter(t => t.active !== false && !isTypeClosed(t.id)); }
 
@@ -1109,6 +1116,9 @@ async function wifiSync(manual){
     wifiSetStatus('syncing');
     let failed = 0;
     for(const q of [...wifiQ]){
+      // Opération supprimée définitivement pendant la synchro (la boucle travaille sur une copie de
+      // la file) : ne jamais la (ré)envoyer au serveur, sinon elle « réapparaît ».
+      if(wifiPurged.has(q.payload.id) || !wifiQ.some(x => x.payload.id === q.payload.id)) continue;
       // Résidu d'un ancien type de mouvement totalement retiré de l'application (Retour/Perte/
       // Annulation, cf. REMOVED_OP_TYPES) : il échouera systématiquement côté serveur (ex. "reason"
       // obligatoire pour ANNULATION) et n'a plus aucune place dans l'app actuelle. Inutile même
@@ -2406,7 +2416,7 @@ en: {
   "Vider l'historique du journal (suppressions & clôtures) ?":"Clear the log history (deletions & closures)?",
   "Cette action est irréversible mais ne touche à AUCUNE donnée active : ventes, paiements, mouvements de stock et attributions restent intacts.":"This action is irreversible but does NOT affect any active data: sales, payments, stock movements and assignments stay intact.",
   "Supprimer définitivement cette ligne du journal ?":"Permanently delete this log entry?",
-  "tickets":"tickets","ticket":"ticket","GNF":"GNF",
+  "tickets":"tickets","ticket":"ticket","Les lignes disparaissent de l'historique sur tous vos appareils. Le stock, les tickets en main et les montants ne changent pas.":"The lines disappear from the history on all your devices. Stock, tickets on hand and amounts do not change.","GNF":"GNF",
   "Clôturer":"Close","Rouvrir":"Reopen","Clôturé":"Closed",
   "⚠ Actualisation impossible — vérifiez la connexion":"⚠ Refresh failed — check your connection",
   "Montant invalide.":"Invalid amount.","Quantité invalide.":"Invalid quantity.",
@@ -2615,6 +2625,7 @@ const DEFAULT_DATA = {
   ticketTypes: [],
   people: [],
   operations: [],
+  baseline: [],
   closures: [],
   meta: { initialized:false }
 };
@@ -2630,6 +2641,12 @@ function mapSale(s){ return {id:s.id, ts:s.sold_at, personId:s.person_id, typeId
 function mapPayment(p){ return {id:p.id, ts:p.paid_at, personId:p.person_id, typeId:p.ticket_type_id||null, opType:'PAIEMENT', qty:null, unitPrice:null, amount:p.amount, comment:p.comment, correctsOpId:null, reason:null}; }
 function mapCorrection(c){ return {id:c.id, ts:c.corrected_at, personId:null, typeId:null, opType:'CORRECTION', qty:c.delta_quantity, unitPrice:null, amount:c.delta_amount, comment:null, correctsOpId:c.target_id, reason:c.reason}; }
 
+// Report (ledger_baseline) : effet net des opérations supprimées de l'historique. Chaque ligne est vue comme une
+// opération « virtuelle » (jamais affichée dans l'historique) que les calculs additionnent aux vraies opérations,
+// avec la même date-ancre pour que les clôtures / périodes se comportent exactement comme avant la suppression.
+function mapBaseline(b){ return {id:'base-'+b.id, baseId:b.id, base:true, ts:b.anchor_at, personId:b.person_id||null, typeId:b.ticket_type_id||null, opType:b.op_type, qty:(b.quantity==null?null:Number(b.quantity)), unitPrice:null, amount:(b.amount==null?null:Number(b.amount)), comment:null, correctsOpId:null, reason:null}; }
+function ledgerOps(){ return (DB.baseline && DB.baseline.length) ? DB.operations.concat(DB.baseline) : DB.operations; }
+
 // Personne par défaut "BAH" : créée automatiquement une seule fois (si aucune personne de ce nom
 // n'existe déjà, active ou supprimée), pour que le carnet WiFi ne parte jamais vide. Le nom reste
 // entièrement modifiable ensuite via Personnes → Modifier, comme pour n'importe quelle personne.
@@ -2644,19 +2661,54 @@ async function ensureDefaultPerson(){
   }catch(e){ console.warn('ensureDefaultPerson:', e); }
 }
 
+// Lecture du report (ledger_baseline), paginée : jamais tronquée à 1000 lignes (une lecture tronquée fausserait le stock).
+function isMissingBaselineTable(e){
+  const c = String((e && e.code) || ''), m = String((e && e.message) || '');
+  return c==='42P01' || c==='PGRST205' || (/ledger_baseline/.test(m) && /(not find|does not exist|schema cache)/i.test(m));
+}
+async function fetchBaselineRows(){
+  const out = [], PAGE = 1000;
+  for(let from=0; ; from+=PAGE){
+    const r = await sb.from('ledger_baseline').select('*').order('created_at',{ascending:true}).order('id',{ascending:true}).range(from, from+PAGE-1);
+    if(r.error){
+      // Table absente = script SQL pas encore exécuté = aucune suppression d'historique n'a jamais eu lieu : report vide.
+      if(isMissingBaselineTable(r.error)) return {rows:[], ready:false};
+      throw r.error;
+    }
+    out.push(...(r.data||[]));
+    if((r.data||[]).length < PAGE) break;
+  }
+  return {rows:out, ready:true};
+}
+const baselineSignature = rows => rows.map(r=>r.id).join(',');
+
 async function loadData(){
-  const [tt, pe, rc, mv, sa, pa, co, cl] = await Promise.all([
-    sb.from('ticket_types').select('*').order('created_at', {ascending:true}),
-    sb.from('people').select('*').order('created_at', {ascending:true}),
-    sb.from('stock_receipts').select('*'),
-    sb.from('stock_movements').select('*'),
-    sb.from('sales').select('*'),
-    sb.from('payments').select('*'),
-    sb.from('corrections').select('*'),
-    sb.from('ticket_type_closures').select('*'),
-  ]);
-  const firstError = [tt,pe,rc,mv,sa,pa,co,cl].find(r => r.error);
-  if(firstError && firstError.error) throw firstError.error;
+  for(let i=0; wifiPurging && i<100; i++) await new Promise(r=>setTimeout(r,100));
+  // Une suppression d'historique (opérations supprimées + report ajouté) est atomique côté serveur. Pour ne jamais
+  // additionner des opérations « d'avant » avec un report « d'après » (ou l'inverse), le report est lu avant ET
+  // après les opérations : s'il a changé entre-temps, ou si une suppression locale a eu lieu, on relit.
+  let bl, res, ok = false;
+  for(let attempt=0; attempt<4 && !ok; attempt++){
+    const epoch = wifiPurgeEpoch;
+    bl = await fetchBaselineRows();
+    res = await Promise.all([
+      sb.from('ticket_types').select('*').order('created_at', {ascending:true}),
+      sb.from('people').select('*').order('created_at', {ascending:true}),
+      sb.from('stock_receipts').select('*'),
+      sb.from('stock_movements').select('*'),
+      sb.from('sales').select('*'),
+      sb.from('payments').select('*'),
+      sb.from('corrections').select('*'),
+      sb.from('ticket_type_closures').select('*'),
+    ]);
+    const firstError = res.find(r => r.error);
+    if(firstError && firstError.error) throw firstError.error;
+    const bl2 = bl.ready ? await fetchBaselineRows() : bl;
+    ok = epoch===wifiPurgeEpoch && !wifiPurging && baselineSignature(bl.rows)===baselineSignature(bl2.rows);
+    if(ok) bl = bl2;
+  }
+  if(!ok) throw new Error("une suppression d'historique est en cours — réessayez dans un instant");
+  const [tt, pe, rc, mv, sa, pa, co, cl] = res;
 
   const ops = stripRemovedOpTypes([
     ...(rc.data||[]).map(mapReceipt),
@@ -2666,7 +2718,7 @@ async function loadData(){
     ...(co.data||[]).map(mapCorrection),
   ]);
   mergeWifiQueue(ops);
-  const finalOps = stripRemovedOpTypes(ops);
+  const finalOps = stripRemovedOpTypes(ops).filter(o => !wifiPurged.has(o.id));
   finalOps.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
   finalOps.forEach((o,i) => o.num = i+1); // numérotation d'affichage recalculée (pas de compteur partagé multi-appareils)
 
@@ -2674,8 +2726,9 @@ async function loadData(){
     ticketTypes: (tt.data||[]).map(t => ({id:t.id, name:t.name, price:Number(t.price), active:t.active})),
     people: (pe.data||[]).map(p => ({id:p.id, name:p.name, active:p.active, createdAt:p.created_at, deletedAt:p.deleted_at||null})),
     operations: finalOps,
+    baseline: bl.rows.map(mapBaseline),
     closures: (cl.data||[]).map(c => ({id:c.id, ticketTypeId:c.ticket_type_id, closedAt:c.closed_at, restoredAt:c.restored_at||null})),
-    meta: {initialized:true}
+    meta: {initialized:true, baselineReady: bl.ready}
   };
   sortTicketTypes();
   mirrorClosures();
@@ -2769,7 +2822,7 @@ function saleUnitPrice(op){
 // Aggregate quantities for a type across all people + me (personId=null)
 function typeAggregate(typeId){
   let received=0, remitted=0, soldDirect=0, soldByPeople=0;
-  DB.operations.forEach(op=>{
+  ledgerOps().forEach(op=>{
     // Une CORRECTION porte toujours personId=null/typeId=null sur elle-même (elle référence
     // l'opération corrigée via correctsOpId) : il faut donc la router via sa cible AVANT tout
     // filtre par typeId, sinon elle serait toujours ignorée (bug corrigé).
@@ -2809,7 +2862,7 @@ function stockSummary(){
 }
 function initialReceived(typeId){
   let sum=0;
-  DB.operations.forEach(op=>{ if(op.typeId===typeId && op.opType==='RECEPTION' && opInPeriod(op, typeId)) sum+=(op.qty||0); });
+  ledgerOps().forEach(op=>{ if(op.typeId===typeId && op.opType==='RECEPTION' && opInPeriod(op, typeId)) sum+=(op.qty||0); });
   return sum;
 }
 
@@ -2819,7 +2872,7 @@ function initialReceived(typeId){
 // clôturées ou non, pour ne jamais effacer une dette réelle.
 function personTypeStats(personId, typeId){
   let pris=0, vendu=0, montantVentes=0;
-  DB.operations.forEach(op=>{
+  ledgerOps().forEach(op=>{
     // Même correction que dans typeAggregate() : router les CORRECTION via leur cible AVANT
     // le filtre personId/typeId (qui sont null sur la correction elle-même).
     if(op.opType==='CORRECTION'){
@@ -2845,7 +2898,7 @@ function personTypeStats(personId, typeId){
 function personMoney(personId){
   let du=0, paye=0;
   DB.ticketTypes.forEach(tt=>{ du += personTypeStats(personId, tt.id).montantVentes; });
-  DB.operations.forEach(op=>{
+  ledgerOps().forEach(op=>{
     if(op.opType==='PAIEMENT' && op.personId===personId) paye += (op.amount||0);
     if(op.opType==='CORRECTION'){
       const target = DB.operations.find(o=>o.id===op.correctsOpId);
@@ -2861,7 +2914,7 @@ function personMoney(personId){
 function personTypeMoney(personId, typeId){
   const du = personTypeStats(personId, typeId).montantVentes;
   let paye = 0;
-  DB.operations.forEach(op=>{
+  ledgerOps().forEach(op=>{
     if(op.opType==='PAIEMENT' && op.personId===personId && op.typeId===typeId) paye += (op.amount||0);
     if(op.opType==='CORRECTION'){
       const target = DB.operations.find(o=>o.id===op.correctsOpId);
@@ -3396,6 +3449,7 @@ const UI = {
       let r = await sb.from('sales').delete().eq('person_id', personId); if(r.error) throw r.error;
       r = await sb.from('payments').delete().eq('person_id', personId); if(r.error) throw r.error;
       r = await sb.from('stock_movements').delete().eq('person_id', personId); if(r.error) throw r.error;
+      if(DB.meta && DB.meta.baselineReady){ r = await sb.from('ledger_baseline').delete().eq('person_id', personId); if(r.error) throw r.error; }
       r = await sb.from('people').delete().eq('id', personId); if(r.error) throw r.error;
       const chk = await sb.from('people').select('id').eq('id', personId);
       if(chk.error) throw chk.error;
@@ -3406,6 +3460,7 @@ const UI = {
     // Nettoyage en mémoire : retire la personne ET toutes ses opérations/corrections liées,
     // pour que les calculs (stock, historique, situations) soient immédiatement cohérents.
     DB.people = DB.people.filter(x=>x.id!==personId);
+    DB.baseline = (DB.baseline||[]).filter(b=>b.personId!==personId);
     const opIdSet = new Set(opIds);
     DB.operations = DB.operations.filter(o=>{
       if(o.personId===personId) return false;
@@ -3480,49 +3535,136 @@ const UI = {
         <div class="hist-qty">${qtyStr}</div>${actions}
       </div>`;
   },
-  // Suppression réelle d'opérations (et des corrections qui les visent), vérifiée côté serveur par
-  // relecture. Rien n'est retiré localement tant que le serveur n'a pas confirmé. Une opération encore
-  // en file d'attente (jamais envoyée) est simplement retirée de la file.
-  async _purgeOps(list){
+  /* ---------- SUPPRESSION RÉELLE DE L'HISTORIQUE (stock / tickets en main / montants inchangés) ----------
+     Les lignes sont réellement supprimées de Supabase. Leur effet net est d'abord repris dans ledger_baseline
+     (une ligne par type / personne / nature / période), dans la MÊME transaction serveur (fonction
+     purge_history) : tout ou rien. Les calculs additionnent opérations + report, donc rien ne bouge. */
+  _foldSegment(closures, typeId, ts){
+    // Nombre de clôtures (même restaurées) antérieures à la ligne : deux lignes de même segment sont toujours du même
+    // côté de n'importe quelle clôture, donc regroupables sans changer le calcul par période.
+    const t = Date.parse(ts||'');
+    return closures.filter(c=>c.ticketTypeId===typeId && Date.parse(c.closedAt) < t).length;
+  },
+  _buildFold(all, closures){
+    const groups = new Map();
+    const add = (target, dq, da)=>{
+      const seg = target.typeId ? this._foldSegment(closures, target.typeId, target.ts) : 0;
+      const key = [target.typeId||'', target.personId||'', target.opType, seg].join('|');
+      let g = groups.get(key);
+      if(!g){ g = {ticket_type_id:target.typeId||null, person_id:target.personId||null, op_type:target.opType, quantity:null, amount:null, anchor:target.ts}; groups.set(key, g); }
+      if(dq!=null) g.quantity = (g.quantity||0) + dq;
+      if(da!=null) g.amount = (g.amount||0) + da;
+      if(Date.parse(target.ts) > Date.parse(g.anchor)) g.anchor = target.ts;
+    };
+    all.forEach(o=>{
+      if(o.opType==='CORRECTION'){
+        const tg = DB.operations.find(x=>x.id===o.correctsOpId);
+        if(tg) add(tg, o.qty, o.amount); // une correction pèse dans le contexte (type/personne/période) de sa cible
+      } else add(o, o.qty, o.amount);
+    });
+    return [...groups.values()].map(g=>({ticket_type_id:g.ticket_type_id, person_id:g.person_id, op_type:g.op_type,
+      quantity:g.quantity, amount:g.amount, anchor_at:new Date(g.anchor).toISOString()}));
+  },
+  // Photographie de TOUT ce qui doit rester identique : stock par type, tickets en main, montants dus/payés.
+  _ledgerSnapshot(){
+    const r = n => Math.round((Number(n)||0)*1e6)/1e6;
+    const snap = {types:{}, people:{}};
+    DB.ticketTypes.forEach(tt=>{
+      const a = typeAggregate(tt.id);
+      snap.types[tt.id] = [r(a.received), r(a.remitted), r(a.soldDirect), r(a.soldByPeople), r(a.withMe), r(initialReceived(tt.id)), isTypeClosed(tt.id)];
+    });
+    DB.people.forEach(p=>{
+      const m = personMoney(p.id);
+      snap.people[p.id] = [r(m.du), r(m.paye), r(m.reste), r(personTotalRestant(p.id)), DB.ticketTypes.map(tt=>{
+        const st = personTypeStats(p.id, tt.id), tm = personTypeMoney(p.id, tt.id);
+        return [r(st.pris), r(st.vendu), r(st.restant), r(st.montantVentes), r(tm.du), r(tm.paye), r(tm.reste)];
+      })];
+    });
+    return JSON.stringify(snap);
+  },
+  async _purgeHistory(list){
+    if(!navigator.onLine) throw new Error("connexion requise : la suppression doit être enregistrée sur Supabase");
+    if(DB.meta && DB.meta.baselineReady===false) throw new Error("exécutez d'abord le script supabase-historique.sql dans Supabase (SQL Editor)");
+    // Attendre la fin d'une synchro en cours, puis envoyer la file : une opération jamais envoyée n'existe pas encore
+    // côté serveur, elle ne peut donc pas être supprimée (ni reportée) proprement.
+    for(let i=0; wifiSyncing && i<100; i++) await new Promise(r=>setTimeout(r,100));
+    if(wifiQ.length){ await wifiSync(true); }
     const ids = new Set(list.map(o=>o.id));
     DB.operations.forEach(c=>{ if(c.opType==='CORRECTION' && ids.has(c.correctsOpId)) ids.add(c.id); });
+    if(wifiQ.some(q=>ids.has(q.payload.id))) throw new Error("des opérations sont encore en attente de synchronisation — réessayez dans un instant");
     const all = DB.operations.filter(o=>ids.has(o.id));
-    const queued = new Set(wifiQ.filter(q=>ids.has(q.payload.id)).map(q=>q.payload.id));
-    const remote = all.filter(o=>!queued.has(o.id));
-    const chunk = (arr, n=80)=>{ const out=[]; for(let i=0;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; };
-    const parentIds = remote.filter(o=>o.opType!=='CORRECTION').map(o=>o.id);
-    for(const c of chunk(parentIds)){ const r = await sb.from('corrections').delete().in('target_id', c); if(r.error) throw r.error; }
-    const byTable = {};
-    remote.forEach(o=>{ const tb = OP_TABLE[o.opType]; if(tb) (byTable[tb] = byTable[tb] || []).push(o.id); });
-    for(const tb of ['corrections','sales','payments','stock_movements','stock_receipts']){
-      for(const c of chunk(byTable[tb]||[])){
-        const d = await sb.from(tb).delete().in('id', c); if(d.error) throw d.error;
-        const chk = await sb.from(tb).select('id').in('id', c); if(chk.error) throw chk.error;
-        if(chk.data && chk.data.length) throw new Error('le serveur a refusé la suppression (droits Supabase ?)');
+    if(!all.length) return [];
+
+    // Clôtures à jour (lues sur le serveur) pour découper les périodes exactement comme les calculs.
+    let closures = DB.closures||[];
+    const cr = await sb.from('ticket_type_closures').select('*');
+    if(cr.error) throw cr.error;
+    closures = (cr.data||[]).map(c=>({ticketTypeId:c.ticket_type_id, closedAt:c.closed_at}));
+
+    const fold = this._buildFold(all, closures);
+    // Contrôle AVANT toute écriture : avec les fonctions de calcul habituelles, le stock, les tickets en main et les
+    // montants doivent être strictement identiques après retrait des lignes + ajout du report. Sinon on annule.
+    const before = this._ledgerSnapshot();
+    const savedOps = DB.operations, savedBase = DB.baseline||[];
+    let after;
+    try{
+      DB.operations = savedOps.filter(o=>!ids.has(o.id));
+      DB.baseline = savedBase.concat(fold.map((f,i)=>mapBaseline({id:'sim'+i, ...f})));
+      after = this._ledgerSnapshot();
+    } finally { DB.operations = savedOps; DB.baseline = savedBase; }
+    if(before!==after) throw new Error("contrôle de sécurité : le stock, les tickets en main ou les montants changeraient — suppression annulée, rien n'a été modifié");
+
+    const byTable = {stock_receipts:[], stock_movements:[], sales:[], payments:[], corrections:[]};
+    all.forEach(o=>{ const tb = OP_TABLE[o.opType]; if(tb) byTable[tb].push(o.id); });
+
+    wifiPurging = true; wifiPurgeEpoch++;
+    all.forEach(o=>wifiPurged.add(o.id));
+    try{
+      const { data, error } = await sb.rpc('purge_history', {p_ids: byTable, p_fold: fold});
+      if(error){
+        const msg = String(error.message||'');
+        if(error.code==='PGRST202' || /purge_history/.test(msg) && /(schema cache|not find|does not exist)/i.test(msg))
+          throw new Error("fonction purge_history absente : exécutez le script supabase-historique.sql dans Supabase (SQL Editor)");
+        const e = new Error(msg.replace(/^HISTORY_[A-Z_]+:\s*/,'') || 'suppression refusée par le serveur');
+        e.conflict = /HISTORY_CONFLICT/.test(msg);
+        throw e;
       }
+      // Le serveur a supprimé les lignes ET enregistré le report (même transaction) : on l'applique en local.
+      DB.operations = DB.operations.filter(o=>!ids.has(o.id));
+      DB.operations.forEach((o,i)=>o.num=i+1);
+      const rows = Array.isArray(data) ? data : [];
+      if(rows.length===fold.length) DB.baseline = (DB.baseline||[]).concat(rows.map(mapBaseline));
+      else { wifiPurgeEpoch++; wifiPurging = false; await loadData(); } // réponse incomplète : relecture complète (jamais de stock faux)
+      try{ localStorage.setItem(WIFI_CACHEKEY, JSON.stringify(DB)); }catch(e){}
+      wifiPurgeEpoch++;
+      return all;
+    }catch(e){
+      all.forEach(o=>wifiPurged.delete(o.id));
+      throw e;
+    }finally{
+      wifiPurging = false;
     }
-    if(queued.size){ wifiQ = wifiQ.filter(q=>!ids.has(q.payload.id)); wifiSaveQ(); }
-    DB.operations = DB.operations.filter(o=>!ids.has(o.id));
-    DB.operations.forEach((o,i)=>o.num=i+1);
-    try{ localStorage.setItem(WIFI_CACHEKEY, JSON.stringify(DB)); }catch(e){}
-    return all;
   },
   async deleteOperation(opId){
     const op = DB.operations.find(o=>o.id===opId);
     if(!op) return;
     const label = OP_META[op.opType].label;
-    if(!confirm(tf('Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.', {label}))) return;
+    if(!confirm(tf('Supprimer définitivement cette opération ({label}) ?', {label}) + '\n\n' + t("Les lignes disparaissent de l'historique sur tous vos appareils. Le stock, les tickets en main et les montants ne changent pas."))) return;
     const c = opContext(op);
-    try{ await this._purgeOps([op]); }
-    catch(e){ toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible')); return; }
+    try{ await this._purgeHistory([op]); }
+    catch(e){
+      toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible'));
+      if(e && e.conflict) await this.refreshWifi(true);
+      return;
+    }
     logAudit('DELETE_OPERATION','operation',opId,[label,c.person?c.person.name:'Disponible',c.type?c.type.name:''].filter(Boolean).join(' — '),op.qty);
     this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
-    toast('Opération supprimée');
+    toast('Opération supprimée — stock inchangé');
   },
   filteredHistoryOps(){
     const q = (document.getElementById('hist-search').value||'').toLowerCase();
-    let ops = [...DB.operations].sort((a,b)=>b.ts.localeCompare(a.ts));
+    let ops = DB.operations.slice().sort((a,b)=>b.ts.localeCompare(a.ts));
     const now = new Date();
     ops = ops.filter(op=>{
       const d = new Date(op.ts);
@@ -3577,11 +3719,10 @@ const UI = {
     const narrowed = this.histFilter!=='all' || !!(document.getElementById('hist-search').value||'').trim();
     const n = ops.length;
     const head = narrowed ? tf('Supprimer définitivement ces {n} opération(s) ?', {n}) : tf("Vider TOUT l'historique ({n} opérations) ?", {n});
-    if(!confirm(head + '\n\n' + t('Elles seront retirées du stock, des tickets en main et des montants. Action irréversible.'))) return;
-    if(!narrowed && !confirm(t('Dernière confirmation : toutes les opérations seront effacées. Continuer ?'))) return;
-    try{ await this._purgeOps(ops); }
+    if(!confirm(head + '\n\n' + t("Les lignes disparaissent de l'historique sur tous vos appareils. Le stock, les tickets en main et les montants ne changent pas."))) return;
+    try{ await this._purgeHistory(ops); }
     catch(e){
-      toast('⚠ Erreur : '+(e&&e.message?e.message:'suppression impossible'));
+      toast('⚠ Erreur : '+(e&&e.message?e.message:'impossible de vider l\'historique'));
       await this.refreshWifi(true);
       return;
     }
@@ -3589,7 +3730,7 @@ const UI = {
     logAudit('CLEAR_HISTORY','operation',rid,narrowed?`Sélection supprimée (${n} opérations)`:`Historique vidé (${n} opérations)`,n);
     this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
-    toast(`${n} opération(s) supprimée(s)`);
+    toast(`${n} ligne(s) supprimée(s) définitivement — stock inchangé`);
   },
 
   /* ---------- RAPPORTS ---------- */
@@ -3811,7 +3952,7 @@ const UI = {
   async deleteTicketType(id){
     const tt = ticketType(id);
     if(!tt) return;
-    const hasHistory = DB.operations.some(o=>o.typeId===id);
+    const hasHistory = ledgerOps().some(o=>o.typeId===id);
     if(hasHistory){
       toast('⚠ Impossible : ce type a un historique (réceptions, ventes, mouvements ou paiements). Désactivez-le ou clôturez-le plutôt.');
       return;
