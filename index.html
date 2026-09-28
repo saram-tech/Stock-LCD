@@ -236,8 +236,6 @@ html[data-app-theme="contraste"]{--bg:#000;--card:#000;--border:#fff;--text:#fff
 #wifiView .view{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 @media (max-width:340px){#wifiView .bottomnav .navbtn{font-size:min(calc(9.5px * var(--wfs,1)),10.5px)}#wifiView .bottomnav .fab{width:46px;height:46px;margin:0 2px}}
 #wifiView .sheet{position:relative}
-#wifiView .clock-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 12px;margin-top:6px;padding-top:6px;border-top:1px solid var(--w-paper-line);font-size:calc(13px * var(--wfs,1));font-weight:700;color:var(--w-ink);line-height:1.3}
-#wifiView .clock-row strong{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 #wifiView .topbar .verBadge{font-weight:700}
 #wifiView .sheet-title{padding-right:38px}
 #wifiView .sheet-close{top:8px;right:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;z-index:2}
@@ -297,7 +295,6 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .filter-row{margin-bottom:8px}
 #wifiView .navbtn{padding:calc(5px * var(--wfs,1)) 2px calc(4px * var(--wfs,1));gap:1px;line-height:1.15}
 #wifiView .topbar{padding-top:calc(3px * var(--wfs,1));padding-bottom:calc(3px * var(--wfs,1))}
-#wifiView .clock-row{margin-top:3px;padding-top:3px;line-height:1.2}
 #wifiView .btn{padding:calc(9px * var(--wfs,1)) 14px;line-height:1.2}
 #wifiView .btn-sm{padding:calc(5px * var(--wfs,1)) 10px}
 #wifiView .field input,#wifiView .field select{padding:calc(7px * var(--wfs,1)) 10px;line-height:1.25}
@@ -375,10 +372,6 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
       <button type="button" title="Actualiser WiFi" aria-label="Actualiser WiFi" onclick="UI.refreshWifi()"
         style="background:none;border:none;font-size:15px;line-height:1;padding:2px;cursor:pointer;color:var(--w-ink);">🔄</button>
     </div>
-  </div>
-  <div class="clock-row" data-noi18n>
-    <strong id="today-chip">—</strong>
-    <strong id="wifi-ver-line">Version —</strong>
   </div>
 </div>
 
@@ -809,7 +802,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.32';
+const APP_VERSION = '6.33';
 const APP_UPDATED = '28/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1155,17 +1148,7 @@ async function wifiSync(manual){
 
 // ---- Mises à jour ----
 let updateAvailable = null, swReg = null, _reloading = false, _updTimer = null;
-function updateClock(){
-  const el = document.getElementById('today-chip');
-  if(!el) return;
-  const d = new Date();
-  el.textContent = d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' · ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-}
-let _clockTimer = null;
-function startClock(){ updateClock(); clearInterval(_clockTimer); _clockTimer = setInterval(updateClock, 1000); }
 function refreshBadges(){
-  const vl = document.getElementById('wifi-ver-line');
-  if(vl) vl.textContent = 'Version ' + APP_VERSION;
   document.querySelectorAll('.verBadge').forEach(b => {
     b.textContent = updateAvailable ? '⟳ Mise à jour' + (/^\d/.test(updateAvailable) ? ' v' + updateAvailable : '') : 'v' + APP_VERSION;
     b.classList.toggle('upd', !!updateAvailable);
@@ -2927,7 +2910,6 @@ const UI = {
       if(!loadWifiCache()){ document.body.innerHTML = `<div class="empty" style="padding:60px 20px;">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
       return; }
     }
-    startClock();
     document.getElementById('people-search').addEventListener('input', ()=>this.renderPeople());
     document.getElementById('hist-search').addEventListener('input', ()=>this.renderHistory());
     this.renderAll();
