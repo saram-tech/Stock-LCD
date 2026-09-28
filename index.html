@@ -802,7 +802,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.33';
+const APP_VERSION = '6.34';
 const APP_UPDATED = '28/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2406,7 +2406,7 @@ en: {
   "Vider l'historique du journal (suppressions & clôtures) ?":"Clear the log history (deletions & closures)?",
   "Cette action est irréversible mais ne touche à AUCUNE donnée active : ventes, paiements, mouvements de stock et attributions restent intacts.":"This action is irreversible but does NOT affect any active data: sales, payments, stock movements and assignments stay intact.",
   "Supprimer définitivement cette ligne du journal ?":"Permanently delete this log entry?",
-  "tickets":"tickets","GNF":"GNF",
+  "tickets":"tickets","ticket":"ticket","GNF":"GNF",
   "Clôturer":"Close","Rouvrir":"Reopen","Clôturé":"Closed",
   "⚠ Actualisation impossible — vérifiez la connexion":"⚠ Refresh failed — check your connection",
   "Montant invalide.":"Invalid amount.","Quantité invalide.":"Invalid quantity.",
@@ -2485,7 +2485,7 @@ ff: {
   "Cette action est IRRÉVERSIBLE. Seules les personnes sans aucun historique lié (ventes, mouvements, paiements) seront réellement effacées ; les autres resteront dans \"Supprimées\" pour préserver leurs données.":"𞤘𞤮𞤤𞤣𞤢 𞤺𞤫𞤴 𞤢𞤪𞤼𞤢𞤢𞤢. 𞤒𞤭𞥅𞤯𞤯𞤮 𞤯𞤭 𞤯𞤢𞤲𞤫𞤪𞤢𞤢𞤢 𞤼𞤢𞤪𞤭𞤺𞤮 (𞤛𞤢𞤥𞤢𞤪𞤫, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫) 𞤯𞤫𞤲 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤺𞤢𞤴𞤢; 𞤯𞤫𞤯𞤫𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤳𞤫𞤯𞤢 𞤶𞤭 \"𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤫\".",
   "personne(s) définitivement effacée(s)":"𞤲𞤫𞤯𞤯𞤮𞥅𞤶𞤭 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤺𞤢𞤴𞤢","conservée(s) (historique lié)":"𞤯𞤫𞤲𞥋𞤣𞤫 (𞤼𞤢𞤪𞤭𞤺𞤮 𞤱𞤮𞤲𞤣𞤫)",
   "Aucune personne effacée — toutes ont un historique lié":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮 — 𞤺𞤢𞤴𞤫 𞤶𞤫𞤴 𞤼𞤢𞤪𞤭𞤺𞤮","Aucune personne supprimée à vider":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮 𞤺𞤮 𞤥𞤮𞥅𞤥𞤼𞤭𞤪𞤯𞤫",
-  "tickets":"𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","GNF":"𞤄𞤁𞤢",
+  "tickets":"𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","ticket":"𞤼𞤭𞤳𞤫𞤼","GNF":"𞤄𞤁𞤢",
   "Clôturer":"𞤔𞤢𞤢","Rouvrir":"𞤈𞤢𞤦𞤢𞤪","Clôturé":"𞤖𞤫𞤳𞤢𞤯𞤮",
   "⚠ Actualisation impossible — vérifiez la connexion":"⚠ 𞤖𞤫𞤧𞤣𞤭𞤲 𞤶𞤢𞥄𞤯𞤢𞤪𞤭 — 𞤪𞤫𞤯𞤣𞤭𞤲 𞤦𞤢𞤦𞤢𞤪𞤫",
   "Montant invalide.":"𞤀𞤪𞤼𞤢𞥄𞤯𞤭 𞤶𞤢𞥄𞤯𞤢.","Quantité invalide.":"𞤈𞤢𞤢𞤪𞤢 𞤶𞤢𞥄𞤯𞤢.",
@@ -2887,9 +2887,14 @@ function ticketPagesCount(qty){
   return Math.ceil(qty/40);
 }
 function ticketPagesLabel(qty){
-  const n = ticketPagesCount(qty);
-  if(n===0) return '';
-  return n + ' ' + t(n===1 ? 'page' : 'pages');
+  qty = Math.max(0, Math.floor(qty||0));
+  if(qty===0) return '';
+  // Même règle qu'avant (1 page = 40 tickets) : la dernière page incomplète n'est plus comptée
+  // comme page entière, on affiche ses tickets restants (ex. 500 -> "12 pages + 20 tickets").
+  const full = Math.floor(qty/40), rest = qty%40;
+  const pagesTxt = full>0 ? full + ' ' + t(full===1 ? 'page' : 'pages') : '';
+  const restTxt = rest>0 ? rest + ' ' + t(rest===1 ? 'ticket' : 'tickets') : '';
+  return [pagesTxt, restTxt].filter(Boolean).join(' + ');
 }
 
 /* ============================================================
