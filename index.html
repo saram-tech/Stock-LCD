@@ -302,6 +302,33 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .hist-toolbar{margin-bottom:5px}
 #wifiView .ico-btn{width:calc(28px * var(--wfs,1));height:calc(28px * var(--wfs,1));min-width:28px;min-height:28px}
 </style>
+<style id="emphasis-v641">
+/* ===== v6.41 : entêtes / tableaux / montants nettement plus lisibles (mobile) ===== */
+#wifiView h2.section-title{font-size:calc(21px * var(--wfs,1));font-weight:800;color:var(--w-ink);margin:26px 0 12px;letter-spacing:-0.01em;line-height:1.25}
+#wifiView table.ledger th{font-size:calc(15.5px * var(--wfs,1));font-weight:800;color:var(--w-ink);padding:calc(9px * var(--wfs,1)) 5px calc(9px * var(--wfs,1));border-bottom:2px solid var(--w-ink);line-height:1.25}
+#wifiView table.ledger td{font-size:calc(15.5px * var(--wfs,1));padding:calc(9px * var(--wfs,1)) 5px;line-height:1.3;font-weight:600}
+#wifiView table.ledger td.tname{font-weight:800;font-size:calc(16px * var(--wfs,1))}
+#wifiView table.ledger td strong{font-weight:800;font-size:calc(17px * var(--wfs,1))}
+#wifiView table.ledger tr.total td{padding-top:calc(10px * var(--wfs,1))}
+/* Lignes d'argent / quantités (Suivi par associé, Stock, Rapport fournisseur) */
+#wifiView .money-row{padding:calc(9px * var(--wfs,1)) 0;line-height:1.3}
+#wifiView .money-row .label{font-size:calc(15.5px * var(--wfs,1));font-weight:700;color:var(--w-ink-soft)}
+#wifiView .money-row .amount{font-size:calc(17px * var(--wfs,1));font-weight:800}
+#wifiView .money-row .label.wname{font-size:calc(17px * var(--wfs,1));font-weight:800;color:var(--w-ink)}
+/* Titres de cartes : nom de l'associé / type de ticket */
+#suivi-associes .card>div:first-child .wname{font-size:calc(20px * var(--wfs,1)) !important;font-weight:800}
+#rapport-content .card>div:first-child strong{font-size:calc(20px * var(--wfs,1));font-weight:800}
+#rapport-content .money-row .label .wname{font-size:calc(16.5px * var(--wfs,1)) !important;font-weight:800}
+#suivi-associes .card,#rapport-content .card{padding-top:calc(14px * var(--wfs,1));padding-bottom:calc(12px * var(--wfs,1))}
+#suivi-associes .card>div:first-child,#rapport-content .card>div:first-child{margin-bottom:calc(8px * var(--wfs,1)) !important}
+/* Liste des personnes : nom + montant total sur la même ligne */
+#wifiView .person-row{display:block;cursor:pointer}
+#wifiView .person-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+#wifiView .person-head .person-name{min-width:0;overflow-wrap:anywhere}
+#wifiView .person-head .person-total{margin:0;flex:none;text-align:right;white-space:nowrap;font-size:calc(19px * var(--wfs,1));font-weight:800}
+#wifiView .person-body{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:2px}
+#wifiView .person-body .person-right{flex:none;text-align:right}
+</style>
 </head>
 <body>
 
@@ -805,7 +832,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.40';
+const APP_VERSION = '6.41';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3220,14 +3247,18 @@ const UI = {
         }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
-          <div>
+          <div class="person-head">
             <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
-            <div class="person-sub">${fmt(restant)} tickets en main</div>
-            ${breakdownLines}
-          </div>
-          <div class="person-right">
             <div class="person-total">${fmtGNF(totalMontant)}</div>
-            ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
+          </div>
+          <div class="person-body">
+            <div>
+              <div class="person-sub">${fmt(restant)} tickets en main</div>
+              ${breakdownLines}
+            </div>
+            <div class="person-right">
+              ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
+            </div>
           </div>
         </div>`;
     }).join('');
