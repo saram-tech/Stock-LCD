@@ -329,6 +329,40 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .person-body{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:2px}
 #wifiView .person-body .person-right{flex:none;text-align:right}
 </style>
+<style id="layout-v642">
+/* ===== v6.42 ===== */
+#wifiView{--w-fill-head:rgba(47,79,140,.20);--w-fill-a:rgba(60,110,200,.15);--w-fill-b:rgba(47,111,94,.20)}
+/* Tableaux : tout reste visible (portrait/paysage, toute taille de police) */
+#wifiView table.ledger{table-layout:fixed;width:100%;border-collapse:collapse}
+#wifiView table.ledger th,#wifiView table.ledger td{overflow-wrap:anywhere;word-break:break-word;padding-left:3px;padding-right:3px;font-family:inherit;font-variant-numeric:tabular-nums;font-size:calc(clamp(11px,3.1vw,15.5px) * var(--wfs,1))}
+#wifiView table.ledger:not(.ledger-7) th:first-child{width:26%}
+#wifiView table.ledger th{background:var(--w-fill-head);border-bottom:2px solid var(--w-ink);padding-top:calc(8px * var(--wfs,1));padding-bottom:calc(8px * var(--wfs,1))}
+#wifiView table.ledger th:first-child{border-radius:9px 0 0 9px;padding-left:6px}
+#wifiView table.ledger th:last-child{border-radius:0 9px 9px 0;padding-right:6px}
+#wifiView table.ledger td:first-child{padding-left:6px}
+#wifiView table.ledger td:last-child{padding-right:6px}
+#wifiView table.ledger td.tname{font-family:inherit}
+#wifiView table.ledger.ledger-7 th,#wifiView table.ledger.ledger-7 td{font-size:calc(clamp(10px,2.9vw,14.5px) * var(--wfs,1));padding-left:2px;padding-right:2px}
+#wifiView table.ledger.ledger-7 td:first-child,#wifiView table.ledger.ledger-7 th:first-child{padding-left:5px}
+#wifiView table.ledger.ledger-7 td:last-child,#wifiView table.ledger.ledger-7 th:last-child{padding-right:5px}
+#wifiView .ledger-wrap{margin:8px -4px 0}
+#wifiView .ledger-note{font-size:calc(12.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:6px;text-align:right}
+/* Bouton Infos */
+#wifiView .info-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 6px;padding:calc(8px * var(--wfs,1)) 12px;border:1px solid var(--w-line);border-radius:10px;background:var(--w-fill-head);color:var(--w-ink);font-size:calc(16px * var(--wfs,1));font-weight:800;cursor:pointer;line-height:1.2}
+#wifiView .info-btn.open{background:var(--w-ink);color:var(--w-paper)}
+#wifiView .info-panel[hidden]{display:none}
+/* Remplissages */
+#wifiView .card.fill-a{background:var(--w-fill-a)}
+#wifiView .card.fill-b{background:var(--w-fill-b)}
+#wifiView .money-row.row-fill-a,#wifiView .money-row.row-fill-b{border-bottom:none;border-radius:10px;padding-left:10px;padding-right:10px;margin:3px 0}
+#wifiView .money-row.row-fill-a{background:var(--w-fill-a)}
+#wifiView .money-row.row-fill-b{background:var(--w-fill-b)}
+/* Nouvelle opération (et autres feuilles) : textes centrés */
+#wifiView .sheet-title,#wifiView .sheet-sub{text-align:center}
+#wifiView .op-tile,#wifiView .op-tile:last-child{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#wifiView .op-tile:last-child{flex-direction:row;flex-wrap:wrap;gap:4px 12px}
+#wifiView .op-tile .op-label,#wifiView .op-tile .op-desc{text-align:center}
+</style>
 </head>
 <body>
 
@@ -832,7 +866,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.41';
+const APP_VERSION = '6.42';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3215,7 +3249,7 @@ const UI = {
     const perPerson = DB.people.filter(p=>!p.deletedAt).map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
       .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
-      <div class="money-row"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
+      <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
       ${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}
       <div class="money-row"><span class="label">Vendus (total)</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
       <div class="money-row total" style="border-top:1px solid var(--ink);margin-top:4px;padding-top:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
@@ -3366,13 +3400,16 @@ const UI = {
       </div>
 
       <h2 class="section-title">Types de tickets</h2>
-      <div class="card">
-        ${typeLines || `<div class="empty">Aucun type de ticket actif.</div>`}
+      <div class="card fill-a">
+        ${this.infoBtn('sit:'+p.id)}
+        <div class="info-panel" ${this.infoIsOpen('sit:'+p.id)?'':'hidden'}>
+          ${typeLines || `<div class="empty">Aucun type de ticket actif.</div>`}
+        </div>
         <div class="money-row" style="border-top:1px solid var(--w-line,#e2ddd0);margin-top:4px;padding-top:8px;"><span class="label"><strong>TOTAL</strong></span><span class="amount"><strong>${fmt(totalRestant)} tickets — ${fmtGNF(totalValeur)}</strong></span></div>
       </div>
 
       <h2 class="section-title">Argent</h2>
-      <div class="card" style="overflow-x:auto;">
+      <div class="card fill-b">
         <table class="ledger">
           <tr><th>Type</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
           ${liveTypes().map(tt=>{
@@ -3783,6 +3820,21 @@ const UI = {
   // lisible" — stock disponible chez lui (restant), tickets attribués/vendus/restants (cumul tous
   // types), argent attendu/rendu, et la dernière attribution reçue (date + type + quantité).
   // N'efface jamais rien : lit uniquement les données déjà enregistrées.
+  infoIsOpen(key){ return !!(this._infoOpen && this._infoOpen[key]); },
+  infoBtn(key){
+    const o = this.infoIsOpen(key);
+    return `<button type="button" class="info-btn${o?' open':''}" aria-expanded="${o}" onclick="event.stopPropagation();UI.toggleInfo('${key}',this)"><span>ℹ️ Infos</span><span class="info-arrow">${o?'▴':'▾'}</span></button>`;
+  },
+  toggleInfo(key,btn){
+    this._infoOpen = this._infoOpen || {};
+    const o = !this._infoOpen[key];
+    this._infoOpen[key] = o;
+    const panel = btn.nextElementSibling;
+    if(panel) panel.hidden = !o;
+    btn.classList.toggle('open', o);
+    btn.setAttribute('aria-expanded', String(o));
+    const a = btn.querySelector('.info-arrow'); if(a) a.textContent = o ? '▴' : '▾';
+  },
   renderSuiviAssocies(){
     const el = document.getElementById('suivi-associes');
     if(!el) return;
@@ -3802,7 +3854,7 @@ const UI = {
         const s = personTypeStats(p.id, tt.id);
         const tm = personTypeMoney(p.id, tt.id);
         if(s.pris===0 && s.vendu===0 && s.restant===0 && tm.du===0 && tm.paye===0) return '';
-        return `<tr><td class="tname">${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}">${fmtGNF(tm.reste)}</td></tr>`;
+        return `<tr><td class="tname">${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}">${fmt(tm.reste)}</td></tr>`;
       }).join('');
       return `
         <div class="card" style="margin-bottom:10px;">
@@ -3810,18 +3862,23 @@ const UI = {
             <span class="wname" style="font-size:15.5px;cursor:pointer;" onclick="UI.openSituation('${p.id}')">${p.name}</span>
             ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
           </div>
-          <div class="money-row"><span class="label">Tickets attribués</span><span class="amount">${fmt(attribues)}</span></div>
-          <div class="money-row"><span class="label">Tickets vendus</span><span class="amount">${fmt(vendus)}</span></div>
-          <div class="money-row"><span class="label">Tickets restants</span><span class="amount">${fmt(restant)}</span></div>
-          <div class="money-row"><span class="label">Argent attendu</span><span class="amount">${fmtGNF(m.du)}</span></div>
-          <div class="money-row"><span class="label">Argent rendu (payé)</span><span class="amount pos">${fmtGNF(m.paye)}</span></div>
+          ${this.infoBtn('suivi:'+p.id)}
+          <div class="info-panel" ${this.infoIsOpen('suivi:'+p.id)?'':'hidden'}>
+            <div class="money-row"><span class="label">Tickets attribués</span><span class="amount">${fmt(attribues)}</span></div>
+            <div class="money-row"><span class="label">Tickets vendus</span><span class="amount">${fmt(vendus)}</span></div>
+            <div class="money-row"><span class="label">Tickets restants</span><span class="amount">${fmt(restant)}</span></div>
+            <div class="money-row"><span class="label">Argent attendu</span><span class="amount">${fmtGNF(m.du)}</span></div>
+            <div class="money-row"><span class="label">Argent rendu (payé)</span><span class="amount pos">${fmtGNF(m.paye)}</span></div>
+          </div>
           <div class="money-row"><span class="label">Dernière attribution</span><span class="amount small" style="font-family:inherit;font-weight:600;">${lastStr}</span></div>
           ${typeRows ? `
-          <div style="margin-top:8px;overflow-x:auto;">
-            <table class="ledger" style="font-size:12px;">
+          <div class="ledger-wrap">
+            <table class="ledger ledger-7">
+              <colgroup><col style="width:14%"><col style="width:9%"><col style="width:11%"><col style="width:15%"><col style="width:17%"><col style="width:17%"><col style="width:17%"></colgroup>
               <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
               ${typeRows}
             </table>
+            <div class="ledger-note">Ventes, Payé et Reste : montants en GNF</div>
           </div>` : ''}
         </div>`;
     }).join('');
@@ -3840,8 +3897,8 @@ const UI = {
             <strong>${s.type.name}</strong>
             <span class="chip ${ok?'clear':'due'}">${ok?'Cohérent':'Écart : '+(s.initial-explained)}</span>
           </div>
-          <div class="money-row"><span class="label">Reçus du fournisseur</span><span class="amount">${fmt(s.initial)}</span></div>
-          <div class="money-row"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)}</span></div>
+          <div class="money-row row-fill-a"><span class="label">Reçus du fournisseur</span><span class="amount">${fmt(s.initial)}</span></div>
+          <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)}</span></div>
           ${perPerson.map(x=>`<div class="money-row"><span class="label">Chez <span class="wname" style="font-size:13.5px;">${x.p.name}</span></span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}
           <div class="money-row"><span class="label">Vendus</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
         </div>`;
