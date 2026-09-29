@@ -1121,7 +1121,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.49';
+const APP_VERSION = '6.50';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -4179,10 +4179,10 @@ const UI = {
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <strong>${s.type.name}</strong>
+            <span style="flex:1 1 auto;min-width:0;text-align:center;white-space:nowrap;font-weight:400;font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);padding:0 6px;">Vendus ${fmt(s.venduDirect+s.venduPersonnes)}</span>
             <span class="chip ${ok?'clear':'due'}">${ok?'Cohérent':'Écart : '+(s.initial-explained)}</span>
           </div>
           <div class="money-row row-fill-a"><span class="label">Reçus du fournisseur</span><span class="amount">${fmt(s.initial)}</span></div>
-          <div class="money-row"><span class="label" style="font-weight:400;font-size:calc(11px * var(--wfs,1));">Vendus</span><span class="amount" style="font-weight:400;font-size:calc(11px * var(--wfs,1));">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
           <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)}</span></div>
           ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label">Chez <span class="wname" style="font-size:13.5px;">${x.p.name}</span></span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}</div>` : ''}
         </div>`;
