@@ -351,6 +351,8 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .info-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 6px;padding:calc(8px * var(--wfs,1)) 12px;border:1px solid var(--w-line);border-radius:10px;background:var(--w-fill-head);color:var(--w-ink);font-size:calc(16px * var(--wfs,1));font-weight:800;cursor:pointer;line-height:1.2}
 #wifiView .info-btn.open{background:var(--w-ink);color:var(--w-paper)}
 #wifiView .info-panel[hidden]{display:none}
+/* Infos en ligne (entre le nom et « à jour ») : suit la hauteur de la ligne et la taille de police */
+#wifiView .info-btn.info-inline{width:auto;flex:1 1 0;min-width:0;align-self:stretch;margin:0 8px;padding:0 6px;gap:4px;white-space:nowrap;overflow:hidden;font-size:calc(16px * var(--wfs,1));line-height:1.1}
 /* Remplissages */
 #wifiView .card.fill-a{background:var(--w-fill-a)}
 #wifiView .card.fill-b{background:var(--w-fill-b)}
@@ -1121,7 +1123,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.50';
+const APP_VERSION = '6.51';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -4084,15 +4086,16 @@ const UI = {
     });
   },
   infoIsOpen(key){ return !!(this._infoOpen && this._infoOpen[key]); },
-  infoBtn(key){
+  infoBtn(key, inline){
     const o = this.infoIsOpen(key);
-    return `<button type="button" class="info-btn${o?' open':''}" aria-expanded="${o}" onclick="event.stopPropagation();UI.toggleInfo('${key}',this)"><span>ℹ️ Infos</span><span class="info-arrow">${o?'▴':'▾'}</span></button>`;
+    return `<button type="button" class="info-btn${inline?' info-inline':''}${o?' open':''}" aria-expanded="${o}" onclick="event.stopPropagation();UI.toggleInfo('${key}',this)"><span>ℹ️ Infos</span><span class="info-arrow">${o?'▴':'▾'}</span></button>`;
   },
   toggleInfo(key,btn){
     this._infoOpen = this._infoOpen || {};
     const o = !this._infoOpen[key];
     this._infoOpen[key] = o;
-    const panel = btn.nextElementSibling;
+    let panel = btn.nextElementSibling;
+    if(!(panel && panel.classList.contains('info-panel'))){ const c = btn.closest('.card'); panel = c ? c.querySelector('.info-panel') : null; }
     if(panel) panel.hidden = !o;
     btn.classList.toggle('open', o);
     btn.setAttribute('aria-expanded', String(o));
@@ -4141,9 +4144,9 @@ const UI = {
         <div class="card" style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span class="wname" style="font-size:15.5px;cursor:pointer;" onclick="UI.openSituation('${p.id}')">${p.name}</span>
+            ${this.infoBtn('suivi:'+p.id, true)}
             ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
           </div>
-          ${this.infoBtn('suivi:'+p.id)}
           <div class="info-panel" ${this.infoIsOpen('suivi:'+p.id)?'':'hidden'}>
             <div class="money-row"><span class="label">Tickets attribués</span><span class="amount">${fmt(attribues)}</span></div>
             <div class="money-row"><span class="label">Tickets vendus</span><span class="amount">${fmt(vendus)}</span></div>
