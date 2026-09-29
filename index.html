@@ -428,6 +428,54 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   #receptionView .app{max-width:none}
 }
 </style>
+<style id="layout-v645">
+/* ===== v6.45 : cadres, espaces réduits, hauteurs automatiques partout ===== */
+/* Groupe de lignes encadré (même style que « Suivi par associé ») */
+#wifiView .frame-rows{border:2px solid var(--w-line);border-radius:12px;overflow:hidden;margin:4px 0}
+#wifiView .frame-rows>*{padding-left:10px;padding-right:10px;margin:0;border-bottom:1px solid var(--w-line)}
+#wifiView .frame-rows>*:last-child{border-bottom:none}
+#wifiView .frame-rows>.person-sub{padding-top:calc(6px * var(--wfs,1));padding-bottom:calc(6px * var(--wfs,1));margin:0 !important;line-height:1.3}
+#wifiView .person-body{align-items:flex-end}
+#wifiView .person-lines{flex:1;min-width:0}
+/* Cartes de listes : cadre renforcé, traits de séparation visibles */
+#wifiView #view-accueil .card,#wifiView #settings-people,#wifiView #settings-prices,#wifiView #settings-types,#wifiView #hist-list,#wifiView #people-list,#wifiView #stock-breakdown{border:2px solid var(--w-line)}
+#wifiView #settings-people .settings-row,#wifiView #settings-prices .settings-row,#wifiView #settings-types .settings-row,#wifiView #view-accueil .money-row,#wifiView #people-list .person-row,#wifiView #hist-list .hist-row{border-bottom-color:var(--w-line)}
+#wifiView #stock-breakdown .money-row{border-bottom-color:var(--w-line)}
+/* Infos ouvert : bloc encadré */
+#wifiView .info-panel:not([hidden]){border:2px solid var(--w-line);border-radius:12px;padding:0 10px 4px;margin:4px 0 8px}
+#wifiView .info-panel .money-row:last-of-type{border-bottom:none}
+/* Espaces réduits entre titres, sous-titres et tableaux */
+#wifiView h2.section-title{margin:12px 0 5px;line-height:1.2}
+#wifiView h2.section-title:first-child{margin-top:0}
+#wifiView .help-text{margin:0 0 5px !important;line-height:1.25}
+#wifiView .view{padding-top:calc(8px * var(--wfs,1))}
+#wifiView .card{padding:calc(9px * var(--wfs,1)) 12px;margin-bottom:0}
+#wifiView .ledger-wrap{margin-top:4px}
+#wifiView .ledger-note{margin-top:3px;line-height:1.2}
+#suivi-associes .card,#rapport-content .card{margin-bottom:8px}
+#suivi-associes .card>div:first-child,#rapport-content .card>div:first-child{margin-bottom:calc(4px * var(--wfs,1)) !important}
+#wifiView .filter-row{margin-bottom:6px}
+#wifiView .type-last{margin-top:5px}
+/* Hauteurs automatiques : plus rien de figé sur les boutons/icônes/champs */
+#wifiView .ico-btn{width:auto;height:auto;min-width:32px;min-height:32px;padding:2px 6px}
+#wifiView .sheet-close{width:auto;height:auto;min-width:38px;min-height:38px}
+#wifiView .settings-row input,#wifiView .settings-row select,#wifiView .field input,#wifiView .field select,#wifiView .search-bar input{height:auto;min-height:2.4em;line-height:1.3}
+#wifiView .settings-row input[type=number]{width:min(120px,34vw)}
+#wifiView .btn,#wifiView .btn-sm,#wifiView .seg button,#wifiView .filter-pill,#wifiView .plus-item,#wifiView .navbtn,#wifiView .chip{height:auto;min-height:0}
+#wifiView .hist-title,#wifiView .hist-sub,#wifiView .hist-amt,#wifiView .st-label,#wifiView .st-sub,#wifiView .op-label,#wifiView .op-desc,#wifiView .money-row .label{overflow-wrap:anywhere}
+#wifiView .money-row{gap:10px;align-items:center}
+#wifiView .money-row .amount{text-align:right;overflow-wrap:anywhere}
+#wifiView .topbar-row{flex-wrap:wrap}
+/* Compte Stock (zoom) : zones de saisie sans hauteur figée */
+#stockSpace textarea{height:auto}
+/* Paysage : deux colonnes lisibles sans débordement */
+@media (orientation:landscape){
+  #wifiView .stat-grid{grid-template-columns:repeat(4,1fr)}
+  #wifiView .op-grid{grid-template-columns:repeat(4,1fr)}
+  #wifiView .op-tile:last-child{grid-column:1/-1}
+  #wifiView .sheet{max-height:92vh}
+}
+</style>
 </head>
 <body>
 
@@ -931,7 +979,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.44';
+const APP_VERSION = '6.45';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3315,7 +3363,7 @@ const UI = {
       .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
       <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
-      ${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}
+      ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}</div>` : ''}
       <div class="money-row"><span class="label">Vendus (total)</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
       <div class="money-row total" style="border-top:1px solid var(--ink);margin-top:4px;padding-top:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
     `;
@@ -3354,8 +3402,8 @@ const UI = {
             <div class="person-sub">${fmt(restant)} tickets en main</div>
           </div>
           <div class="person-body">
-            <div>
-              ${breakdownLines}
+            <div class="person-lines">
+              ${breakdownLines ? `<div class="frame-rows">${breakdownLines}</div>` : ''}
             </div>
             <div class="person-right">
               ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
@@ -3996,7 +4044,7 @@ const UI = {
           </div>
           <div class="money-row row-fill-a"><span class="label">Reçus du fournisseur</span><span class="amount">${fmt(s.initial)}</span></div>
           <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)}</span></div>
-          ${perPerson.map(x=>`<div class="money-row"><span class="label">Chez <span class="wname" style="font-size:13.5px;">${x.p.name}</span></span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}
+          ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label">Chez <span class="wname" style="font-size:13.5px;">${x.p.name}</span></span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}</div>` : ''}
           <div class="money-row"><span class="label">Vendus</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
         </div>`;
     }).join('');
