@@ -527,6 +527,97 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .person-lines{width:100%}
 #wifiView .chip{padding:calc(2px * var(--wfs,1)) 9px;line-height:1.2}
 </style>
+<style id="layout-v647">
+/* ===== v6.47 ===== */
+/* Personnes : montants alignés à droite */
+#wifiView .frame-rows>.person-sub{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#wifiView .person-sub .ps-l{min-width:0;overflow-wrap:anywhere}
+#wifiView .person-sub .ps-r{margin-left:auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--w-ink);font-weight:600}
+/* Étiquettes et boutons : tailles et hauteurs proportionnelles à la police */
+#wifiView .st-label{font-size:calc(15px * var(--wfs,1));font-weight:700;line-height:1.2;margin-bottom:calc(3px * var(--wfs,1)) !important}
+#wifiView .st-sub{line-height:1.15}
+#wifiView .btn{padding:calc(6px * var(--wfs,1)) 12px;line-height:1.15}
+#wifiView .btn-sm{padding:calc(3px * var(--wfs,1)) 9px}
+#wifiView #settings-types .btn,#wifiView #settings-people .btn{padding:calc(3px * var(--wfs,1)) 9px !important;font-size:calc(12.5px * var(--wfs,1)) !important;line-height:1.15}
+#wifiView #settings-types .settings-row>div:last-child{gap:calc(4px * var(--wfs,1)) 5px !important}
+#wifiView #view-parametres .card>div[style*="display:flex"] .btn{padding:calc(3px * var(--wfs,1)) 12px !important;font-size:calc(17px * var(--wfs,1)) !important}
+#wifiView #view-parametres .card[style*="margin-top:10px"]{margin-top:5px !important}
+#wifiView #view-parametres .card>div[style*="margin-top:8px"]{margin-top:3px !important}
+#wifiView #view-parametres div[style*="margin-top:8px"]{margin-top:4px !important}
+#wifiView #theme-picker,#wifiView #lang-picker{flex-wrap:wrap;overflow:visible;gap:calc(4px * var(--wfs,1)) 6px}
+/* Champs des paramètres (prix…) : compacts */
+#wifiView .settings-row input,#wifiView .settings-row select{min-height:0;padding:calc(3px * var(--wfs,1)) 8px;font-size:calc(15px * var(--wfs,1));line-height:1.2}
+#wifiView #settings-prices input[type=number]{width:min(120px,34vw)}
+#wifiView .settings-row .st-label{margin-bottom:0 !important}
+#wifiView input[type=range]{margin:0;height:auto}
+/* Feuilles du bas (Nouvelle opération, formulaires) : compactes */
+#wifiView .sheet{padding:calc(8px * var(--wfs,1)) 14px calc(12px + env(safe-area-inset-bottom))}
+#wifiView .sheet-handle{margin:0 auto calc(5px * var(--wfs,1))}
+#wifiView .sheet-title{padding:0 44px;margin-bottom:calc(5px * var(--wfs,1));line-height:1.2}
+#wifiView .sheet-sub{margin-bottom:calc(6px * var(--wfs,1));line-height:1.2}
+#wifiView .op-grid{gap:calc(6px * var(--wfs,1))}
+#wifiView .op-tile,#wifiView .op-tile:last-child{padding:calc(6px * var(--wfs,1)) 8px;gap:0}
+#wifiView .op-tile .op-icon{line-height:1.1}
+#wifiView .op-tile .op-label{margin-top:1px;line-height:1.15}
+#wifiView .op-tile .op-desc{margin-top:0;line-height:1.15}
+#wifiView .op-tile:last-child{gap:2px 10px}
+#wifiView .field{margin-bottom:calc(7px * var(--wfs,1))}
+#wifiView .field label{margin-bottom:calc(3px * var(--wfs,1));line-height:1.2}
+#wifiView .field input,#wifiView .field select,#wifiView .field textarea{padding:calc(5px * var(--wfs,1)) 10px;line-height:1.25}
+#wifiView .qty-select{gap:calc(5px * var(--wfs,1))}
+#wifiView .qty-tile{padding:calc(5px * var(--wfs,1)) 4px;line-height:1.15}
+#wifiView .btn-row{gap:6px}
+</style>
+<style id="layout-v648">
+/* ===== v6.48 : hauteurs et espaces en em/lh = proportionnels à la taille réelle des polices (réglage appli + zoom Android) ===== */
+#wifiView{--w-p1:.18em;--w-p2:.3em}
+/* Lignes de paramètres (Personnes, Prix, Types, Sauvegarde, Taille du texte) */
+#wifiView .settings-row{padding:.28em 2px;gap:.1em .5em;align-items:center;line-height:1.15;min-height:0}
+#wifiView .settings-row>div{min-width:0}
+#wifiView .settings-row .st-label,#wifiView .settings-row .wname,#wifiView .settings-row .tname{margin:0 !important;padding:0;line-height:1.15}
+#wifiView .settings-row .st-sub{margin:0;padding:0;line-height:1.1}
+#wifiView .settings-row .btn,#wifiView .settings-row .btn-sm,#wifiView #settings-types .btn,#wifiView #settings-people .btn{padding:.22em .65em !important;line-height:1.1;min-height:0;height:auto;align-self:center;width:auto}
+#wifiView .settings-row input,#wifiView .settings-row select{padding:.18em .5em;line-height:1.1;min-height:0;height:auto;box-sizing:border-box}
+#wifiView #settings-types .settings-row>div:last-child{gap:.25em .35em !important;align-items:center}
+/* Taille du texte : − / curseur / + compacts, centrés */
+#wifiView #view-parametres .card>div[style*="display:flex"]{align-items:center;margin-top:.15em !important;gap:.5em !important}
+#wifiView #view-parametres .card>div[style*="display:flex"] .btn{width:auto;min-width:2.2em;padding:.1em .6em !important;line-height:1.1;height:auto;min-height:0;align-self:center;flex:0 0 auto}
+#wifiView input[type=range]{margin:0;padding:0;height:1.4em;min-height:0}
+/* Thème / Langue : cartes et pastilles compactes */
+#wifiView #view-parametres .card{padding:.35em .7em}
+#wifiView #view-parametres .card>.st-label{margin:0 0 .25em !important}
+#wifiView #theme-picker,#wifiView #lang-picker{margin:0 !important;gap:.3em .4em}
+#wifiView #theme-picker .filter-pill,#wifiView #lang-picker .filter-pill{padding:.2em .8em;line-height:1.15;min-height:0;height:auto}
+#wifiView #view-parametres>div[style*="margin-top:8px"]{margin-top:.3em !important}
+#wifiView #view-parametres .help-text{margin:0 0 .2em !important}
+#wifiView #view-parametres .btn.btn-secondary,#wifiView #view-parametres .btn.btn-outline:not(.btn-sm){padding:.4em .8em;line-height:1.15}
+/* Feuille « Nouvelle opération » et autres feuilles du bas */
+#wifiView .sheet{padding:.5em .9em calc(.7em + env(safe-area-inset-bottom));line-height:1.15}
+#wifiView .sheet-handle{margin:0 auto .3em}
+#wifiView .sheet-title{padding:0 2.6em;margin:0 0 .3em;line-height:1.15}
+#wifiView .sheet-sub{margin:0 0 .35em;line-height:1.15}
+#wifiView .sheet-close{min-width:0;min-height:0;top:.3em;right:.4em;padding:.2em .4em;line-height:1}
+#wifiView .op-grid{gap:.4em}
+#wifiView .op-tile,#wifiView .op-tile:last-child{padding:.4em .5em;gap:0;line-height:1.1;min-height:0;height:auto}
+#wifiView .op-tile .op-icon{line-height:1;margin:0}
+#wifiView .op-tile .op-label{margin:.05em 0 0;line-height:1.1}
+#wifiView .op-tile .op-desc{margin:0;line-height:1.1}
+#wifiView .op-tile:last-child{gap:.1em .6em}
+#wifiView .field{margin-bottom:.4em}
+#wifiView .field label{margin-bottom:.15em;line-height:1.15}
+#wifiView .field input,#wifiView .field select,#wifiView .field textarea{padding:.3em .6em;line-height:1.15;min-height:0}
+#wifiView .btn-row{gap:.4em}
+#wifiView .sheet .btn{padding:.4em .8em;line-height:1.15}
+#wifiView .plus-item{padding:.4em .8em;line-height:1.15}
+#wifiView .plus-list{gap:.3em}
+/* Personnes : lignes « type : tickets — montant », montants alignés à droite sur une même colonne */
+#wifiView .frame-rows>.person-sub{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:.6em;margin:0 !important;padding-top:.22em;padding-bottom:.22em;line-height:1.15}
+#wifiView .person-sub .ps-l{min-width:0;text-align:left;overflow-wrap:anywhere}
+#wifiView .person-sub .ps-r{margin-left:0;justify-self:end;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;color:var(--w-ink)}
+#wifiView .person-row{padding:.3em 2px}
+#wifiView .person-top{padding:.25em .6em;margin-bottom:.2em}
+#wifiView .person-name,#wifiView .person-total{line-height:1.15;margin-bottom:0}
+</style>
 </head>
 <body>
 
@@ -1030,7 +1121,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.46';
+const APP_VERSION = '6.49';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3413,10 +3504,9 @@ const UI = {
     const perPerson = DB.people.filter(p=>!p.deletedAt).map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
       .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
+      <div class="money-row total" style="border-bottom:1px solid var(--ink);margin-bottom:4px;padding-bottom:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
       <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
       ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}</div>` : ''}
-      <div class="money-row"><span class="label">Vendus (total)</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
-      <div class="money-row total" style="border-top:1px solid var(--ink);margin-top:4px;padding-top:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
     `;
   },
 
@@ -3441,7 +3531,7 @@ const UI = {
           if(!s.restant) return '';
           const montant = s.restant * (tt.price||0);
           totalMontant += montant;
-          return `<div class="person-sub" style="margin-top:3px;"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong> — ${fmtGNF(montant)}</div>`;
+          return `<div class="person-sub" style="margin-top:3px;"><span class="ps-l"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong></span><span class="ps-r">${fmtGNF(montant)}</span></div>`;
         }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
@@ -4092,9 +4182,9 @@ const UI = {
             <span class="chip ${ok?'clear':'due'}">${ok?'Cohérent':'Écart : '+(s.initial-explained)}</span>
           </div>
           <div class="money-row row-fill-a"><span class="label">Reçus du fournisseur</span><span class="amount">${fmt(s.initial)}</span></div>
+          <div class="money-row"><span class="label" style="font-weight:400;font-size:calc(11px * var(--wfs,1));">Vendus</span><span class="amount" style="font-weight:400;font-size:calc(11px * var(--wfs,1));">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
           <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)}</span></div>
           ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label">Chez <span class="wname" style="font-size:13.5px;">${x.p.name}</span></span><span class="amount">${fmt(x.restant)}</span></div>`).join('')}</div>` : ''}
-          <div class="money-row"><span class="label">Vendus</span><span class="amount">${fmt(s.venduDirect+s.venduPersonnes)}</span></div>
         </div>`;
     }).join('');
   },
