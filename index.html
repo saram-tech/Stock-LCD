@@ -476,6 +476,57 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   #wifiView .sheet{max-height:92vh}
 }
 </style>
+<style id="layout-v646">
+/* ===== v6.46 : affichage compact, hauteurs proportionnelles à la police (--wfs) ===== */
+#wifiView{--w-gap:calc(5px * var(--wfs,1))}
+/* Stock disponible (chez moi) */
+#wifiView .stat-grid{gap:calc(6px * var(--wfs,1))}
+#dash-stock .stat{padding:calc(6px * var(--wfs,1)) 8px}
+#dash-stock .stat .label{line-height:1.15}
+#dash-stock .stat .value{margin-top:0;line-height:1.05}
+#dash-stock .stat .pages-hint{margin-top:0;line-height:1.15}
+/* Lignes d'argent / quantités */
+#wifiView .money-row{padding:calc(4px * var(--wfs,1)) 0;line-height:1.15}
+#wifiView .money-row.row-fill-a,#wifiView .money-row.row-fill-b{margin:2px 0}
+#wifiView .frame-rows{margin:3px 0}
+/* Tableaux */
+#wifiView table.ledger th{padding-top:calc(5px * var(--wfs,1));padding-bottom:calc(5px * var(--wfs,1));line-height:1.15}
+#wifiView table.ledger td{padding-top:calc(5px * var(--wfs,1));padding-bottom:calc(5px * var(--wfs,1));line-height:1.15}
+#wifiView table.ledger tr.total td{padding-top:calc(5px * var(--wfs,1))}
+/* Cartes, titres, listes */
+#wifiView h2.section-title{margin:calc(8px * var(--wfs,1)) 0 calc(3px * var(--wfs,1));line-height:1.15}
+#wifiView h2.section-title:first-child{margin-top:0}
+#wifiView .help-text{margin:0 0 3px !important;line-height:1.2}
+#wifiView .view{padding-top:calc(4px * var(--wfs,1));padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+#wifiView .card{padding:calc(5px * var(--wfs,1)) 10px}
+#suivi-associes .card,#rapport-content .card{margin-bottom:6px;padding-top:calc(7px * var(--wfs,1));padding-bottom:calc(6px * var(--wfs,1))}
+#suivi-associes .card>div:first-child,#rapport-content .card>div:first-child{margin-bottom:calc(2px * var(--wfs,1)) !important;line-height:1.15}
+#wifiView .empty{padding:calc(10px * var(--wfs,1)) 8px;line-height:1.2}
+#wifiView .info-btn{margin:1px 0 4px;padding:calc(5px * var(--wfs,1)) 10px;line-height:1.1}
+#wifiView .info-panel:not([hidden]){margin:3px 0 5px;padding:0 10px 2px}
+#wifiView .type-last{margin-top:4px;padding:calc(5px * var(--wfs,1)) 8px}
+#wifiView .type-last-line{margin-top:1px;line-height:1.15}
+#wifiView .ledger-wrap{margin-top:3px}
+#wifiView .ledger-note{margin-top:2px}
+#wifiView .settings-row{padding:calc(5px * var(--wfs,1)) 2px;gap:3px 8px}
+#wifiView .hist-row{padding:calc(5px * var(--wfs,1)) 2px}
+#wifiView .alert{padding:calc(4px * var(--wfs,1)) 10px}
+#wifiView .plus-item{padding:calc(6px * var(--wfs,1)) 12px}
+#wifiView .filter-pill{padding:calc(4px * var(--wfs,1)) 12px}
+#wifiView .search-bar{margin-bottom:6px}
+#wifiView .search-bar input{padding:calc(6px * var(--wfs,1)) 10px}
+/* Personnes : compact, puce « doit » seulement quand utile */
+#wifiView .person-row{padding:calc(5px * var(--wfs,1)) 2px}
+#wifiView .person-top{padding:calc(4px * var(--wfs,1)) 10px;margin-bottom:3px}
+#wifiView .person-head{align-items:center}
+#wifiView .person-name{line-height:1.15}
+#wifiView .person-sub{line-height:1.15;margin-top:0}
+#wifiView .frame-rows>.person-sub{padding-top:calc(4px * var(--wfs,1));padding-bottom:calc(4px * var(--wfs,1))}
+#wifiView .person-body{display:block;margin-top:0}
+#wifiView .person-body .person-right{display:flex;justify-content:flex-end;margin-top:3px}
+#wifiView .person-lines{width:100%}
+#wifiView .chip{padding:calc(2px * var(--wfs,1)) 9px;line-height:1.2}
+</style>
 </head>
 <body>
 
@@ -979,7 +1030,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.45';
+const APP_VERSION = '6.46';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3405,9 +3456,7 @@ const UI = {
             <div class="person-lines">
               ${breakdownLines ? `<div class="frame-rows">${breakdownLines}</div>` : ''}
             </div>
-            <div class="person-right">
-              ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
-            </div>
+            ${m.reste>0 ? `<div class="person-right"><span class="chip due">doit ${fmtGNF(m.reste)}</span></div>` : ''}
           </div>
         </div>`;
     }).join('');
