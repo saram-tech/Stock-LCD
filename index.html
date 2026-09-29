@@ -384,6 +384,50 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .type-last-line{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;margin-top:3px;font-size:calc(14px * var(--wfs,1));font-weight:600;color:var(--w-ink-soft)}
 #wifiView .type-last-line span:last-child{color:var(--w-ink);font-weight:700;text-align:right;margin-left:auto}
 </style>
+<style id="layout-v644">
+/* ===== v6.44 : hauteurs automatiques (aucune hauteur fixe), lignes encadrées ===== */
+/* --- Compte Réception : hauteur des lignes = taille du texte (em), rien de coupé --- */
+#receptionView .tabs{width:100%;flex-wrap:wrap}
+#receptionView .tab{flex:1 1 auto;padding:.6em .9em;font-size:13px;line-height:1.3;white-space:normal;text-align:center;height:auto}
+#receptionView .tbl-scroll{overflow-x:auto;max-height:min(420px,62vh)}
+#receptionView .db-wrap{max-height:min(380px,62vh)}
+#receptionView th{padding:.7em .7em;line-height:1.3;height:auto;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;vertical-align:middle}
+#receptionView td{padding:.55em .6em;line-height:1.35;height:auto;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;vertical-align:middle}
+#receptionView .db-table th{padding:.65em .8em;line-height:1.3;white-space:normal}
+#receptionView .db-table td{padding:.55em .8em;line-height:1.35;overflow-wrap:anywhere}
+#receptionView td input,#receptionView .db-table td input{height:auto;min-height:2.3em;padding:.3em .5em;line-height:1.3;min-width:0}
+#receptionView .del-btn{width:auto;height:auto;min-width:2em;min-height:2em;padding:.3em}
+#receptionView .rec-head td{padding:.55em .8em;line-height:1.35}
+#receptionView .total-row td{padding:.65em .6em}
+#receptionView .metric{padding:.75em 1em}
+#receptionView .metric .lbl{line-height:1.3}
+#receptionView .metric .val{line-height:1.25}
+#receptionView button{line-height:1.3;height:auto;min-height:2.4em}
+#receptionView .row-bar{align-items:center}
+#receptionView .row-bar input,#receptionView .row-bar select{height:auto;min-height:2.6em;line-height:1.3}
+#receptionView h1{line-height:1.3}
+/* --- Compte WiFi : tableaux encadrés, lignes et colonnes délimitées --- */
+#wifiView table.ledger{border:2px solid var(--w-line);border-radius:12px;border-collapse:separate;border-spacing:0}
+#wifiView table.ledger th{border-bottom:2px solid var(--w-ink)}
+#wifiView table.ledger th:first-child{border-radius:10px 0 0 0}
+#wifiView table.ledger th:last-child{border-radius:0 10px 0 0}
+#wifiView table.ledger td{border-bottom:1px solid var(--w-line);border-right:1px solid var(--w-paper-line)}
+#wifiView table.ledger th{border-right:1px solid var(--w-paper-line)}
+#wifiView table.ledger td:last-child,#wifiView table.ledger th:last-child{border-right:none}
+#wifiView table.ledger tr:last-child td{border-bottom:none}
+#wifiView table.ledger tr:last-child td:first-child{border-radius:0 0 0 10px}
+#wifiView table.ledger tr:last-child td:last-child{border-radius:0 0 10px 0}
+#wifiView table.ledger td[colspan]{border-right:none}
+#wifiView table.ledger tr.total td{border-top:2px solid var(--w-ink)}
+/* --- Toute l'application : jamais de hauteur figée qui coupe le contenu --- */
+#wifiView .card,#wifiView .stat,#wifiView .money-row,#wifiView .person-row,#wifiView .hist-row,#wifiView .settings-row,#wifiView .plus-item,#wifiView .op-tile,#wifiView .chip{height:auto;min-height:0}
+#wifiView .hist-title,#wifiView .hist-sub,#wifiView .person-sub,#wifiView .settings-row .st-label{overflow-wrap:anywhere}
+#wifiView .card{overflow:visible}
+@media (orientation:landscape){
+  #wifiView .view{max-width:none}
+  #receptionView .app{max-width:none}
+}
+</style>
 </head>
 <body>
 
@@ -887,7 +931,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.43';
+const APP_VERSION = '6.44';
 const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
