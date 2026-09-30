@@ -1123,8 +1123,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.51';
-const APP_UPDATED = '29/09/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.52';
+const APP_UPDATED = '30/09/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -3091,7 +3091,7 @@ function sortTicketTypes(){
 
 // Insère une ligne dans la table Supabase concernée puis l'ajoute localement, en la
 // convertissant immédiatement au format "operation" unifié (pas de rechargement complet nécessaire).
-async function insertOp(table, payload, mapper){
+async function insertOp(table, payload, mapper, deferSync){
   // Génère id + horodatage côté client AVANT l'insertion : si la policy RLS de la table autorise
   // l'INSERT mais bloque le SELECT de relecture (piège Supabase classique), .select() renvoie un
   // tableau vide sans "error" — on ne dépend donc plus de la ligne retournée pour construire
@@ -3107,7 +3107,7 @@ async function insertOp(table, payload, mapper){
   DB.operations.push(op);
   DB.operations.sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
   DB.operations.forEach((o,i) => o.num = i+1);
-  wifiSync();
+  if(!deferSync) wifiSync();
   return op;
 }
 
@@ -4552,7 +4552,7 @@ const UI = {
     const qty = parseInt(document.getElementById('op-qty').value)||0;
     if(op.opType==='VENTE'){
       const price = parseInt(document.getElementById('op-price')?.value)||tt.price;
-      document.getElementById('op-preview').textContent = qty>0 ? `Total : ${fmtGNF(qty*price)}` : '';
+      document.getElementById('op-preview').textContent = qty>0 ? `Total : ${fmtGNF(qty*price)}` + (op.personId ? ' — le versement du même montant sera enregistré automatiquement.' : '') : '';
     }
   },
   async submitOp(){
@@ -4599,7 +4599,12 @@ const UI = {
       if(op.opType==='RECEPTION'){
         await insertOp('stock_receipts', {ticket_type_id: op.typeId, quantity: qty, comment}, mapReceipt);
       } else if(op.opType==='VENTE'){
-        await insertOp('sales', {person_id: op.personId||null, ticket_type_id: op.typeId, quantity: qty, unit_price: unitPrice, comment}, mapSale);
+        if(op.personId){
+          // Vente pour une personne : le versement du même montant est créé automatiquement (une seule saisie).
+          await this.recordLinkedSalePayment(op.personId, op.typeId, qty, unitPrice, comment, 'VENTE');
+        } else {
+          await insertOp('sales', {person_id: null, ticket_type_id: op.typeId, quantity: qty, unit_price: unitPrice, comment}, mapSale);
+        }
       } else {
         // REMISE
         await insertOp('stock_movements', {movement_type: op.opType, ticket_type_id: op.typeId, person_id: op.personId||null, quantity: qty, comment}, mapMovement);
@@ -4617,40 +4622,88 @@ const UI = {
       return;
     }
     this.closeSheet();
-    toast(`${OP_META[op.opType].label} enregistrée`);
+    toast(op.opType==='VENTE' && op.personId && amount>0 ? `Vente enregistrée + versement de ${fmtGNF(amount)}` : `${OP_META[op.opType].label} enregistrée`);
   },
 
   renderPaymentForm(){
     const p = person(this.newOp.personId);
     const tt = ticketType(this.newOp.typeId);
     const tm = personTypeMoney(p.id, tt.id);
+    const avail = Math.max(0, personTypeStats(p.id, tt.id).restant);
+    const price = Number(tt.price)||0;
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Paiement — ${tt.name}</div>
-      <div class="sheet-sub"><span class="wname">${p.name}</span> · Reste à payer pour ce type : ${fmtGNF(tm.reste)}</div>
-      <div class="field"><label>Montant versé (GNF)</label><input autocomplete="off" type="number" id="pay-amount" min="1" placeholder="0"></div>
+      <div class="sheet-sub"><span class="wname">${p.name}</span> · Reste à payer pour ce type : ${fmtGNF(tm.reste)}<br>Disponible : ${fmt(avail)} ticket(s) × ${fmtGNF(price)} = maximum ${fmtGNF(avail*price)}</div>
+      <div class="field"><label>Quantité (tickets)</label><input autocomplete="off" type="number" id="pay-qty" min="1" ${avail>0?'max="'+avail+'"':''} placeholder="0" oninput="UI.updatePayPreview()"></div>
+      <div id="pay-preview" class="help-text"></div>
       <div class="field"><label>Commentaire (optionnel)</label><textarea id="pay-comment"></textarea></div>
       <div id="pay-error"></div>
       <button class="btn btn-primary" onclick="UI.submitPayment('${p.id}')">Enregistrer le paiement</button>
     `);
   },
+  updatePayPreview(){
+    const el = document.getElementById('pay-preview'); if(!el) return;
+    const tt = ticketType(this.newOp.typeId); if(!tt) return;
+    const qty = parseInt(document.getElementById('pay-qty').value)||0;
+    const price = Number(tt.price)||0;
+    el.textContent = qty>0 ? `Montant du versement : ${fmtGNF(qty*price)} — la vente correspondante sera enregistrée automatiquement.` : '';
+  },
+  // Enregistre UNE vente + UN versement liés (même personne, même type, même quantité, même montant).
+  // Les deux opérations sont mises en file ensemble puis synchronisées en une seule fois : jamais l'une sans l'autre.
+  // Appelée une seule fois par saisie utilisateur ; les deux insertOp ne se rappellent jamais entre eux (pas de boucle).
+  async recordLinkedSalePayment(personId, typeId, qty, unitPrice, comment, origin){
+    const amount = qty*unitPrice;
+    const auto = origin==='PAIEMENT' ? 'Vente automatique liée au versement' : 'Versement automatique lié à la vente';
+    const autoComment = comment ? auto+' — '+comment : auto;
+    const created = [];
+    try{
+      const sale = await insertOp('sales', {person_id: personId, ticket_type_id: typeId, quantity: qty, unit_price: unitPrice, comment: origin==='VENTE' ? comment : autoComment}, mapSale, true);
+      created.push(sale.id);
+      sale.amount = amount;   // montant local immédiat (le serveur le recalcule à la prochaine lecture)
+      if(amount>0){           // un versement de 0 GNF n'a pas de sens : rien à verser
+        const pay = await insertOp('payments', {person_id: personId, ticket_type_id: typeId, amount, comment: origin==='PAIEMENT' ? comment : autoComment}, mapPayment, true);
+        created.push(pay.id);
+      }
+    }catch(e){
+      // Jamais d'opération orpheline : on retire ce qui vient d'être mis en file.
+      wifiQ = wifiQ.filter(x => !created.includes(x.payload.id)); wifiSaveQ();
+      DB.operations = DB.operations.filter(o => !created.includes(o.id));
+      DB.operations.forEach((o,i) => o.num = i+1);
+      throw e;
+    }
+    wifiSync();
+    return {amount};
+  },
   async submitPayment(personId){
-    const amount = parseInt(document.getElementById('pay-amount').value)||0;
+    const qty = parseInt(document.getElementById('pay-qty').value)||0;
     const comment = document.getElementById('pay-comment').value.trim()||null;
     const errEl = document.getElementById('pay-error');
-    if(amount<=0){ errEl.innerHTML=`<div class="error-text">Montant invalide.</div>`; return; }
+    errEl.innerHTML='';
+    if(qty<=0){ errEl.innerHTML=`<div class="error-text">Quantité invalide : saisissez un nombre de tickets supérieur à zéro.</div>`; return; }
     const typeId = this.newOp.typeId;
     if(!typeId){ errEl.innerHTML=`<div class="error-text">Type de ticket manquant — recommencez.</div>`; return; }
+    const tt = ticketType(typeId);
+    const price = Number(tt && tt.price)||0;
+    if(price<=0){ errEl.innerHTML=`<div class="error-text">Prix non défini pour ce type de ticket : impossible de calculer le montant du versement.</div>`; return; }
+    // Contrôle AVANT tout enregistrement : le versement ne peut pas dépasser la valeur des tickets encore disponibles chez la personne.
+    const avail = Math.max(0, personTypeStats(personId, typeId).restant);
+    const maxAmount = avail*price;
+    const amount = qty*price;
+    if(amount>maxAmount){
+      errEl.innerHTML = `<div class="error-text">Versement refusé : ${fmtGNF(amount)} (${fmt(qty)} × ${fmtGNF(price)}) dépasse le maximum autorisé de ${fmtGNF(maxAmount)}, soit ${fmt(avail)} ticket(s) disponible(s) chez cette personne pour ce type.</div>`;
+      return;
+    }
     try{
-      await insertOp('payments', {person_id: personId, ticket_type_id: typeId, amount, comment}, mapPayment);
+      await this.recordLinkedSalePayment(personId, typeId, qty, price, comment, 'PAIEMENT');
     }catch(e){
       errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
       return;
     }
     this.closeSheet(); this.renderAll();
     if(this.currentView==='situation') this.renderSituation();
-    toast('Paiement enregistré');
+    toast(`Paiement enregistré : ${fmtGNF(amount)} (vente de ${fmt(qty)} × ${tt.name} liée)`);
   },
 
   /* ---------- CORRECTION ---------- */
