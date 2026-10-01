@@ -697,6 +697,15 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 }
 @media (prefers-reduced-motion:reduce){#wifiView *{transition:none!important;animation:none!important}}
 </style>
+<style id="fix-v655">
+/* v6.55 : nom sur une seule ligne + montant vendu sous le total */
+#wifiView .person-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;min-width:0}
+#wifiView .person-head .person-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+#wifiView .person-sub.person-sub-row{display:flex;justify-content:space-between;align-items:baseline;gap:.6em}
+#wifiView .person-sub-row .ps-main{min-width:0}
+#wifiView .person-sub-row .ps-sold{margin-left:auto;text-align:right;white-space:nowrap;font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);font-weight:600;font-variant-numeric:tabular-nums}
+#wifiView .person-sub-row .ps-sold span{font-size:.85em;font-weight:500}
+</style>
 </head>
 <body>
 
@@ -1200,7 +1209,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.54';
+const APP_VERSION = '6.55';
 const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2777,7 +2786,7 @@ en: {
   "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"At-a-glance overview: assigned, sold, remaining, money expected/returned and last assignment.",
-  "Type":"Type","Pris":"Taken","Vendu":"Sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Reste":"Balance","Montant":"Amount","Montant, Payé et Reste : en GNF":"Amount, Paid and Balance: in GNF","TOTAL":"TOTAL",
+  "Type":"Type","Pris":"Taken","Vendu":"Sold","vendu":"sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Reste":"Balance","Montant":"Amount","Montant, Payé et Reste : en GNF":"Amount, Paid and Balance: in GNF","TOTAL":"TOTAL",
   "Argent":"Money","Types de tickets":"Ticket types","Aucun type de ticket actif.":"No active ticket type.",
   "Aucun mouvement d'argent.":"No money movement.","Aucune donnée pour cette personne.":"No data for this person.",
   "Journal des suppressions & clôtures":"Deletion & closure log","Journal (suppressions & clôtures)":"Log (deletions & closures)",
@@ -2857,7 +2866,7 @@ ff: {
   "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ 𞤒𞤢𞤤𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"𞤒𞤭𞤴𞤭𞥅𞤪𞤫: 𞤼𞤮𞤼𞤢𞥄𞤯𞤮, 𞤛𞤢𞤥𞤢𞥄𞤯𞤮, 𞤳𞤢𞤥𞤯𞤭𞤯𞤮, 𞤢𞤪𞤼𞤢𞥄𞤯𞤭/𞤺𞤭𞤯𞤮 𞤫 𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤢𞤲𞤯𞤫.",
-  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Reste":"𞤀𞤦𞥆𞤢𞤯𞤢𞤲","Montant":"𞤖𞤢𞤦𞤣𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
+  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Reste":"𞤀𞤦𞥆𞤢𞤯𞤢𞤲","Montant":"𞤖𞤢𞤦𞤣𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
   "Argent":"𞤖𞤢𞤦𞤣𞤭","Types de tickets":"𞤙𞤮𞥅𞤬𞤮𞥅𞤶𞤭 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","Aucun type de ticket actif.":"𞤁𞤮𞥅 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭 𞤺𞤮𞤤𞤣𞤮.",
   "Aucun mouvement d'argent.":"𞤁𞤮𞥅 𞤣𞤭𞤯𞤯𞤭 𞤢𞤪𞤣𞤭𞤪.","Aucune donnée pour cette personne.":"𞤁𞤮𞥅 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤲𞤫𞤯𞤯𞤮 𞤯𞤭.",
   "Journal des suppressions & clôtures":"𞤎𞤭𞥅𞤪𞤣𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭𞥅𞤶𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭𞥅𞤶𞤭","Journal (suppressions & clôtures)":"𞤎𞤭𞥅𞤪𞤣𞤫 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭)",
@@ -3633,7 +3642,7 @@ const UI = {
               <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
               <div class="person-total">${fmtGNF(totalMontant)}</div>
             </div>
-            <div class="person-sub">${fmt(restant)} tickets en main</div>
+            <div class="person-sub person-sub-row"><span class="ps-main">${fmt(restant)} tickets en main</span><span class="ps-sold"><span>vendu</span> = ${fmtGNF(m.du)}</span></div>
           </div>
           <div class="person-body">
             <div class="person-lines">
@@ -4236,7 +4245,7 @@ const UI = {
       return `
         <div class="card" style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span class="wname" style="font-size:15.5px;cursor:pointer;" onclick="UI.openSituation('${p.id}')">${p.name}</span>
+            <span class="wname" style="font-size:15.5px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;" onclick="UI.openSituation('${p.id}')">${p.name}</span>
             ${this.infoBtn('suivi:'+p.id, true)}
             ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
           </div>
