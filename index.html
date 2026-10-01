@@ -1123,8 +1123,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.52';
-const APP_UPDATED = '30/09/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.53';
+const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -2700,7 +2700,7 @@ en: {
   "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"At-a-glance overview: assigned, sold, remaining, money expected/returned and last assignment.",
-  "Type":"Type","Pris":"Taken","Vendu":"Sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Reste":"Balance","TOTAL":"TOTAL",
+  "Type":"Type","Pris":"Taken","Vendu":"Sold","Restant":"Remaining","Ventes":"Sales","Montant":"Amount","Valeur totale":"Total value","Valeur du disponible":"Value of available","Payé":"Paid","Reste":"Balance","TOTAL":"TOTAL",
   "Argent":"Money","Types de tickets":"Ticket types","Aucun type de ticket actif.":"No active ticket type.",
   "Aucun mouvement d'argent.":"No money movement.","Aucune donnée pour cette personne.":"No data for this person.",
   "Journal des suppressions & clôtures":"Deletion & closure log","Journal (suppressions & clôtures)":"Log (deletions & closures)",
@@ -3507,8 +3507,9 @@ const UI = {
       .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
       <div class="money-row total" style="border-bottom:1px solid var(--ink);margin-bottom:4px;padding-bottom:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
-      <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
-      ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}</div>` : ''}
+      <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} tickets</span></div>
+      <div class="money-row"><span class="label wname">Valeur du disponible</span><span class="amount">${fmtGNF(s.disponible*price)}</span></div>
+      ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} tickets</span></div>`).join('')}</div>` : ''}
     `;
   },
 
@@ -3533,14 +3534,14 @@ const UI = {
           if(!s.restant) return '';
           const montant = s.restant * (tt.price||0);
           totalMontant += montant;
-          return `<div class="person-sub" style="margin-top:3px;"><span class="ps-l"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong></span><span class="ps-r">${fmtGNF(montant)}</span></div>`;
+          return `<div class="person-sub" style="margin-top:3px;"><span class="ps-l"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong></span></div>`;
         }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
           <div class="person-top">
             <div class="person-head">
               <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
-              <div class="person-total">${fmtGNF(totalMontant)}</div>
+              <div class="person-total">Valeur : ${fmtGNF(totalMontant)}</div>
             </div>
             <div class="person-sub">${fmt(restant)} tickets en main</div>
           </div>
@@ -3635,7 +3636,7 @@ const UI = {
       const s = personTypeStats(p.id, tt.id);
       if(!s.restant) return '';
       const montant = s.restant * (tt.price||0);
-      return `<div class="money-row"><span class="label wname">${tt.name}</span><span class="amount">${fmt(s.restant)} tickets — ${fmtGNF(montant)}</span></div>`;
+      return `<div class="money-row"><span class="label wname">${tt.name}</span><span class="amount">${fmt(s.restant)} tickets</span></div>`;
     }).join('');
     const totalRestant = personTotalRestant(p.id);
     const totalValeur = liveTypes().reduce((sum,tt)=>sum + personTypeStats(p.id,tt.id).restant*(tt.price||0), 0);
@@ -3661,20 +3662,22 @@ const UI = {
         <div class="info-panel" ${this.infoIsOpen('sit:'+p.id)?'':'hidden'}>
           ${typeLines || `<div class="empty">Aucun type de ticket actif.</div>`}
         </div>
-        <div class="money-row" style="border-top:1px solid var(--w-line,#e2ddd0);margin-top:4px;padding-top:8px;"><span class="label"><strong>TOTAL</strong></span><span class="amount"><strong>${fmt(totalRestant)} tickets — ${fmtGNF(totalValeur)}</strong></span></div>
+        <div class="money-row" style="border-top:1px solid var(--w-line,#e2ddd0);margin-top:4px;padding-top:8px;"><span class="label"><strong>TOTAL tickets</strong></span><span class="amount"><strong>${fmt(totalRestant)} tickets</strong></span></div>
+        <div class="money-row"><span class="label"><strong>Valeur totale</strong></span><span class="amount"><strong>${fmtGNF(totalValeur)}</strong></span></div>
       </div>
 
       <h2 class="section-title">Argent</h2>
       <div class="card fill-b">
         <table class="ledger">
-          <tr><th>Type</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
+          <tr><th>Type</th><th>Vendu</th><th>Montant</th><th>Payé</th><th>Reste</th></tr>
           ${liveTypes().map(tt=>{
             const tm = personTypeMoney(p.id, tt.id);
             if(tm.du===0 && tm.paye===0) return '';
-            return `<tr><td class="tname">${tt.name}</td><td>${fmtGNF(tm.du)}</td><td>${fmtGNF(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmtGNF(tm.reste)}</strong></td></tr>`;
-          }).join('') || `<tr><td colspan="4" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
-          <tr class="total"><td>TOTAL</td><td>${fmtGNF(m.du)}</td><td>${fmtGNF(m.paye)}</td><td>${fmtGNF(m.reste)}</td></tr>
+            return `<tr><td class="tname">${tt.name}</td><td>${fmt(personTypeStats(p.id, tt.id).vendu)}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmt(tm.reste)}</strong></td></tr>`;
+          }).join('') || `<tr><td colspan="5" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
+          <tr class="total"><td>TOTAL</td><td>${fmt(liveTypes().reduce((a,tt)=>a+personTypeStats(p.id, tt.id).vendu,0))}</td><td>${fmt(m.du)}</td><td>${fmt(m.paye)}</td><td>${fmt(m.reste)}</td></tr>
         </table>
+        <div class="ledger-note">Vendu : quantité de tickets · Montant, Payé et Reste : en GNF</div>
       </div>
 
       <h2 class="section-title">Dernières opérations</h2>
@@ -3850,12 +3853,12 @@ const UI = {
     if(op.opType==='REMISE' && p) title = `${meta.label} <span style="font-weight:400;">→</span> <span class="wname">${p.name}</span>`;
     const nameHtml = (op.opType==='REMISE' && p) ? null : `<span class="wname" style="font-size:13px;">${p?p.name:'Disponible'}</span>`;
     const sub = [nameHtml, tt?`<span class="tname">${tt.name}</span>`:null, dateStr].filter(Boolean).join(' · ');
-    let qtyStr = '';
+    let qtyStr = '', amtSub = '';
     if(op.opType==='PAIEMENT') qtyStr = fmtGNF(op.amount);
-    else if(op.opType==='VENTE') qtyStr = `${fmt(op.qty)}<div class="hist-amt">${fmtGNF(op.amount)}</div>`;
+    else if(op.opType==='VENTE'){ qtyStr = fmt(op.qty); amtSub = `Montant : ${fmtGNF(op.amount)}`; }
     else if(op.opType==='CORRECTION'){
       if(c.target.opType==='PAIEMENT') qtyStr = sgn(op.amount) + ' GNF';
-      else { qtyStr = sgn(op.qty); if(c.target.opType==='VENTE' && op.amount) qtyStr += `<div class="hist-amt">${sgn(op.amount)} GNF</div>`; }
+      else { qtyStr = sgn(op.qty); if(c.target.opType==='VENTE' && op.amount) amtSub = `Montant : ${sgn(op.amount)} GNF`; }
     } else if(op.qty!=null) qtyStr = sgn(op.qty);
     const actions = opts.pick ? '' : `
         <div class="hist-actions">
@@ -3868,7 +3871,7 @@ const UI = {
         <div class="hist-badge" style="background:${meta.color}"></div>
         <div class="hist-main">
           <div class="hist-title">${title}</div>
-          <div class="hist-sub">${sub}${op.comment?' · '+op.comment:''}</div>
+          <div class="hist-sub">${sub}${amtSub?' · '+amtSub:''}${op.comment?' · '+op.comment:''}</div>
         </div>
         <div class="hist-qty">${qtyStr}</div>${actions}
       </div>`;
@@ -4160,10 +4163,10 @@ const UI = {
           <div class="ledger-wrap">
             <table class="ledger ledger-7">
               <colgroup><col style="width:14%"><col style="width:9%"><col style="width:11%"><col style="width:15%"><col style="width:17%"><col style="width:17%"><col style="width:17%"></colgroup>
-              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
+              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Montant</th><th>Payé</th><th>Reste</th></tr>
               ${typeRows}
             </table>
-            <div class="ledger-note">Ventes, Payé et Reste : montants en GNF</div>
+            <div class="ledger-note">Pris, Vendu, Restant : quantités de tickets · Montant, Payé, Reste : en GNF</div>
           </div>` : ''}
         </div>`;
     }).join('');
