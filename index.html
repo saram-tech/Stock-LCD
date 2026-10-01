@@ -345,6 +345,9 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView table.ledger.ledger-7 th,#wifiView table.ledger.ledger-7 td{font-size:calc(clamp(10px,2.9vw,14.5px) * var(--wfs,1));padding-left:2px;padding-right:2px}
 #wifiView table.ledger.ledger-7 td:first-child,#wifiView table.ledger.ledger-7 th:first-child{padding-left:5px}
 #wifiView table.ledger.ledger-7 td:last-child,#wifiView table.ledger.ledger-7 th:last-child{padding-right:5px}
+#wifiView table.ledger.ledger-5 th,#wifiView table.ledger.ledger-5 td{font-size:calc(clamp(10.5px,3vw,15px) * var(--wfs,1));padding-left:2px;padding-right:2px}
+#wifiView table.ledger.ledger-5 td:first-child,#wifiView table.ledger.ledger-5 th:first-child{padding-left:5px}
+#wifiView table.ledger.ledger-5 td:last-child,#wifiView table.ledger.ledger-5 th:last-child{padding-right:5px}
 #wifiView .ledger-wrap{margin:8px -4px 0}
 #wifiView .ledger-note{font-size:calc(12.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:6px;text-align:right}
 /* Bouton Infos */
@@ -619,6 +622,80 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .person-row{padding:.3em 2px}
 #wifiView .person-top{padding:.25em .6em;margin-bottom:.2em}
 #wifiView .person-name,#wifiView .person-total{line-height:1.15;margin-bottom:0}
+</style>
+<style id="ui-v654">
+/* ===== v6.54 : modernisation visuelle (CSS uniquement, aucune logique modifiée) ===== */
+#wifiView{--w-r:16px;--w-r-s:11px;--w-focus:0 0 0 3px color-mix(in srgb,var(--w-green) 30%,transparent);--w-sh:0 1px 2px rgba(20,30,50,.06),0 6px 18px rgba(20,30,50,.07)}
+#wifiView{line-height:1.35;letter-spacing:.005em;-webkit-tap-highlight-color:transparent}
+/* Hiérarchie : titres de section discrets, valeurs en avant */
+#wifiView h2.section-title{font-size:calc(12.5px * var(--wfs,1));font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--w-ink-soft);margin:1.3em 2px .5em;display:flex;align-items:center;gap:.6em}
+#wifiView h2.section-title::after{content:"";flex:1;height:1px;background:var(--w-paper-line)}
+#wifiView h2.section-title:first-child{margin-top:.2em}
+/* Cartes */
+#wifiView .card,#wifiView .stat,#wifiView .op-tile{border-radius:var(--w-r);border:1px solid var(--w-line);box-shadow:var(--w-sh)}
+#wifiView .card.fill-a,#wifiView .card.fill-b{background:var(--w-card)}
+#wifiView .card{padding:.75em .85em}
+#wifiView .card + .card{margin-top:.7em}
+#wifiView .stat{padding:.7em .85em}
+#wifiView .stat .label{text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+#wifiView .stat .value{font-weight:700;letter-spacing:-.01em}
+#wifiView .money-row{padding:.5em 0;gap:.8em}
+#wifiView .money-row .label{color:var(--w-ink-soft)}
+#wifiView .money-row .amount{font-weight:700}
+/* Tableaux */
+#wifiView table.ledger{border:1px solid var(--w-line);border-radius:var(--w-r-s);border-collapse:separate;border-spacing:0;overflow:hidden;background:var(--w-card)}
+#wifiView table.ledger th{background:var(--w-fill-head,var(--w-paper));color:var(--w-ink-soft);font-size:calc(clamp(10px,2.9vw,12.5px) * var(--wfs,1));font-weight:700;text-transform:uppercase;letter-spacing:.05em;border:none;border-bottom:1px solid var(--w-line);padding:.55em 4px;border-radius:0}
+#wifiView table.ledger td{border:none;border-bottom:1px solid var(--w-paper-line);padding:.55em 4px;font-weight:600;line-height:1.25;border-radius:0}
+#wifiView table.ledger tr:nth-child(even) td{background:color-mix(in srgb,var(--w-paper) 55%,transparent)}
+#wifiView table.ledger td.tname{font-weight:700;color:var(--w-ink)}
+#wifiView table.ledger td strong{font-size:inherit;font-weight:800}
+#wifiView table.ledger td.neg{color:var(--w-red)}#wifiView table.ledger td.pos{color:var(--w-green)}
+#wifiView table.ledger tr:last-child td{border-bottom:none}
+#wifiView table.ledger tr.total td{background:var(--w-fill-head,var(--w-paper));border-top:1px solid var(--w-ink);font-weight:800;color:var(--w-ink);padding-top:.6em}
+#wifiView .ledger-note{font-size:calc(11px * var(--wfs,1));opacity:.85}
+/* Boutons */
+#wifiView .btn{border-radius:var(--w-r-s);min-height:2.7em;padding:.7em 1em;font-weight:700;letter-spacing:.01em;transition:transform .08s,box-shadow .15s,background .15s}
+#wifiView .btn-primary{box-shadow:0 2px 6px rgba(20,30,50,.22)}
+#wifiView .btn-secondary,#wifiView .btn-outline{border:1.5px solid var(--w-line)}
+#wifiView .btn:active{transform:scale(.98)}
+#wifiView .btn:focus-visible,#wifiView input:focus,#wifiView select:focus,#wifiView textarea:focus{outline:none;box-shadow:var(--w-focus);border-color:var(--w-green)}
+#wifiView .info-btn{border-radius:var(--w-r-s);font-weight:700}
+/* Champs */
+#wifiView .field input,#wifiView .field select,#wifiView .field textarea{border-radius:var(--w-r-s);border:1.5px solid var(--w-line);background:var(--w-card);color:var(--w-ink);padding:.6em .75em;min-height:2.6em}
+#wifiView .field label{font-size:calc(12px * var(--wfs,1));font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--w-ink-soft)}
+/* Pastilles et historique */
+#wifiView .chip{font-weight:700;padding:.2em .7em;letter-spacing:.01em}
+#wifiView .hist-row{padding:.6em 2px;gap:.7em}
+#wifiView .hist-badge{width:.6em;height:.6em;border-radius:50%;margin-top:.45em}
+#wifiView .hist-title{font-weight:700}
+#wifiView .person-row{padding:.7em 2px;border-radius:var(--w-r-s);transition:background .12s}
+#wifiView .person-row:active{background:var(--w-paper-line)}
+/* Barre du haut et navigation */
+#wifiView .topbar{background:color-mix(in srgb,var(--w-paper) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--w-paper-line)}
+#wifiView .topbar .verBadge,#wifiView .topbar .syncBadge{border-radius:20px;font-weight:600}
+#wifiView .bottomnav{background:var(--w-card);border-top:1px solid var(--w-line);box-shadow:0 -4px 16px rgba(20,30,50,.07)}
+#wifiView .navbtn{font-weight:700;transition:color .12s}
+#wifiView .navbtn.active{color:var(--w-green)}
+#wifiView .fab{box-shadow:0 4px 14px rgba(20,30,50,.3)}
+/* Fenêtres (sheets) */
+#wifiView .overlay{-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+#wifiView .sheet{border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.2);max-width:640px;margin:0 auto}
+#wifiView .sheet-handle{width:42px;height:5px;border-radius:3px}
+#wifiView .sheet-title{font-weight:800;letter-spacing:-.01em}
+#wifiView .op-tile{padding:.75em .7em;transition:transform .08s,background .12s}
+#wifiView .op-tile:active{transform:scale(.97)}
+#wifiView .alert{border-radius:var(--w-r-s)}
+/* Paysage : plein écran utile, zones sûres, espacements resserrés */
+@media (orientation:landscape){
+  #wifiView .view{max-width:none;padding:.5em max(16px,env(safe-area-inset-right)) 1em max(16px,env(safe-area-inset-left))}
+  #wifiView .topbar{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+  #wifiView .sheet{max-width:720px;max-height:94vh}
+  #wifiView .navbtn{flex-direction:row;justify-content:center;gap:.5em;padding:.4em 2px}
+  #wifiView{padding-bottom:56px}
+  #wifiView .card{padding:.6em .8em}
+  #wifiView table.ledger td,#wifiView table.ledger th{padding-top:.4em;padding-bottom:.4em}
+}
+@media (prefers-reduced-motion:reduce){#wifiView *{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
@@ -1123,7 +1200,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.53';
+const APP_VERSION = '6.54';
 const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2700,7 +2777,7 @@ en: {
   "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"At-a-glance overview: assigned, sold, remaining, money expected/returned and last assignment.",
-  "Type":"Type","Pris":"Taken","Vendu":"Sold","Restant":"Remaining","Ventes":"Sales","Montant":"Amount","Valeur totale":"Total value","Valeur du disponible":"Value of available","Payé":"Paid","Reste":"Balance","TOTAL":"TOTAL",
+  "Type":"Type","Pris":"Taken","Vendu":"Sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Reste":"Balance","Montant":"Amount","Montant, Payé et Reste : en GNF":"Amount, Paid and Balance: in GNF","TOTAL":"TOTAL",
   "Argent":"Money","Types de tickets":"Ticket types","Aucun type de ticket actif.":"No active ticket type.",
   "Aucun mouvement d'argent.":"No money movement.","Aucune donnée pour cette personne.":"No data for this person.",
   "Journal des suppressions & clôtures":"Deletion & closure log","Journal (suppressions & clôtures)":"Log (deletions & closures)",
@@ -2780,7 +2857,7 @@ ff: {
   "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ 𞤒𞤢𞤤𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"𞤒𞤭𞤴𞤭𞥅𞤪𞤫: 𞤼𞤮𞤼𞤢𞥄𞤯𞤮, 𞤛𞤢𞤥𞤢𞥄𞤯𞤮, 𞤳𞤢𞤥𞤯𞤭𞤯𞤮, 𞤢𞤪𞤼𞤢𞥄𞤯𞤭/𞤺𞤭𞤯𞤮 𞤫 𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤢𞤲𞤯𞤫.",
-  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Reste":"𞤀𞤦𞥆𞤢𞤯𞤢𞤲","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
+  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Reste":"𞤀𞤦𞥆𞤢𞤯𞤢𞤲","Montant":"𞤖𞤢𞤦𞤣𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
   "Argent":"𞤖𞤢𞤦𞤣𞤭","Types de tickets":"𞤙𞤮𞥅𞤬𞤮𞥅𞤶𞤭 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","Aucun type de ticket actif.":"𞤁𞤮𞥅 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭 𞤺𞤮𞤤𞤣𞤮.",
   "Aucun mouvement d'argent.":"𞤁𞤮𞥅 𞤣𞤭𞤯𞤯𞤭 𞤢𞤪𞤣𞤭𞤪.","Aucune donnée pour cette personne.":"𞤁𞤮𞥅 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤲𞤫𞤯𞤯𞤮 𞤯𞤭.",
   "Journal des suppressions & clôtures":"𞤎𞤭𞥅𞤪𞤣𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭𞥅𞤶𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭𞥅𞤶𞤭","Journal (suppressions & clôtures)":"𞤎𞤭𞥅𞤪𞤣𞤫 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭)",
@@ -3216,6 +3293,20 @@ function personTypeStats(personId, typeId){
   const restant = pris - vendu;
   return {pris, vendu, restant, montantVentes};
 }
+// Quantité de tickets vendus, sur le MÊME périmètre que montantVentes (toutes les ventes, clôturées ou non),
+// pour que « Vendu » et « Montant » du tableau Argent restent cohérents.
+function personTypeSoldQty(personId, typeId){
+  let q=0;
+  ledgerOps().forEach(op=>{
+    if(op.opType==='CORRECTION'){
+      const target = DB.operations.find(o=>o.id===op.correctsOpId);
+      if(target && target.personId===personId && target.typeId===typeId && target.opType==='VENTE') q += (op.qty||0);
+      return;
+    }
+    if(op.personId===personId && op.typeId===typeId && op.opType==='VENTE') q += (op.qty||0);
+  });
+  return q;
+}
 function personMoney(personId){
   let du=0, paye=0;
   DB.ticketTypes.forEach(tt=>{ du += personTypeStats(personId, tt.id).montantVentes; });
@@ -3507,9 +3598,8 @@ const UI = {
       .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
       <div class="money-row total" style="border-bottom:1px solid var(--ink);margin-bottom:4px;padding-bottom:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
-      <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} tickets</span></div>
-      <div class="money-row"><span class="label wname">Valeur du disponible</span><span class="amount">${fmtGNF(s.disponible*price)}</span></div>
-      ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} tickets</span></div>`).join('')}</div>` : ''}
+      <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
+      ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}</div>` : ''}
     `;
   },
 
@@ -3534,14 +3624,14 @@ const UI = {
           if(!s.restant) return '';
           const montant = s.restant * (tt.price||0);
           totalMontant += montant;
-          return `<div class="person-sub" style="margin-top:3px;"><span class="ps-l"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong></span></div>`;
+          return `<div class="person-sub" style="margin-top:3px;"><span class="ps-l"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong></span><span class="ps-r">${fmtGNF(montant)}</span></div>`;
         }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
           <div class="person-top">
             <div class="person-head">
               <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
-              <div class="person-total">Valeur : ${fmtGNF(totalMontant)}</div>
+              <div class="person-total">${fmtGNF(totalMontant)}</div>
             </div>
             <div class="person-sub">${fmt(restant)} tickets en main</div>
           </div>
@@ -3636,7 +3726,7 @@ const UI = {
       const s = personTypeStats(p.id, tt.id);
       if(!s.restant) return '';
       const montant = s.restant * (tt.price||0);
-      return `<div class="money-row"><span class="label wname">${tt.name}</span><span class="amount">${fmt(s.restant)} tickets</span></div>`;
+      return `<div class="money-row"><span class="label wname">${tt.name}</span><span class="amount">${fmt(s.restant)} tickets — ${fmtGNF(montant)}</span></div>`;
     }).join('');
     const totalRestant = personTotalRestant(p.id);
     const totalValeur = liveTypes().reduce((sum,tt)=>sum + personTypeStats(p.id,tt.id).restant*(tt.price||0), 0);
@@ -3662,22 +3752,22 @@ const UI = {
         <div class="info-panel" ${this.infoIsOpen('sit:'+p.id)?'':'hidden'}>
           ${typeLines || `<div class="empty">Aucun type de ticket actif.</div>`}
         </div>
-        <div class="money-row" style="border-top:1px solid var(--w-line,#e2ddd0);margin-top:4px;padding-top:8px;"><span class="label"><strong>TOTAL tickets</strong></span><span class="amount"><strong>${fmt(totalRestant)} tickets</strong></span></div>
-        <div class="money-row"><span class="label"><strong>Valeur totale</strong></span><span class="amount"><strong>${fmtGNF(totalValeur)}</strong></span></div>
+        <div class="money-row" style="border-top:1px solid var(--w-line,#e2ddd0);margin-top:4px;padding-top:8px;"><span class="label"><strong>TOTAL</strong></span><span class="amount"><strong>${fmt(totalRestant)} tickets — ${fmtGNF(totalValeur)}</strong></span></div>
       </div>
 
       <h2 class="section-title">Argent</h2>
       <div class="card fill-b">
-        <table class="ledger">
+        <table class="ledger ledger-5">
+          <colgroup><col style="width:23%"><col style="width:12%"><col style="width:22%"><col style="width:21%"><col style="width:22%"></colgroup>
           <tr><th>Type</th><th>Vendu</th><th>Montant</th><th>Payé</th><th>Reste</th></tr>
           ${liveTypes().map(tt=>{
             const tm = personTypeMoney(p.id, tt.id);
             if(tm.du===0 && tm.paye===0) return '';
-            return `<tr><td class="tname">${tt.name}</td><td>${fmt(personTypeStats(p.id, tt.id).vendu)}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmt(tm.reste)}</strong></td></tr>`;
+            return `<tr><td class="tname">${tt.name}</td><td>${fmt(personTypeSoldQty(p.id, tt.id))}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmt(tm.reste)}</strong></td></tr>`;
           }).join('') || `<tr><td colspan="5" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
-          <tr class="total"><td>TOTAL</td><td>${fmt(liveTypes().reduce((a,tt)=>a+personTypeStats(p.id, tt.id).vendu,0))}</td><td>${fmt(m.du)}</td><td>${fmt(m.paye)}</td><td>${fmt(m.reste)}</td></tr>
+          <tr class="total"><td>TOTAL</td><td>${fmt(DB.ticketTypes.reduce((a,tt)=>a+personTypeSoldQty(p.id, tt.id),0))}</td><td>${fmt(m.du)}</td><td>${fmt(m.paye)}</td><td>${fmt(m.reste)}</td></tr>
         </table>
-        <div class="ledger-note">Vendu : quantité de tickets · Montant, Payé et Reste : en GNF</div>
+        <div class="ledger-note">Montant, Payé et Reste : en GNF</div>
       </div>
 
       <h2 class="section-title">Dernières opérations</h2>
@@ -3853,12 +3943,12 @@ const UI = {
     if(op.opType==='REMISE' && p) title = `${meta.label} <span style="font-weight:400;">→</span> <span class="wname">${p.name}</span>`;
     const nameHtml = (op.opType==='REMISE' && p) ? null : `<span class="wname" style="font-size:13px;">${p?p.name:'Disponible'}</span>`;
     const sub = [nameHtml, tt?`<span class="tname">${tt.name}</span>`:null, dateStr].filter(Boolean).join(' · ');
-    let qtyStr = '', amtSub = '';
+    let qtyStr = '';
     if(op.opType==='PAIEMENT') qtyStr = fmtGNF(op.amount);
-    else if(op.opType==='VENTE'){ qtyStr = fmt(op.qty); amtSub = `Montant : ${fmtGNF(op.amount)}`; }
+    else if(op.opType==='VENTE') qtyStr = `${fmt(op.qty)}<div class="hist-amt">${fmtGNF(op.amount)}</div>`;
     else if(op.opType==='CORRECTION'){
       if(c.target.opType==='PAIEMENT') qtyStr = sgn(op.amount) + ' GNF';
-      else { qtyStr = sgn(op.qty); if(c.target.opType==='VENTE' && op.amount) amtSub = `Montant : ${sgn(op.amount)} GNF`; }
+      else { qtyStr = sgn(op.qty); if(c.target.opType==='VENTE' && op.amount) qtyStr += `<div class="hist-amt">${sgn(op.amount)} GNF</div>`; }
     } else if(op.qty!=null) qtyStr = sgn(op.qty);
     const actions = opts.pick ? '' : `
         <div class="hist-actions">
@@ -3871,7 +3961,7 @@ const UI = {
         <div class="hist-badge" style="background:${meta.color}"></div>
         <div class="hist-main">
           <div class="hist-title">${title}</div>
-          <div class="hist-sub">${sub}${amtSub?' · '+amtSub:''}${op.comment?' · '+op.comment:''}</div>
+          <div class="hist-sub">${sub}${op.comment?' · '+op.comment:''}</div>
         </div>
         <div class="hist-qty">${qtyStr}</div>${actions}
       </div>`;
@@ -4163,10 +4253,10 @@ const UI = {
           <div class="ledger-wrap">
             <table class="ledger ledger-7">
               <colgroup><col style="width:14%"><col style="width:9%"><col style="width:11%"><col style="width:15%"><col style="width:17%"><col style="width:17%"><col style="width:17%"></colgroup>
-              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Montant</th><th>Payé</th><th>Reste</th></tr>
+              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
               ${typeRows}
             </table>
-            <div class="ledger-note">Pris, Vendu, Restant : quantités de tickets · Montant, Payé, Reste : en GNF</div>
+            <div class="ledger-note">Ventes, Payé et Reste : montants en GNF</div>
           </div>` : ''}
         </div>`;
     }).join('');
