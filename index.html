@@ -710,6 +710,24 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .person-sub.ps-tap{cursor:pointer;border-radius:8px;transition:background .12s;-webkit-tap-highlight-color:transparent}
 #wifiView .person-sub.ps-tap:active{background:color-mix(in srgb,var(--w-green) 22%,transparent)}
 </style>
+<style id="sheet-v658">
+/* v6.58 : fenêtres compactes + bouton d'enregistrement toujours visible */
+#wifiView .overlay{overflow:hidden}
+#wifiView .sheet{max-height:calc(100% - 6px);padding:8px 14px calc(8px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+#wifiView .sheet-handle{margin:0 auto 6px}
+#wifiView .sheet-title{font-size:calc(17px * var(--wfs,1));margin:0 0 .25em;line-height:1.2}
+#wifiView .sheet-sub{margin:0 0 .45em;line-height:1.25;font-size:calc(13px * var(--wfs,1))}
+#wifiView .sheet .field{margin:0 0 .45em}
+#wifiView .sheet .field label{margin:0 0 .2em;display:block;font-size:calc(11px * var(--wfs,1));line-height:1.1}
+#wifiView .sheet .field input,#wifiView .sheet .field select{min-height:0;padding:.42em .65em;line-height:1.25}
+#wifiView .sheet .field textarea{height:2.3em;min-height:0;max-height:5.5em;resize:none;padding:.4em .65em;line-height:1.25;field-sizing:content}
+#wifiView .sheet .help-text{margin:.2em 0;line-height:1.25}
+#wifiView .sheet .btn{min-height:0;padding:.6em .9em}
+#wifiView .sheet-close{top:6px}
+/* Bouton Enregistrer / valider : collé en bas de la fenêtre, jamais masqué */
+#wifiView .sheet > .btn-primary:not(:has(~ .btn-primary)),#wifiView .sheet > .btn-row:not(:has(~ .btn-row)){position:sticky;bottom:calc(4px + env(safe-area-inset-bottom));z-index:5;margin-top:.5em;box-shadow:0 0 0 8px var(--w-paper),0 2px 6px rgba(20,30,50,.22)}
+@media (orientation:landscape){#wifiView .sheet{max-height:calc(100% - 4px);padding-top:6px}#wifiView .sheet .field{margin-bottom:.3em}}
+</style>
 </head>
 <body>
 
@@ -1213,7 +1231,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.57';
+const APP_VERSION = '6.58';
 const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -5570,6 +5588,20 @@ window.initReceptionApp = async function(){
 })();
 applyGlobalPrefs();
 autoSync();
+</script>
+<script>
+/* v6.58 : la fenêtre suit la zone réellement visible (clavier ouvert) pour que le bouton reste accessible */
+(function(){
+  var vv=window.visualViewport; if(!vv) return;
+  function fit(){
+    var o=document.getElementById('overlay'); if(!o) return;
+    var kb=window.innerHeight-vv.height-vv.offsetTop;
+    if(kb>60){ o.style.top=vv.offsetTop+'px'; o.style.bottom='auto'; o.style.height=vv.height+'px'; }
+    else { o.style.top=''; o.style.bottom=''; o.style.height=''; }
+  }
+  vv.addEventListener('resize',fit); vv.addEventListener('scroll',fit);
+  window.addEventListener('orientationchange',function(){ setTimeout(fit,300); });
+})();
 </script>
 </body>
 </html>
