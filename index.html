@@ -827,6 +827,7 @@ th{text-align:center !important;vertical-align:middle}
 @media (hover:hover){
   #wifiView .person-row:hover{background:var(--w-paper-line)}
 }
+#wifiView .bah-card .bah-total{text-align:center;color:var(--w-green,#1a8a3c);font-weight:800;font-size:calc(clamp(34px,9vw,46px) * var(--wfs,1))}
 </style>
 </head>
 <body>
@@ -1341,7 +1342,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.74';
+const APP_VERSION = '6.75';
 const APP_UPDATED = '02/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -4440,7 +4441,7 @@ const UI = {
           <div class="bah-total">${fmtGNF(totalPaye)}</div>
           <table class="ledger ledger-5">
             <colgroup><col style="width:28%"><col style="width:38%"><col style="width:34%"></colgroup>
-            <tr><th>Type de ticket</th><th>Quantité vendue / quantité totale</th><th>Montant payé</th></tr>
+            <tr><th>Type</th><th>Quantité</th><th>Payé</th></tr>
             ${(rows + autresRow) || `<tr><td colspan="3" style="color:var(--w-ink-soft);">Aucun mouvement enregistré.</td></tr>`}
           </table>
           <div class="ledger-note">Montant payé : en GNF</div>
