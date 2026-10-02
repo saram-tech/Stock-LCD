@@ -446,9 +446,11 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView #view-accueil .card,#wifiView #settings-people,#wifiView #settings-prices,#wifiView #settings-types,#wifiView #hist-list,#wifiView #people-list,#wifiView #stock-breakdown{border:2px solid var(--w-line)}
 #wifiView #settings-people .settings-row,#wifiView #settings-prices .settings-row,#wifiView #settings-types .settings-row,#wifiView #view-accueil .money-row,#wifiView #people-list .person-row,#wifiView #hist-list .hist-row{border-bottom-color:var(--w-line)}
 #wifiView #stock-breakdown .money-row{border-bottom-color:var(--w-line)}
-/* Montants GNF de la carte « Où sont mes tickets ? » : valeur des tickets reçus (en haut) et montant vendu (en bas, vert) */
-#wifiView #stock-breakdown .gnf-note{display:inline-block;margin-left:6px;white-space:nowrap;font-size:calc(clamp(12px,3.4vw,15px) * var(--wfs,1));font-weight:600;color:var(--w-ink-soft);font-variant-numeric:tabular-nums}
-#wifiView #stock-breakdown .sold-note{margin-top:6px;padding:8px 2px 2px;border-top:1px solid var(--w-line);text-align:right;white-space:nowrap;font-size:calc(clamp(13px,3.8vw,17px) * var(--wfs,1));font-weight:800;color:var(--w-green);font-variant-numeric:tabular-nums}
+/* Carte « Où sont mes tickets ? » : en-tête à droite = montant global puis « payé = … » en vert (période en cours) */
+#wifiView #stock-breakdown .money-row.total{align-items:flex-start}
+#wifiView #stock-breakdown .total-right{display:flex;flex-direction:column;align-items:flex-end;text-align:right;white-space:nowrap}
+#wifiView #stock-breakdown .total-right .paid-note{margin-top:2px;font-size:calc(clamp(12px,3.4vw,15px) * var(--wfs,1));font-weight:800;color:var(--w-green);font-variant-numeric:tabular-nums}
+#wifiView #stock-breakdown .total-right .paid-note span{font-size:.9em}
 /* Infos ouvert : bloc encadré */
 #wifiView .info-panel:not([hidden]){border:2px solid var(--w-line);border-radius:12px;padding:0 10px 4px;margin:4px 0 8px}
 #wifiView .info-panel .money-row:last-of-type{border-bottom:none}
@@ -1231,7 +1233,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.62';
+const APP_VERSION = '6.68';
 const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3283,7 +3285,7 @@ function saleUnitPrice(op){
 
 // Aggregate quantities for a type across all people + me (personId=null)
 function typeAggregate(typeId){
-  let received=0, remitted=0, soldDirect=0, soldByPeople=0;
+  let received=0, remitted=0, soldDirect=0, soldByPeople=0, soldAmount=0;
   ledgerOps().forEach(op=>{
     // Une CORRECTION porte toujours personId=null/typeId=null sur elle-même (elle référence
     // l'opération corrigée via correctsOpId) : il faut donc la router via sa cible AVANT tout
@@ -3295,7 +3297,7 @@ function typeAggregate(typeId){
       const q = op.qty||0;
       if(target.opType==='RECEPTION') received += q;
       else if(target.opType==='REMISE') remitted += q;
-      else if(target.opType==='VENTE'){ if(target.personId) soldByPeople+=q; else soldDirect+=q; }
+      else if(target.opType==='VENTE'){ if(target.personId) soldByPeople+=q; else soldDirect+=q; soldAmount += (op.amount||0); }
       return;
     }
     if(op.typeId!==typeId) return;
@@ -3303,11 +3305,11 @@ function typeAggregate(typeId){
     const q = op.qty||0;
     if(op.opType==='RECEPTION') received += q;
     else if(op.opType==='REMISE') remitted += q;
-    else if(op.opType==='VENTE'){ if(op.personId) soldByPeople+=q; else soldDirect+=q; }
+    else if(op.opType==='VENTE'){ if(op.personId) soldByPeople+=q; else soldDirect+=q; soldAmount += (op.amount||0); }
   });
   const withMe = received - remitted - soldDirect;
   const withPeople = remitted - soldByPeople;
-  return {received, remitted, soldDirect, soldByPeople, withMe};
+  return {received, remitted, soldDirect, soldByPeople, soldAmount, withMe};
 }
 
 function stockSummary(){
@@ -3318,7 +3320,7 @@ function stockSummary(){
     const chezPersonnes = agg.remitted - agg.soldByPeople;
     return {
       type: tt, initial: initialReceived(tt.id), remis: agg.remitted, venduDirect: agg.soldDirect,
-      venduPersonnes: agg.soldByPeople, disponible, chezPersonnes
+      venduPersonnes: agg.soldByPeople, montantVendu: agg.soldAmount, disponible, chezPersonnes
     };
   });
 }
@@ -3677,15 +3679,14 @@ const UI = {
     const s = stockSummary().find(x=>x.type.id===this.stockPillType);
     if(!s){ el.innerHTML = `<div class="empty">Aucun type de ticket.</div>`; return; }
     const price = s.type.price||0;
+    // « payé » = montant des ventes de la période en cours (tout ticket vendu est encaissé aussitôt : aucune dette) ; repart à zéro à la clôture.
     const valeurRecus = s.initial * price;                          // reçus × prix unitaire
-    const montantVendu = (s.venduDirect + s.venduPersonnes) * price; // vendus (directs + via associés) × prix unitaire
     const perPerson = DB.people.filter(p=>!p.deletedAt).map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
       .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
-      <div class="money-row total" style="border-bottom:1px solid var(--ink);margin-bottom:4px;padding-bottom:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})<span class="gnf-note">(${fmtGNF(valeurRecus)})</span></span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
+      <div class="money-row total" style="border-bottom:1px solid var(--ink);margin-bottom:4px;padding-bottom:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="total-right"><span class="amount">${fmtGNF(valeurRecus)}</span><span class="paid-note"><span>payé</span> = ${fmtGNF(s.montantVendu)}</span></span></div>
       <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
       ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}</div>` : ''}
-      <div class="sold-note">(<span>vendu</span> = ${fmtGNF(montantVendu)})</div>
     `;
   },
 
