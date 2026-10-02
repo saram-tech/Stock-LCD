@@ -196,7 +196,7 @@
 .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}#wifiView .stat{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:12px 14px;}#wifiView .stat .label{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .stat .value{font-family:'IBM Plex Mono',monospace;font-size:calc(22px * var(--wfs,1));font-weight:600;margin-top:2px;}#wifiView .stat .value.small{font-size:calc(16px * var(--wfs,1));}#wifiView .stat .pages-hint{font-size:calc(10.5px * var(--wfs,1));color:var(--w-ink-soft);opacity:.75;margin-top:2px;}#wifiView .money-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--w-paper-line);}#wifiView .money-row:last-child{border-bottom:none;}#wifiView .money-row .label{font-size:calc(13px * var(--wfs,1));color:var(--w-ink-soft);}#wifiView .money-row .amount{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:calc(14.5px * var(--wfs,1));}#wifiView .amount.pos{color:var(--w-green);}#wifiView .amount.neg{color:var(--w-red);}#wifiView .money-row .label.wname{color:var(--w-ink);font-weight:700;font-size:calc(15px * var(--wfs,1));}#wifiView /* Alerts */
 .alert{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:calc(12.5px * var(--wfs,1));line-height:1.4;}#wifiView .alert + .alert{margin-top:8px;}#wifiView .alert.amber{background:var(--w-amber-soft);color:#7A4A17;}#wifiView .alert.red{background:var(--w-red-soft);color:#7A2621;}#wifiView .alert .dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex:none;}#wifiView .alert.amber .dot{background:var(--w-amber);}#wifiView .alert.red .dot{background:var(--w-red);}#wifiView /* Table (ledger style) */
 table.ledger{width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--wfs,1));}#wifiView table.ledger th{text-align:right;font-weight:700;color:var(--w-ink);font-size:calc(12px * var(--wfs,1));padding:0 4px 7px;border-bottom:1px solid var(--w-line);}#wifiView table.ledger th:first-child, #wifiView table.ledger td:first-child{text-align:left;}#wifiView table.ledger td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--w-paper-line);font-family:'IBM Plex Mono',monospace;}#wifiView table.ledger tr:last-child td{border-bottom:none;}#wifiView table.ledger tr.total td{font-weight:700;border-top:1px solid var(--w-ink);padding-top:8px;}#wifiView /* People list */
-.person-row{display:flex;align-items:center;justify-content:space-between;padding:14px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:700;font-size:calc(21px * var(--wfs,1));}#wifiView .wname{font-weight:700;font-size:calc(16px * var(--wfs,1));color:var(--w-ink);}#wifiView .tname{font-weight:700;color:var(--w-ink);}#wifiView .person-sub{font-size:calc(15px * var(--wfs,1));color:var(--w-ink-soft);margin-top:3px;}#wifiView .person-right{text-align:right;}#wifiView .person-total{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:calc(15px * var(--wfs,1));color:var(--w-ink);margin-bottom:4px;}#wifiView .chip{display:inline-block;font-size:calc(13px * var(--wfs,1));padding:3px 9px;border-radius:20px;font-weight:600;}#wifiView .chip.due{background:var(--w-red-soft);color:var(--w-red);}#wifiView .chip.clear{background:var(--w-green-soft);color:var(--w-green);}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
+.person-row{display:flex;align-items:center;justify-content:space-between;padding:14px 2px;border-bottom:1px solid var(--w-paper-line);cursor:pointer;}#wifiView .person-row:last-child{border-bottom:none;}#wifiView .person-name{font-weight:700;font-size:calc(21px * var(--wfs,1));}#wifiView .wname{font-weight:700;font-size:calc(16px * var(--wfs,1));color:var(--w-ink);}#wifiView .tname{font-weight:700;color:var(--w-ink);}#wifiView .person-sub{font-size:calc(15px * var(--wfs,1));color:var(--w-ink-soft);margin-top:3px;}#wifiView .person-total{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:calc(15px * var(--wfs,1));color:var(--w-ink);margin-bottom:4px;}#wifiView .chip{display:inline-block;font-size:calc(13px * var(--wfs,1));padding:3px 9px;border-radius:20px;font-weight:600;}#wifiView .chip.inactive{background:#EEE;color:#888;}#wifiView /* History rows */
 .hist-row{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--w-paper-line);align-items:flex-start;}#wifiView .hist-row:last-child{border-bottom:none;}#wifiView .hist-badge{flex:none;width:8px;height:8px;border-radius:2px;margin-top:5px;}#wifiView .hist-main{flex:1;min-width:0;}#wifiView .hist-title{font-size:calc(13px * var(--wfs,1));font-weight:600;}#wifiView .hist-sub{font-size:calc(11.5px * var(--wfs,1));color:var(--w-ink-soft);margin-top:1px;}#wifiView .hist-qty{font-family:'IBM Plex Mono',monospace;font-size:calc(13px * var(--wfs,1));font-weight:600;white-space:nowrap;}#wifiView /* Buttons */
 .btn{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;border:none;border-radius:10px;padding:13px 16px;font-size:calc(16px * var(--wfs,1));font-weight:600;cursor:pointer;width:100%;box-sizing:border-box;text-align:center;white-space:normal;word-break:keep-all;overflow-wrap:normal;line-height:1.3;}#wifiView .btn-primary{background:var(--w-ink);color:var(--w-paper);}#wifiView .btn-secondary{background:var(--w-card);color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-outline{background:transparent;color:var(--w-ink);border:1px solid var(--w-line);}#wifiView .btn-danger{background:var(--w-red);color:#fff;}#wifiView .btn-row{display:flex;gap:8px;}#wifiView .btn-row .btn{width:auto;flex:1;}#wifiView .btn:active{transform:scale(0.98);}#wifiView .btn:disabled{opacity:0.4;cursor:not-allowed;}#wifiView /* Op-type grid (new operation) */
 .op-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;}#wifiView .op-tile{background:var(--w-card);border:1px solid var(--w-line);border-radius:var(--w-radius);padding:14px 12px;text-align:left;cursor:pointer;box-shadow:var(--w-shadow);transition:background .12s;}#wifiView .op-tile:active{background:var(--w-paper);}#wifiView .op-tile .op-icon{font-size:calc(19px * var(--wfs,1));}#wifiView .op-tile .op-label{display:block;font-weight:600;font-size:calc(13.5px * var(--wfs,1));margin-top:6px;}#wifiView .op-tile .op-desc{display:block;font-size:calc(11px * var(--wfs,1));color:var(--w-ink-soft);margin-top:2px;}#wifiView .op-tile:last-child{grid-column:1/-1;display:flex;align-items:center;gap:12px;}#wifiView .op-tile:last-child .op-icon{font-size:calc(22px * var(--wfs,1));}#wifiView .op-tile:last-child .op-label{margin-top:0;}#wifiView .op-tile:last-child .op-desc{margin-top:0;}#wifiView /* Bottom nav */
@@ -327,7 +327,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .person-head .person-name{min-width:0;overflow-wrap:anywhere}
 #wifiView .person-head .person-total{margin:0;flex:none;text-align:right;white-space:nowrap;font-size:calc(19px * var(--wfs,1));font-weight:800}
 #wifiView .person-body{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:2px}
-#wifiView .person-body .person-right{flex:none;text-align:right}
+
 </style>
 <style id="layout-v642">
 /* ===== v6.42 ===== */
@@ -354,7 +354,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .info-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 6px;padding:calc(8px * var(--wfs,1)) 12px;border:1px solid var(--w-line);border-radius:10px;background:var(--w-fill-head);color:var(--w-ink);font-size:calc(16px * var(--wfs,1));font-weight:800;cursor:pointer;line-height:1.2}
 #wifiView .info-btn.open{background:var(--w-ink);color:var(--w-paper)}
 #wifiView .info-panel[hidden]{display:none}
-/* Infos en ligne (entre le nom et « à jour ») : suit la hauteur de la ligne et la taille de police */
+/* Infos en ligne (à droite du nom) : suit la hauteur de la ligne et la taille de police */
 #wifiView .info-btn.info-inline{width:auto;flex:1 1 0;min-width:0;align-self:stretch;margin:0 8px;padding:0 6px;gap:4px;white-space:nowrap;overflow:hidden;font-size:calc(16px * var(--wfs,1));line-height:1.1}
 /* Remplissages */
 #wifiView .card.fill-a{background:var(--w-fill-a)}
@@ -520,7 +520,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .filter-pill{padding:calc(4px * var(--wfs,1)) 12px}
 #wifiView .search-bar{margin-bottom:6px}
 #wifiView .search-bar input{padding:calc(6px * var(--wfs,1)) 10px}
-/* Personnes : compact, puce « doit » seulement quand utile */
+/* Personnes : compact */
 #wifiView .person-row{padding:calc(5px * var(--wfs,1)) 2px}
 #wifiView .person-top{padding:calc(4px * var(--wfs,1)) 10px;margin-bottom:3px}
 #wifiView .person-head{align-items:center}
@@ -528,7 +528,7 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .person-sub{line-height:1.15;margin-top:0}
 #wifiView .frame-rows>.person-sub{padding-top:calc(4px * var(--wfs,1));padding-bottom:calc(4px * var(--wfs,1))}
 #wifiView .person-body{display:block;margin-top:0}
-#wifiView .person-body .person-right{display:flex;justify-content:flex-end;margin-top:3px}
+
 #wifiView .person-lines{width:100%}
 #wifiView .chip{padding:calc(2px * var(--wfs,1)) 9px;line-height:1.2}
 </style>
@@ -649,7 +649,6 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView table.ledger tr:nth-child(even) td{background:color-mix(in srgb,var(--w-paper) 55%,transparent)}
 #wifiView table.ledger td.tname{font-weight:700;color:var(--w-ink)}
 #wifiView table.ledger td strong{font-size:inherit;font-weight:800}
-#wifiView table.ledger td.neg{color:var(--w-red)}#wifiView table.ledger td.pos{color:var(--w-green)}
 #wifiView table.ledger tr:last-child td{border-bottom:none}
 #wifiView table.ledger tr.total td{background:var(--w-fill-head,var(--w-paper));border-top:1px solid var(--w-ink);font-weight:800;color:var(--w-ink);padding-top:.6em}
 #wifiView .ledger-note{font-size:calc(11px * var(--wfs,1));opacity:.85}
@@ -817,7 +816,6 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
   <div class="card">
     <div class="money-row"><span class="label">Total des ventes</span><span class="amount" id="dash-sales">0</span></div>
     <div class="money-row"><span class="label">Total encaissé</span><span class="amount pos" id="dash-paid">0</span></div>
-    <div class="money-row"><span class="label">Reste à percevoir</span><span class="amount neg" id="dash-due">0</span></div>
   </div>
 
   <h2 class="section-title">Alertes</h2>
@@ -1231,7 +1229,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.58';
+const APP_VERSION = '6.60';
 const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1544,6 +1542,7 @@ async function wifiSync(manual){
     if(!navigator.onLine){ wifiSetStatus('offline'); return; }
     wifiSetStatus('syncing');
     let failed = 0;
+    const wifiDoneGrp = new Set();
     for(const q of [...wifiQ]){
       // Opération supprimée définitivement pendant la synchro (la boucle travaille sur une copie de
       // la file) : ne jamais la (ré)envoyer au serveur, sinon elle « réapparaît ».
@@ -1554,6 +1553,38 @@ async function wifiSync(manual){
       // d'essayer l'envoi réseau — mise en quarantaine directe.
       if(q.table==='stock_movements' && REMOVED_OP_TYPES.includes(q.payload.movement_type)){
         wifiQuarantine(q, "type de mouvement retiré de l'application (" + q.payload.movement_type + ")");
+        continue;
+      }
+      if(q.grp){
+        // Opérations liées (ex. vente + paiement) : synchronisées comme UNE seule opération.
+        // Tant que tout le groupe n'est pas envoyé, il reste entier dans la file ; un échec définitif annule
+        // le groupe entier (y compris ce qui était déjà parti) : jamais une moitié seule côté serveur.
+        if(wifiDoneGrp.has(q.grp)) continue;
+        wifiDoneGrp.add(q.grp);
+        const members = wifiQ.filter(x => x.grp === q.grp && !wifiPurged.has(x.payload.id));
+        const sent = []; let bad = null, soft = false;
+        for(const m of members){
+          const r = await sb.from(m.table).insert(m.payload);
+          if(r.error && r.error.code !== '23505'){
+            if(isNetworkError(r.error)) throw r.error;
+            if(isPermanentSyncError(r.error)){ bad = r.error; break; }
+            failed++; wifiErr = r.error.message || 'refus du serveur'; soft = true; break;
+          }
+          sent.push(m);
+        }
+        if(soft) continue;
+        if(bad){
+          let undoOk = true;
+          for(const m of sent){
+            const d = await sb.from(m.table).delete().eq('id', m.payload.id);
+            if(d.error){ if(isNetworkError(d.error)) throw d.error; undoOk = false; }
+          }
+          if(!undoOk){ failed++; wifiErr = "annulation du groupe vente + paiement impossible, nouvel essai"; continue; }
+          members.forEach(m => wifiQuarantine(m, 'groupe lié annulé (vente + paiement) : ' + (bad.message || ('code ' + bad.code))));
+          continue;
+        }
+        const gids = new Set(members.map(m => m.payload.id));
+        wifiQ = wifiQ.filter(x => !gids.has(x.payload.id)); wifiSaveQ();
         continue;
       }
       const { error } = await sb.from(q.table).insert(q.payload);
@@ -2777,7 +2808,7 @@ if ('serviceWorker' in navigator) {
       quelle que soit la fonction qui a produit le HTML.
    Le remplacement se fait par sous-chaîne (les clés les plus longues d'abord, pour éviter qu'une
    clé courte comme "Type" ne coupe au milieu d'une clé plus longue comme "Type de ticket"), donc
-   un texte dynamique mêlant un libellé fixe et une valeur variable ("Reste à payer : 5 000 GNF")
+   un texte dynamique mêlant un libellé fixe et une valeur variable ("Disponible : 5 ticket(s)")
    reste correctement traduit sur sa partie fixe sans toucher au nombre. */
 const WIFI_FONTSCALE_KEY = 'wifi_fontscale';
 const WIFI_THEME_KEY = 'wifi_theme';
@@ -2792,7 +2823,7 @@ en: {
   "Actives":"Active","Supprimées":"Deleted","+ Ajouter une personne":"+ Add a person",
   "Aucune personne supprimée.":"No deleted people.","Aucune personne enregistrée.":"No people registered.",
   "Vider les personnes supprimées":"Empty deleted people","tickets en main":"tickets on hand",
-  "à jour":"up to date","doit":"owes","inactif":"inactive","Actif":"Active","Inactif":"Inactive",
+  "inactif":"inactive","Actif":"Active","Inactif":"Inactive",
   "Modifier":"Edit","Supprimer":"Delete","Restaurer":"Restore","Annuler":"Cancel","Fermer":"Close",
   "Enregistrer":"Save","Valider":"Confirm","Continuer":"Continue","Confirmer":"Confirm",
   "Ajouter":"Add","Retour":"Back","Supprimée le":"Deleted on",
@@ -2808,7 +2839,7 @@ en: {
   "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"At-a-glance overview: assigned, sold, remaining, money expected/returned and last assignment.",
-  "Type":"Type","Pris":"Taken","Vendu":"Sold","vendu":"sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Reste":"Balance","Montant":"Amount","Montant, Payé et Reste : en GNF":"Amount, Paid and Balance: in GNF","TOTAL":"TOTAL",
+  "Type":"Type","Pris":"Taken","Vendu":"Sold","vendu":"sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Montant":"Amount","Montant et Payé : en GNF":"Amount and Paid: in GNF","TOTAL":"TOTAL",
   "Argent":"Money","Types de tickets":"Ticket types","Aucun type de ticket actif.":"No active ticket type.",
   "Aucun mouvement d'argent.":"No money movement.","Aucune donnée pour cette personne.":"No data for this person.",
   "Journal des suppressions & clôtures":"Deletion & closure log","Journal (suppressions & clôtures)":"Log (deletions & closures)",
@@ -2849,18 +2880,18 @@ en: {
   "Clôturer":"Close","Rouvrir":"Reopen","Clôturé":"Closed",
   "⚠ Actualisation impossible — vérifiez la connexion":"⚠ Refresh failed — check your connection",
   "Montant invalide.":"Invalid amount.","Quantité invalide.":"Invalid quantity.",
-  "Reste à payer pour ce type :":"Balance due for this type:","Montant versé (GNF)":"Amount paid (GNF)",
+  "Montant versé (GNF)":"Amount paid (GNF)",
   "Enregistrer le paiement":"Save the payment","Type de ticket manquant — recommencez.":"Missing ticket type — start again.",
   "Supprimer \"{name}\" ?":"Delete \"{name}\"?","Vous pourrez la restaurer plus tard.":"You can restore them later.",
-  "⚠ Cette personne a encore {qty} ticket(s) en main et {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ This person still has {qty} ticket(s) on hand and {amount} owed. This data stays in the history after deletion.",
+  
   "⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l'historique après suppression.":"⚠ This person still has {qty} ticket(s) on hand. This data stays in the history after deletion.",
-  "⚠ Cette personne a encore {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ This person still owes {amount}. This data stays in the history after deletion.",
+  
   "Restaurer \"{name}\" dans les personnes actives ?":"Restore \"{name}\" to active people?",
   "Supprimer DÉFINITIVEMENT \"{name}\" ?":"PERMANENTLY delete \"{name}\"?",
   "Toutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.":"All their sales, payments and ticket movements will be IRREVERSIBLY erased.",
-  "⚠ {qty} ticket(s) en main. Doit {amount}. Tout sera effacé avec elle.":"⚠ {qty} ticket(s) on hand. Owes {amount}. Everything will be erased with them.",
+  
   "⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.":"⚠ {qty} ticket(s) on hand. Everything will be erased with them.",
-  "⚠ Doit {amount}. Tout sera effacé avec elle.":"⚠ Owes {amount}. Everything will be erased with them.",
+  
   "Vider définitivement {count} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.":"Permanently clear {count} deleted person/people?\n\nThis action is IRREVERSIBLE: all their sales, payments and ticket movements will also be erased.",
   "Clôturer \"{name}\" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L'historique complet reste consultable et la clôture est annulable.":"Close \"{name}\"?\n\nThe current situation (available stock, quantities held by people) will be reset to 0. Full history stays viewable and the closure can be undone.",
   "Annuler la clôture de \"{name}\" ? La situation antérieure à la clôture sera restaurée.":"Undo the closure of \"{name}\"? The situation before the closure will be restored.",
@@ -2872,7 +2903,7 @@ ff: {
   "Actives":"𞤖𞤮𞥅𞤪𞤢𞥄𞤶𞤭","Supprimées":"𞤃𞤮𞥅𞤥𞤼𞤢𞤯𞤫","+ Ajouter une personne":"+ 𞤄𞤫𞤴𞤢𞤲 𞤲𞤫𞤯𞤯𞤮",
   "Aucune personne supprimée.":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮.","Aucune personne enregistrée.":"𞤁𞤮𞥅 𞤲𞤫𞤯𞤯𞤮 𞤱𞤭𞤲𞤼𞤢𞥄𞤯𞤮.",
   "Vider les personnes supprimées":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤲𞤫𞤯𞤯𞤮𞥅𞤶𞤭 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭","tickets en main":"𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫",
-  "à jour":"𞤲𞤢𞤲𞤺𞤭𞤲𞥋𞤣𞤫","doit":"𞤣𞤢𞤴𞤢𞤲𞤢","inactif":"𞤲𞤢𞤲 𞤺𞤮𞤤𞤣𞤮","Actif":"𞤎𞤮𞤤𞤣𞤮","Inactif":"𞤄𞤢𞤯𞤭",
+  "inactif":"𞤲𞤢𞤲 𞤺𞤮𞤤𞤣𞤮","Actif":"𞤎𞤮𞤤𞤣𞤮","Inactif":"𞤄𞤢𞤯𞤭",
   "Modifier":"𞤔𞤢𞤲𞥋𞤺𞤭𞤲","Supprimer":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲","Restaurer":"𞤄𞤢𞤪𞤼𞤭𞤲","Annuler":"𞤔𞤭𞤥𞤯𞤭𞤲","Fermer":"𞤖𞤮𞤪𞥆𞤭𞤲",
   "Enregistrer":"𞤔𞤮𞤥𞥆𞤢𞤲","Valider":"𞤀𞤪𞤼𞤭𞤲","Continuer":"𞤙𞤢𞤪𞤭𞤴𞤢𞤲","Confirmer":"𞤀𞤪𞤼𞤭𞤲",
   "Ajouter":"𞤄𞤫𞤴𞤢𞤲","Retour":"𞤀𞤪𞤼𞤭𞥅𞤪𞤢","Supprimée le":"𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤮 𞤲𞤣𞤫𞥅",
@@ -2888,7 +2919,7 @@ ff: {
   "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ 𞤒𞤢𞤤𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"𞤒𞤭𞤴𞤭𞥅𞤪𞤫: 𞤼𞤮𞤼𞤢𞥄𞤯𞤮, 𞤛𞤢𞤥𞤢𞥄𞤯𞤮, 𞤳𞤢𞤥𞤯𞤭𞤯𞤮, 𞤢𞤪𞤼𞤢𞥄𞤯𞤭/𞤺𞤭𞤯𞤮 𞤫 𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤢𞤲𞤯𞤫.",
-  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Reste":"𞤀𞤦𞥆𞤢𞤯𞤢𞤲","Montant":"𞤖𞤢𞤦𞤣𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
+  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Montant":"𞤖𞤢𞤦𞤣𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
   "Argent":"𞤖𞤢𞤦𞤣𞤭","Types de tickets":"𞤙𞤮𞥅𞤬𞤮𞥅𞤶𞤭 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","Aucun type de ticket actif.":"𞤁𞤮𞥅 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭 𞤺𞤮𞤤𞤣𞤮.",
   "Aucun mouvement d'argent.":"𞤁𞤮𞥅 𞤣𞤭𞤯𞤯𞤭 𞤢𞤪𞤣𞤭𞤪.","Aucune donnée pour cette personne.":"𞤁𞤮𞥅 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤲𞤫𞤯𞤯𞤮 𞤯𞤭.",
   "Journal des suppressions & clôtures":"𞤎𞤭𞥅𞤪𞤣𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭𞥅𞤶𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭𞥅𞤶𞤭","Journal (suppressions & clôtures)":"𞤎𞤭𞥅𞤪𞤣𞤫 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭)",
@@ -2928,18 +2959,18 @@ ff: {
   "Clôturer":"𞤔𞤢𞤢","Rouvrir":"𞤈𞤢𞤦𞤢𞤪","Clôturé":"𞤖𞤫𞤳𞤢𞤯𞤮",
   "⚠ Actualisation impossible — vérifiez la connexion":"⚠ 𞤖𞤫𞤧𞤣𞤭𞤲 𞤶𞤢𞥄𞤯𞤢𞤪𞤭 — 𞤪𞤫𞤯𞤣𞤭𞤲 𞤦𞤢𞤦𞤢𞤪𞤫",
   "Montant invalide.":"𞤀𞤪𞤼𞤢𞥄𞤯𞤭 𞤶𞤢𞥄𞤯𞤢.","Quantité invalide.":"𞤈𞤢𞤢𞤪𞤢 𞤶𞤢𞥄𞤯𞤢.",
-  "Reste à payer pour ce type :":"𞤖𞤢𞤦𞤣𞤭 𞤯𞤫𞤦𞥆𞤭𞤯𞤮 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤲𞤺𞤫𞥅:","Montant versé (GNF)":"𞤖𞤢𞤦𞤣𞤭 𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭 (𞤄𞤁𞤢)",
+  "Montant versé (GNF)":"𞤖𞤢𞤦𞤣𞤭 𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭 (𞤄𞤁𞤢)",
   "Enregistrer le paiement":"𞤔𞤮𞤥𞥆𞤢𞤲 𞤴𞤭𞥅𞤴𞤢𞤪𞤫","Type de ticket manquant — recommencez.":"𞤁𞤮𞥅 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭 — 𞤣𞤫𞤯𞤢𞥄𞤣 𞤺𞤢𞥄𞤲𞤺𞤢.",
   "Supprimer \"{name}\" ?":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 \"{name}\" ?","Vous pourrez la restaurer plus tard.":"𞤀 𞤦𞤢𞤯𞤢𞤴 𞤄𞤢𞤪𞤼𞤢𞤲 𞤲𞤺𞤫𞥅 𞤺𞤭𞤤𞤢.",
-  "⚠ Cette personne a encore {qty} ticket(s) en main et {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ 𞤲𞤣𞤫𞥅 𞤲𞤺𞤫𞥅 𞤲𞤢𞤢 {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫 𞤫 {amount} 𞤯𞤫𞤦𞥆𞤭𞤯𞤮. 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤦𞤢𞤯𞤮 𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭.",
+  
   "⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l'historique après suppression.":"⚠ 𞤲𞤣𞤫𞥅 𞤲𞤺𞤫𞥅 𞤲𞤢𞤢 {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫. 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤦𞤢𞤯𞤮 𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭.",
-  "⚠ Cette personne a encore {amount} à payer. Ces données restent conservées dans l'historique après suppression.":"⚠ 𞤲𞤣𞤫𞥅 𞤲𞤺𞤫𞥅 𞤲𞤢𞤢 {amount} 𞤯𞤫𞤦𞥆𞤭𞤯𞤮. 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤯𞤫𞤯𞤫 𞤯𞤫𞤲 𞤼𞤢𞤪𞤭𞤺𞤮 𞤦𞤢𞤯𞤮 𞤃𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭.",
+  
   "Restaurer \"{name}\" dans les personnes actives ?":"𞤄𞤢𞤪𞤼𞤭𞤲 \"{name}\" 𞤶𞤭 𞤲𞤫𞤯𞤯𞤮 𞤺𞤮𞤤𞤣𞤭 ?",
   "Supprimer DÉFINITIVEMENT \"{name}\" ?":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤺𞤢𞤴𞤢 \"{name}\" ?",
   "Toutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.":"𞤛𞤢𞤥𞤢𞤪𞤫 𞤫, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫 𞤫, 𞤣𞤭𞤯𞤯𞤭 𞤼𞤭𞤳𞤫𞤼𞤭 𞤥𞤵𞤥 𞤯𞤫𞤲 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢, 𞤺𞤫𞤴 𞤢𞤪𞤼𞤢𞤢𞤢.",
-  "⚠ {qty} ticket(s) en main. Doit {amount}. Tout sera effacé avec elle.":"⚠ {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫. 𞤯𞤫𞤦𞥆𞤭 {amount}. 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤲𞤢 𞤥𞤢𞤳𞤳𞤮.",
+  
   "⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.":"⚠ {qty} 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤶𞤮𞤲𞤫. 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤲𞤢 𞤥𞤢𞤳𞤳𞤮.",
-  "⚠ Doit {amount}. Tout sera effacé avec elle.":"⚠ 𞤯𞤫𞤦𞥆𞤭 {amount}. 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢 𞤲𞤢 𞤥𞤢𞤳𞤳𞤮.",
+  
   "Vider définitivement {count} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.":"𞤃𞤮𞥅𞤥𞤼𞤭𞤲 𞤺𞤢𞤴𞤢 {count} 𞤲𞤫𞤯𞤯𞤮𞥅𞤶𞤭 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 ?\n\n𞤘𞤮𞤤𞤣𞤢 𞤺𞤫𞤴 𞤢𞤪𞤼𞤢𞤢𞤢 : 𞤛𞤢𞤥𞤢𞤪𞤫 𞤥𞤵𞤥, 𞤴𞤭𞥅𞤴𞤢𞤪𞤫 𞤥𞤵𞤥 𞤫 𞤣𞤭𞤯𞤯𞤭 𞤼𞤭𞤳𞤫𞤼𞤭 𞤥𞤵𞤥 𞤯𞤫𞤲 𞤳𞤮 𞤶𞤢𞥄𞤯𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞤢.",
   "Clôturer \"{name}\" ?\n\nLa situation en cours (stock disponible, quantités chez les personnes) sera remise à 0. L'historique complet reste consultable et la clôture est annulable.":"𞤔𞤢𞤢 \"{name}\" ?\n\n𞤣𞤭𞤯𞤯𞤭 𞤲𞤣𞤫 (𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤮𞤤𞤣𞤫, 𞤣𞤢𞤢𞤪𞤢 𞤶𞤭 𞤺𞤢𞤯𞤣𞤭) 𞤳𞤮 𞤯𞤢𞥄𞤺𞤢𞤲 0. 𞤼𞤢𞤪𞤭𞤺𞤮 𞤥𞵃 𞤯𞤫𞤲 𞤳𞤫𞤯𞤢, 𞔢𞤢𞤢 𞤲𞤢 𞤈𞤢𞤦𞤢𞤪.",
   "Annuler la clôture de \"{name}\" ? La situation antérieure à la clôture sera restaurée.":"𞤔𞤭𞤥𞤯𞤭𞤲 𞤔𞤢𞤢 \"{name}\" ? 𞤣𞤭𞤯𞤯𞤭 𞤢𞤣𞤢 𞤔𞤢𞤢 𞤳𞤮 𞤄𞤢𞤪𞤼𞤢𞤲.",
@@ -3199,7 +3230,7 @@ function sortTicketTypes(){
 
 // Insère une ligne dans la table Supabase concernée puis l'ajoute localement, en la
 // convertissant immédiatement au format "operation" unifié (pas de rechargement complet nécessaire).
-async function insertOp(table, payload, mapper, deferSync){
+async function insertOp(table, payload, mapper, deferSync, grp){
   // Génère id + horodatage côté client AVANT l'insertion : si la policy RLS de la table autorise
   // l'INSERT mais bloque le SELECT de relecture (piège Supabase classique), .select() renvoie un
   // tableau vide sans "error" — on ne dépend donc plus de la ligne retournée pour construire
@@ -3209,7 +3240,7 @@ async function insertOp(table, payload, mapper, deferSync){
   const tsField = {sales:'sold_at', payments:'paid_at', stock_movements:'occurred_at', stock_receipts:'received_at', corrections:'corrected_at'}[table];
   const fullPayload = {id, ...(tsField?{[tsField]:now}:{}), ...payload};
   // Écriture d'abord locale + mise en file (persistée), puis envoi automatique dès que le réseau le permet.
-  wifiQ.push({table, payload: fullPayload}); wifiSaveQ(); wifiSetStatus('pending');
+  wifiQ.push(grp ? {table, payload: fullPayload, grp} : {table, payload: fullPayload}); wifiSaveQ(); wifiSetStatus('pending');
   const row = fullPayload;
   const op = mapper(row);
   DB.operations.push(op);
@@ -3348,7 +3379,7 @@ function personMoney(personId){
       if(target && target.opType==='PAIEMENT' && target.personId===personId) paye += (op.amount||0);
     }
   });
-  return {du, paye, reste: du-paye};
+  return {du, paye};
 }
 // Même logique que personMoney(), mais limitée à UN type de ticket — nécessaire depuis que chaque
 // versement est obligatoirement rattaché à un type (voir submitPayment). Un ancien paiement sans
@@ -3364,15 +3395,41 @@ function personTypeMoney(personId, typeId){
       if(target && target.opType==='PAIEMENT' && target.personId===personId && target.typeId===typeId) paye += (op.amount||0);
     }
   });
-  return {du, paye, reste: du-paye};
+  return {du, paye};
 }
+// ---- Règle vente = paiement lié : aide au rapprochement, contrôle d'écart, annulation d'un groupe ----
+// Une vente et son paiement sont créés ensemble (même personne, même type, même montant, horodatage quasi
+// identique, l'un des deux porte la mention « automatique lié(e) »). Aucune colonne de base n'est ajoutée.
+function linkedCounterpart(op){
+  if(!op || !op.personId || !op.typeId) return null;
+  const want = op.opType==='VENTE' ? 'PAIEMENT' : op.opType==='PAIEMENT' ? 'VENTE' : null;
+  if(!want) return null;
+  const t0 = new Date(op.ts).getTime(), auto = /automatique li/i;
+  let best = null, bd = 15000;
+  DB.operations.forEach(o=>{
+    if(o.opType!==want || o.personId!==op.personId || o.typeId!==op.typeId || (o.amount||0)!==(op.amount||0)) return;
+    if(!auto.test(o.comment||'') && !auto.test(op.comment||'')) return;
+    const d = Math.abs(new Date(o.ts).getTime()-t0);
+    if(d<=bd){ bd = d; best = o; }
+  });
+  return best;
+}
+function moneyGap(personId, typeId){ const m = personTypeMoney(personId, typeId); return m.du - m.paye; }
+// Annule localement un groupe d'opérations mises en file ensemble (jamais d'opération seule).
+function wifiRollbackGroup(grp){
+  const ids = wifiQ.filter(x=>x.grp===grp).map(x=>x.payload.id);
+  wifiQ = wifiQ.filter(x=>x.grp!==grp); wifiSaveQ();
+  DB.operations = DB.operations.filter(o=>!ids.includes(o.id));
+  DB.operations.forEach((o,i)=>o.num=i+1);
+}
+function newGrp(){ return 'grp-'+Date.now()+'-'+Math.random().toString(36).slice(2,8); }
 function personTotalRestant(personId){
   let sum=0; DB.ticketTypes.forEach(tt=>{ sum += personTypeStats(personId, tt.id).restant; }); return sum;
 }
 function moneyTotals(){
   let ventes=0, paye=0;
   DB.people.forEach(p=>{ const m=personMoney(p.id); ventes+=m.du; paye+=m.paye; });
-  return {ventes, paye, reste: ventes-paye};
+  return {ventes, paye};
 }
 function fmt(n){ return (n||0).toLocaleString('fr-FR'); }
 function fmtGNF(n){ return fmt(n) + ' GNF'; }
@@ -3573,14 +3630,9 @@ const UI = {
     const mt = moneyTotals();
     document.getElementById('dash-sales').textContent = fmtGNF(mt.ventes);
     document.getElementById('dash-paid').textContent = fmtGNF(mt.paye);
-    document.getElementById('dash-due').textContent = fmtGNF(mt.reste);
 
     // Alerts
     const alerts = [];
-    DB.people.filter(p=>!p.deletedAt).sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'})).forEach(p=>{
-      const m = personMoney(p.id);
-      if(m.reste>0) alerts.push({level:'amber', text:`<span class="wname" style="font-size:12.5px;">${p.name}</span> doit encore ${fmtGNF(m.reste)}`});
-    });
     summary.forEach(s=>{
       if(s.disponible < s.initial*0.1 && s.initial>0) alerts.push({level:'red', text:`Stock faible : <span class="tname">${s.type.name}</span> — ${fmt(s.disponible)} restants chez vous`});
       const explained = s.disponible + s.chezPersonnes + s.venduDirect + s.venduPersonnes;
@@ -3670,7 +3722,6 @@ const UI = {
             <div class="person-lines">
               ${breakdownLines ? `<div class="frame-rows">${breakdownLines}</div>` : ''}
             </div>
-            ${m.reste>0 ? `<div class="person-right"><span class="chip due">doit ${fmtGNF(m.reste)}</span></div>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -3789,16 +3840,16 @@ const UI = {
       <h2 class="section-title">Argent</h2>
       <div class="card fill-b">
         <table class="ledger ledger-5">
-          <colgroup><col style="width:23%"><col style="width:12%"><col style="width:22%"><col style="width:21%"><col style="width:22%"></colgroup>
-          <tr><th>Type</th><th>Vendu</th><th>Montant</th><th>Payé</th><th>Reste</th></tr>
+          <colgroup><col style="width:25%"><col style="width:15%"><col style="width:30%"><col style="width:30%"></colgroup>
+          <tr><th>Type</th><th>Vendu</th><th>Montant</th><th>Payé</th></tr>
           ${liveTypes().map(tt=>{
             const tm = personTypeMoney(p.id, tt.id);
             if(tm.du===0 && tm.paye===0) return '';
-            return `<tr><td class="tname">${tt.name}</td><td>${fmt(personTypeSoldQty(p.id, tt.id))}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}"><strong>${fmt(tm.reste)}</strong></td></tr>`;
-          }).join('') || `<tr><td colspan="5" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
-          <tr class="total"><td>TOTAL</td><td>${fmt(DB.ticketTypes.reduce((a,tt)=>a+personTypeSoldQty(p.id, tt.id),0))}</td><td>${fmt(m.du)}</td><td>${fmt(m.paye)}</td><td>${fmt(m.reste)}</td></tr>
+            return `<tr><td class="tname">${tt.name}</td><td>${fmt(personTypeSoldQty(p.id, tt.id))}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td></tr>`;
+          }).join('') || `<tr><td colspan="4" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
+          <tr class="total"><td>TOTAL</td><td>${fmt(DB.ticketTypes.reduce((a,tt)=>a+personTypeSoldQty(p.id, tt.id),0))}</td><td>${fmt(m.du)}</td><td>${fmt(m.paye)}</td></tr>
         </table>
-        <div class="ledger-note">Montant, Payé et Reste : en GNF</div>
+        <div class="ledger-note">Montant et Payé : en GNF</div>
       </div>
 
       <h2 class="section-title">Dernières opérations</h2>
@@ -3851,17 +3902,8 @@ const UI = {
     const p = person(id);
     if(!p) return;
     const restant = personTotalRestant(p.id);
-    const reste = personMoney(p.id).reste;
     let msg = tf('Supprimer "{name}" ?', {name: p.name});
-    if(restant>0 || reste>0){
-      if(restant>0 && reste>0){
-        msg += '\n\n' + tf('⚠ Cette personne a encore {qty} ticket(s) en main et {amount} à payer. Ces données restent conservées dans l\'historique après suppression.', {qty: fmt(restant), amount: fmtGNF(reste)});
-      } else if(restant>0){
-        msg += '\n\n' + tf('⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l\'historique après suppression.', {qty: fmt(restant)});
-      } else {
-        msg += '\n\n' + tf('⚠ Cette personne a encore {amount} à payer. Ces données restent conservées dans l\'historique après suppression.', {amount: fmtGNF(reste)});
-      }
-    }
+    if(restant>0) msg += '\n\n' + tf('⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l\'historique après suppression.', {qty: fmt(restant)});
     msg += '\n\n' + t('Vous pourrez la restaurer plus tard.');
     if(!confirm(msg)) return;
     const now = new Date().toISOString();
@@ -3935,11 +3977,8 @@ const UI = {
     const p = DB.people.find(x=>x.id===personId);
     if(!p) return;
     const restant = personTotalRestant(p.id);
-    const reste = personMoney(p.id).reste;
     let warn = '';
-    if(restant>0 && reste>0) warn = '\n\n' + tf('⚠ {qty} ticket(s) en main. Doit {amount}. Tout sera effacé avec elle.', {qty: fmt(restant), amount: fmtGNF(reste)});
-    else if(restant>0) warn = '\n\n' + tf('⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.', {qty: fmt(restant)});
-    else if(reste>0) warn = '\n\n' + tf('⚠ Doit {amount}. Tout sera effacé avec elle.', {amount: fmtGNF(reste)});
+    if(restant>0) warn = '\n\n' + tf('⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.', {qty: fmt(restant)});
     if(!confirm(tf('Supprimer DÉFINITIVEMENT "{name}" ?', {name: p.name}) + '\n\n' + t("Toutes ses ventes, paiements et mouvements de tickets seront effacés de façon IRRÉVERSIBLE.") + warn)) return;
     const res = await this.hardDeletePerson(personId);
     toast(res.ok ? `${p.name} définitivement supprimée` : "⚠ Erreur : "+(res.error&&res.error.message?res.error.message:'suppression impossible (vérifier les droits de suppression Supabase)'));
@@ -4037,9 +4076,9 @@ const UI = {
     });
     DB.people.forEach(p=>{
       const m = personMoney(p.id);
-      snap.people[p.id] = [r(m.du), r(m.paye), r(m.reste), r(personTotalRestant(p.id)), DB.ticketTypes.map(tt=>{
+      snap.people[p.id] = [r(m.du), r(m.paye), r(personTotalRestant(p.id)), DB.ticketTypes.map(tt=>{
         const st = personTypeStats(p.id, tt.id), tm = personTypeMoney(p.id, tt.id);
-        return [r(st.pris), r(st.vendu), r(st.restant), r(st.montantVentes), r(tm.du), r(tm.paye), r(tm.reste)];
+        return [r(st.pris), r(st.vendu), r(st.restant), r(st.montantVentes), r(tm.du), r(tm.paye)];
       })];
     });
     return JSON.stringify(snap);
@@ -4262,14 +4301,13 @@ const UI = {
         const s = personTypeStats(p.id, tt.id);
         const tm = personTypeMoney(p.id, tt.id);
         if(s.pris===0 && s.vendu===0 && s.restant===0 && tm.du===0 && tm.paye===0) return '';
-        return `<tr><td class="tname">${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td><td class="${tm.reste>0?'neg':'pos'}">${fmt(tm.reste)}</td></tr>`;
+        return `<tr><td class="tname">${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td></tr>`;
       }).join('');
       return `
         <div class="card" style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span class="wname" style="font-size:15.5px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;" onclick="UI.openSituation('${p.id}')">${p.name}</span>
             ${this.infoBtn('suivi:'+p.id, true)}
-            ${m.reste>0 ? `<span class="chip due">doit ${fmtGNF(m.reste)}</span>` : `<span class="chip clear">à jour</span>`}
           </div>
           <div class="info-panel" ${this.infoIsOpen('suivi:'+p.id)?'':'hidden'}>
             <div class="money-row"><span class="label">Tickets attribués</span><span class="amount">${fmt(attribues)}</span></div>
@@ -4283,11 +4321,11 @@ const UI = {
           ${typeRows ? `
           <div class="ledger-wrap">
             <table class="ledger ledger-7">
-              <colgroup><col style="width:14%"><col style="width:9%"><col style="width:11%"><col style="width:15%"><col style="width:17%"><col style="width:17%"><col style="width:17%"></colgroup>
-              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Ventes</th><th>Payé</th><th>Reste</th></tr>
+              <colgroup><col style="width:15%"><col style="width:10%"><col style="width:13%"><col style="width:16%"><col style="width:23%"><col style="width:23%"></colgroup>
+              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Ventes</th><th>Payé</th></tr>
               ${typeRows}
             </table>
-            <div class="ledger-note">Ventes, Payé et Reste : montants en GNF</div>
+            <div class="ledger-note">Ventes et Payé : montants en GNF</div>
           </div>` : ''}
         </div>`;
     }).join('');
@@ -4591,8 +4629,6 @@ const UI = {
   remiseBlockReason(personId, typeId){
     const s = stockSummary().find(x=>x.type.id===typeId);
     if(!s || s.disponible<=0) return t('stock épuisé');
-    const tm = personTypeMoney(personId, typeId);
-    if(tm.reste>0) return t('reste à payer')+' : '+fmtGNF(tm.reste);
     const restant = personTypeStats(personId, typeId).restant;
     if(restant>0) return t('déjà')+' '+fmt(restant)+' '+t('en main');
     return '';
@@ -4709,8 +4745,6 @@ const UI = {
       const s = stockSummary().find(x=>x.type.id===op.typeId);
       if(!s || qty>s.disponible){ errEl.innerHTML = `<div class="error-text">Stock insuffisant chez vous (${fmt(s?s.disponible:0)} disponibles).</div>`; return; }
       if(op.personId){
-        const tm = personTypeMoney(op.personId, op.typeId);
-        if(tm.reste>0){ errEl.innerHTML = `<div class="error-text">Impossible : cette personne n'a pas encore payé le ticket précédent de ce type (reste à payer : ${fmtGNF(tm.reste)}).</div>`; return; }
         const restant = personTypeStats(op.personId, op.typeId).restant;
         if(restant>0){ errEl.innerHTML = `<div class="error-text">Impossible : cette personne possède déjà ${fmt(restant)} ticket(s) disponible(s) de ce type.</div>`; return; }
       }
@@ -4759,14 +4793,13 @@ const UI = {
   renderPaymentForm(){
     const p = person(this.newOp.personId);
     const tt = ticketType(this.newOp.typeId);
-    const tm = personTypeMoney(p.id, tt.id);
     const avail = Math.max(0, personTypeStats(p.id, tt.id).restant);
     const price = Number(tt.price)||0;
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
       <div class="sheet-title">Paiement — ${tt.name}</div>
-      <div class="sheet-sub"><span class="wname">${p.name}</span> · Reste à payer pour ce type : ${fmtGNF(tm.reste)}<br>Disponible : ${fmt(avail)} ticket(s) × ${fmtGNF(price)} = maximum ${fmtGNF(avail*price)}</div>
+      <div class="sheet-sub"><span class="wname">${p.name}</span> · Disponible : ${fmt(avail)} ticket(s) × ${fmtGNF(price)} = maximum ${fmtGNF(avail*price)}</div>
       <div class="field"><label>Quantité (tickets)</label><input autocomplete="off" type="number" id="pay-qty" min="1" ${avail>0?'max="'+avail+'"':''} placeholder="0" oninput="UI.updatePayPreview()"></div>
       <div id="pay-preview" class="help-text"></div>
       <div class="field"><label>Commentaire (optionnel)</label><textarea id="pay-comment"></textarea></div>
@@ -4788,20 +4821,20 @@ const UI = {
     const amount = qty*unitPrice;
     const auto = origin==='PAIEMENT' ? 'Vente automatique liée au versement' : 'Versement automatique lié à la vente';
     const autoComment = comment ? auto+' — '+comment : auto;
-    const created = [];
+    const grp = newGrp();
+    const gapBefore = moneyGap(personId, typeId);
     try{
-      const sale = await insertOp('sales', {person_id: personId, ticket_type_id: typeId, quantity: qty, unit_price: unitPrice, comment: origin==='VENTE' ? comment : autoComment}, mapSale, true);
-      created.push(sale.id);
+      const sale = await insertOp('sales', {person_id: personId, ticket_type_id: typeId, quantity: qty, unit_price: unitPrice, comment: origin==='VENTE' ? comment : autoComment}, mapSale, true, grp);
       sale.amount = amount;   // montant local immédiat (le serveur le recalcule à la prochaine lecture)
+      let pay = null;
       if(amount>0){           // un versement de 0 GNF n'a pas de sens : rien à verser
-        const pay = await insertOp('payments', {person_id: personId, ticket_type_id: typeId, amount, comment: origin==='PAIEMENT' ? comment : autoComment}, mapPayment, true);
-        created.push(pay.id);
+        pay = await insertOp('payments', {person_id: personId, ticket_type_id: typeId, amount, comment: origin==='PAIEMENT' ? comment : autoComment}, mapPayment, true, grp);
       }
+      // Contrôle systématique AVANT validation : montant vendu = montant payé, et aucun écart créé.
+      if((pay ? pay.amount : 0) !== sale.amount || moneyGap(personId, typeId) !== gapBefore)
+        throw new Error("contrôle : le montant vendu et le montant payé ne sont pas identiques — enregistrement annulé");
     }catch(e){
-      // Jamais d'opération orpheline : on retire ce qui vient d'être mis en file.
-      wifiQ = wifiQ.filter(x => !created.includes(x.payload.id)); wifiSaveQ();
-      DB.operations = DB.operations.filter(o => !created.includes(o.id));
-      DB.operations.forEach((o,i) => o.num = i+1);
+      wifiRollbackGroup(grp);   // jamais d'opération orpheline
       throw e;
     }
     wifiSync();
@@ -4955,14 +4988,39 @@ const UI = {
     const deltaQuantity = isPay ? null : delta;
     const deltaAmount = isPay ? delta : (target.opType==='VENTE' ? delta*saleUnitPrice(target) : null);
 
+    // Règle vente = paiement lié : corriger l'un corrige automatiquement l'autre, pour le même montant.
+    let mirror = null;
+    if(target.opType==='VENTE' || isPay){
+      const other = linkedCounterpart(target);
+      if(other){
+        if(isPay){
+          const up = saleUnitPrice(other);
+          if(!up || delta % up !== 0){ showErr(`Ce paiement est lié à une vente : le montant doit être un multiple du prix unitaire (${fmtGNF(up||0)}).`); return; }
+          mirror = {op:other, table:'sales', deltaQuantity: delta/up, deltaAmount: delta};
+        } else {
+          mirror = {op:other, table:'payments', deltaQuantity: null, deltaAmount: deltaAmount};
+        }
+      }
+    }
+    const gapBefore = mirror ? moneyGap(target.personId, target.typeId) : 0;
+
     // Vérification de cohérence AVANT écriture : on simule la correction dans DB.operations, on
     // recalcule personne + stock avec les fonctions habituelles, puis on retire la simulation.
     const hypo = {id:'__hypo_correction__', ts:new Date().toISOString(), personId:null, typeId:null,
       opType:'CORRECTION', qty:deltaQuantity, unitPrice:null, amount:deltaAmount, comment:null,
       correctsOpId:target.id, reason:null};
     DB.operations.push(hypo);
+    let hypo2 = null;
+    if(mirror){
+      hypo2 = {id:'__hypo_correction_lie__', ts:new Date().toISOString(), personId:null, typeId:null,
+        opType:'CORRECTION', qty:mirror.deltaQuantity, unitPrice:null, amount:mirror.deltaAmount, comment:null,
+        correctsOpId:mirror.op.id, reason:null};
+      DB.operations.push(hypo2);
+    }
     let invalidMsg = '';
     try{
+      if(mirror && moneyGap(target.personId, target.typeId) !== gapBefore)
+        invalidMsg = "Contrôle : le montant vendu et le montant payé ne seraient plus identiques — correction refusée.";
       if(target.personId && target.typeId){
         const st = personTypeStats(target.personId, target.typeId);
         const w = delta<0 ? 'Cette diminution' : 'Cette augmentation';
@@ -4976,16 +5034,27 @@ const UI = {
       }
     } finally {
       DB.operations.pop();
+      if(hypo2) DB.operations.pop();
     }
     if(invalidMsg){ showErr(invalidMsg); return; }
 
     this._corSubmitting = true;
     try{
       // « reason » : colonne obligatoire côté base ; valeur automatique, l'utilisateur n'a jamais de raison à saisir.
+      if(mirror){
+        // Correction de la vente ET du paiement lié : une seule opération (même groupe de synchronisation).
+        const grp = newGrp();
+        try{
+          await insertOp('corrections', {target_table: targetTable, target_id: target.id, delta_quantity: deltaQuantity, delta_amount: deltaAmount, reason: 'Correction'}, mapCorrection, true, grp);
+          await insertOp('corrections', {target_table: mirror.table, target_id: mirror.op.id, delta_quantity: mirror.deltaQuantity, delta_amount: mirror.deltaAmount, reason: 'Correction liée'}, mapCorrection, true, grp);
+        }catch(err){ wifiRollbackGroup(grp); throw err; }
+        wifiSync();
+      } else {
       await insertOp('corrections', {
         target_table: targetTable, target_id: target.id,
         delta_quantity: deltaQuantity, delta_amount: deltaAmount, reason: 'Correction'
       }, mapCorrection);
+      }
     }catch(e){
       showErr(`Erreur d'enregistrement : ${e.message||e}`);
       return;
@@ -5038,8 +5107,8 @@ const UI = {
       <div class="sheet-handle"></div>
       <div class="sheet-title">Étape 1/2 — Retour d'argent</div>
       <div class="sheet-sub"><span class="tname">${tt.name}</span> · <span class="wname">${p.name}</span> · ${fmt(s.restant)} ticket(s) détenus</div>
-      <div class="field"><label>Argent rendu (GNF)</label><input autocomplete="off" type="number" id="rr-amount" min="0" value="${montantAttendu}"></div>
-      <div class="help-text">Montant attendu pour les tickets détenus : ${fmtGNF(montantAttendu)}. Modifiable si le montant réellement rendu diffère.</div>
+      <div class="field"><label>Argent rendu (GNF)</label><input autocomplete="off" type="number" id="rr-amount" min="0" value="${montantAttendu}" readonly></div>
+      <div class="help-text">Montant calculé automatiquement pour les tickets détenus : ${fmt(s.restant)} × ${fmtGNF(tt.price||0)} = ${fmtGNF(montantAttendu)}.</div>
       <div class="field" style="margin-top:10px;"><label>Commentaire (optionnel)</label><textarea id="rr-comment"></textarea></div>
       <div id="rr-error"></div>
       <button class="btn btn-primary" style="margin-top:6px;" onclick="UI.rrStep2()">Continuer — clôturer et redemander</button>
@@ -5047,11 +5116,11 @@ const UI = {
   },
   rrStep2(){
     const rr = this.newRR;
-    rr.amount = Math.max(0, parseInt(document.getElementById('rr-amount').value)||0);
     rr.comment = document.getElementById('rr-comment').value.trim()||null;
     const p = person(rr.personId), tt = ticketType(rr.typeId);
     const s = personTypeStats(p.id, rr.typeId);
     rr.oldQty = s.restant;
+    rr.amount = Math.max(0, s.restant * (Number(tt.price)||0));   // calculé, jamais saisi librement
     this.openSheet(`
       <button class="sheet-close" onclick="UI.closeSheet()">✕</button>
       <div class="sheet-handle"></div>
@@ -5077,18 +5146,23 @@ const UI = {
         return;
       }
     }
+    const grp = newGrp();
     try{
+      // Montant recalculé au moment de valider (jamais celui d'un champ modifiable) ; les étapes partent ensemble.
+      rr.amount = Math.max(0, rr.oldQty * (Number(tt.price)||0));
       if(rr.amount>0){
-        await insertOp('payments', {person_id: rr.personId, ticket_type_id: rr.typeId, amount: rr.amount, comment: rr.comment || "Retour d'argent — clôture d'attribution ("+tt.name+")"}, mapPayment);
+        await insertOp('payments', {person_id: rr.personId, ticket_type_id: rr.typeId, amount: rr.amount, comment: rr.comment || "Retour d'argent — clôture d'attribution ("+tt.name+")"}, mapPayment, true, grp);
       }
       if(rr.oldQty>0){
-        await insertOp('stock_movements', {movement_type:'REMISE', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: -rr.oldQty, comment:"Clôture de l'ancienne attribution"}, mapMovement);
+        await insertOp('stock_movements', {movement_type:'REMISE', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: -rr.oldQty, comment:"Clôture de l'ancienne attribution"}, mapMovement, true, grp);
       }
       if(newQty>0){
-        await insertOp('stock_movements', {movement_type:'REMISE', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: newQty, comment:'Nouvelle attribution'}, mapMovement);
+        await insertOp('stock_movements', {movement_type:'REMISE', ticket_type_id: rr.typeId, person_id: rr.personId, quantity: newQty, comment:'Nouvelle attribution'}, mapMovement, true, grp);
       }
+      wifiSync();
       await logAudit('RETOUR_REATTRIBUTION', 'person', rr.personId, `${p.name} — ${tt.name} (ancienne : ${rr.oldQty}, rendu : ${fmt(rr.amount)} GNF, nouvelle : ${newQty})`, newQty);
     }catch(e){
+      wifiRollbackGroup(grp);
       errEl.innerHTML = `<div class="error-text">Erreur d'enregistrement : ${e.message||e}</div>`;
       return;
     }
@@ -5582,7 +5656,7 @@ window.initReceptionApp = async function(){
 
 // Traductions ajoutées (uniquement si absentes du dictionnaire existant)
 (function(){
-  const add = {"Attribuer à": "Assign to", "attribués": "assigned", "Terminer": "Done", "Fermer": "Close", "stock épuisé": "out of stock", "reste à payer": "left to pay", "en main": "on hand", "Attribuer des tickets (tous les types)": "Assign tickets (all types)", "📦 Attribuer des tickets (tous les types)": "📦 Assign tickets (all types)", "Choisis ton espace": "Choose your space", "Commande fournisseur (WhatsApp)": "Supplier order (WhatsApp)", "Commande fournisseur": "Supplier order", "disponible(s)": "available", "valeur du stock (GNF)": "stock value (GNF)", "Rechercher un article...": "Search an item...", "+ Ajouter un article": "+ Add an item", "Aucun article dans cette catégorie. Ajoutez-en un.": "No item in this category. Add one.", "Nom / modèle": "Name / model", "Numéro de téléphone": "Phone number", "Référence (optionnel)": "Reference (optional)", "Quantité en stock": "Quantity in stock", "Seuil d'alerte par défaut": "Default alert threshold", "Seuil d'alerte": "Alert threshold", "Prix d'achat unitaire (GNF, optionnel — rempli quand connu)": "Unit purchase price (GNF, optional — filled when known)", "Désignation": "Designation", "Montant (GNF)": "Amount (GNF)", "Envoyer WhatsApp": "Send WhatsApp", "Copier": "Copy", "Code PIN requis": "PIN code required", "Code PIN": "PIN code", "Valider": "Confirm", "Application verrouillée": "App locked", "Entre ton code PIN pour continuer": "Enter your PIN to continue", "Déverrouiller": "Unlock", "PIN oublié ?": "Forgot PIN?", "Trier A→Z / Z→A": "Sort A→Z / Z→A", "Nom de l'onglet stock perso": "Personal stock tab name", "Nom de l'onglet compte": "Account tab name", "Supprimer une catégorie": "Delete a category", "Définir / modifier le code PIN": "Set / change PIN code", "Verrouiller l'application maintenant": "Lock the app now", "Forcer la synchronisation": "Force synchronization", "Sauvegarder les données (backup)": "Back up data", "Restaurer depuis une sauvegarde": "Restore from a backup", "À propos de l'application": "About the app", "Articles (toutes catégories)": "Items (all categories)", "En attente de synchronisation": "Waiting to sync", "Connexion": "Connection", "hors ligne": "offline", "en ligne": "online", "À propos": "About", "Dernière mise à jour": "Last update", "Développé pour Boulliwel Service": "Built for Boulliwel Service", "Sauvegarde des données": "Data backup", "Restaurer une sauvegarde": "Restore a backup", "Apparence": "Appearance", "Police": "Font", "Système": "System", "Arrondie": "Rounded", "Défaut": "Default", "Crème": "Cream", "Synchronisé": "Synced", "Synchronisation en cours": "Syncing", "Hors ligne": "Offline", "Erreur de synchronisation": "Sync error", "Données en attente": "Data pending", "en attente": "pending", "Mise à jour": "Update", "Rechercher une mise à jour": "Check for updates", "(disponible)": "(available)", "(vérification…)": "(checking…)", "(à jour ✓)": "(up to date ✓)", "(hors ligne)": "(offline)", "(échec, réessaie)": "(failed, retry)", "Toucher pour synchroniser": "Tap to sync","Océan":"Ocean","Forêt":"Forest","Sépia":"Sepia","Contraste élevé":"High contrast","Supprimer cette opération":"Delete this operation","Opération supprimée":"Operation deleted","Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.":"Permanently delete this operation ({label})?\n\nIt will be removed from stock and amounts. This cannot be undone."};
+  const add = {"Attribuer à": "Assign to", "attribués": "assigned", "Terminer": "Done", "Fermer": "Close", "stock épuisé": "out of stock", "en main": "on hand", "Attribuer des tickets (tous les types)": "Assign tickets (all types)", "📦 Attribuer des tickets (tous les types)": "📦 Assign tickets (all types)", "Choisis ton espace": "Choose your space", "Commande fournisseur (WhatsApp)": "Supplier order (WhatsApp)", "Commande fournisseur": "Supplier order", "disponible(s)": "available", "valeur du stock (GNF)": "stock value (GNF)", "Rechercher un article...": "Search an item...", "+ Ajouter un article": "+ Add an item", "Aucun article dans cette catégorie. Ajoutez-en un.": "No item in this category. Add one.", "Nom / modèle": "Name / model", "Numéro de téléphone": "Phone number", "Référence (optionnel)": "Reference (optional)", "Quantité en stock": "Quantity in stock", "Seuil d'alerte par défaut": "Default alert threshold", "Seuil d'alerte": "Alert threshold", "Prix d'achat unitaire (GNF, optionnel — rempli quand connu)": "Unit purchase price (GNF, optional — filled when known)", "Désignation": "Designation", "Montant (GNF)": "Amount (GNF)", "Envoyer WhatsApp": "Send WhatsApp", "Copier": "Copy", "Code PIN requis": "PIN code required", "Code PIN": "PIN code", "Valider": "Confirm", "Application verrouillée": "App locked", "Entre ton code PIN pour continuer": "Enter your PIN to continue", "Déverrouiller": "Unlock", "PIN oublié ?": "Forgot PIN?", "Trier A→Z / Z→A": "Sort A→Z / Z→A", "Nom de l'onglet stock perso": "Personal stock tab name", "Nom de l'onglet compte": "Account tab name", "Supprimer une catégorie": "Delete a category", "Définir / modifier le code PIN": "Set / change PIN code", "Verrouiller l'application maintenant": "Lock the app now", "Forcer la synchronisation": "Force synchronization", "Sauvegarder les données (backup)": "Back up data", "Restaurer depuis une sauvegarde": "Restore from a backup", "À propos de l'application": "About the app", "Articles (toutes catégories)": "Items (all categories)", "En attente de synchronisation": "Waiting to sync", "Connexion": "Connection", "hors ligne": "offline", "en ligne": "online", "À propos": "About", "Dernière mise à jour": "Last update", "Développé pour Boulliwel Service": "Built for Boulliwel Service", "Sauvegarde des données": "Data backup", "Restaurer une sauvegarde": "Restore a backup", "Apparence": "Appearance", "Police": "Font", "Système": "System", "Arrondie": "Rounded", "Défaut": "Default", "Crème": "Cream", "Synchronisé": "Synced", "Synchronisation en cours": "Syncing", "Hors ligne": "Offline", "Erreur de synchronisation": "Sync error", "Données en attente": "Data pending", "en attente": "pending", "Mise à jour": "Update", "Rechercher une mise à jour": "Check for updates", "(disponible)": "(available)", "(vérification…)": "(checking…)", "(à jour ✓)": "(up to date ✓)", "(hors ligne)": "(offline)", "(échec, réessaie)": "(failed, retry)", "Toucher pour synchroniser": "Tap to sync","Océan":"Ocean","Forêt":"Forest","Sépia":"Sepia","Contraste élevé":"High contrast","Supprimer cette opération":"Delete this operation","Opération supprimée":"Operation deleted","Supprimer définitivement cette opération ({label}) ?\n\nElle sera retirée du stock et des montants. Action irréversible.":"Permanently delete this operation ({label})?\n\nIt will be removed from stock and amounts. This cannot be undone."};
   for(const k in add){ if(!(k in I18N.en)) I18N.en[k] = add[k]; }
   delete I18N.en.__sorted; delete I18N.ff.__sorted;
 })();
