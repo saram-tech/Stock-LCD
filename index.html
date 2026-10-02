@@ -706,6 +706,10 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView .person-sub-row .ps-sold{margin-left:auto;text-align:right;white-space:nowrap;font-size:calc(11.5px * var(--wfs,1));color:var(--w-green);font-weight:800;font-variant-numeric:tabular-nums}
 #wifiView .person-sub-row .ps-sold span{font-size:.85em;font-weight:800}
 </style>
+<style id="quicksale-v657">
+#wifiView .person-sub.ps-tap{cursor:pointer;border-radius:8px;transition:background .12s;-webkit-tap-highlight-color:transparent}
+#wifiView .person-sub.ps-tap:active{background:color-mix(in srgb,var(--w-green) 22%,transparent)}
+</style>
 </head>
 <body>
 
@@ -1209,7 +1213,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.56';
+const APP_VERSION = '6.57';
 const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3633,7 +3637,7 @@ const UI = {
           if(!s.restant) return '';
           const montant = s.restant * (tt.price||0);
           totalMontant += montant;
-          return `<div class="person-sub" style="margin-top:3px;"><span class="ps-l"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong></span><span class="ps-r">${fmtGNF(montant)}</span></div>`;
+          return `<div class="person-sub ps-tap" style="margin-top:3px;" onclick="event.stopPropagation();UI.quickSale('${p.id}','${tt.id}')"><span class="ps-l"><span class="tname">${tt.name}</span> : <strong>${fmt(s.restant)} tickets</strong></span><span class="ps-r">${fmtGNF(montant)}</span></div>`;
         }).join('');
       return `
         <div class="person-row" onclick="UI.openSituation('${p.id}')">
@@ -4555,6 +4559,13 @@ const UI = {
   selectPerson(personId){
     this.newOp.personId = personId;
     this.renderTypePicker(this.newOp.opType);
+  },
+  // Vente rapide : depuis la liste des personnes, un appui sur un type ouvre directement le formulaire de vente
+  // (même formulaire et mêmes contrôles que Nouvelle opération → Vente → personne → type).
+  quickSale(personId, typeId){
+    if(!person(personId) || !ticketType(typeId)) return;
+    this.newOp = {personId, opType:'VENTE', typeId};
+    this.renderQtyForm();
   },
 
   // Remise à une personne : liste de tous les types, avec ce qui est déjà attribué pendant cette session, et les types
