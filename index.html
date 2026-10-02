@@ -335,16 +335,16 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 /* Tableaux : tout reste visible (portrait/paysage, toute taille de police) */
 #wifiView table.ledger{table-layout:fixed;width:100%;border-collapse:collapse}
 #wifiView table.ledger th,#wifiView table.ledger td{overflow-wrap:anywhere;word-break:break-word;padding-left:3px;padding-right:3px;font-family:inherit;font-variant-numeric:tabular-nums;font-size:calc(clamp(11px,3.1vw,15.5px) * var(--wfs,1))}
-#wifiView table.ledger:not(.ledger-7) th:first-child{width:26%}
+#wifiView table.ledger:not(.ledger-suivi) th:first-child{width:26%}
 #wifiView table.ledger th{background:var(--w-fill-head);border-bottom:2px solid var(--w-ink);padding-top:calc(8px * var(--wfs,1));padding-bottom:calc(8px * var(--wfs,1))}
 #wifiView table.ledger th:first-child{border-radius:9px 0 0 9px;padding-left:6px}
 #wifiView table.ledger th:last-child{border-radius:0 9px 9px 0;padding-right:6px}
 #wifiView table.ledger td:first-child{padding-left:6px}
 #wifiView table.ledger td:last-child{padding-right:6px}
 #wifiView table.ledger td.tname{font-family:inherit}
-#wifiView table.ledger.ledger-7 th,#wifiView table.ledger.ledger-7 td{font-size:calc(clamp(10px,2.9vw,14.5px) * var(--wfs,1));padding-left:2px;padding-right:2px}
-#wifiView table.ledger.ledger-7 td:first-child,#wifiView table.ledger.ledger-7 th:first-child{padding-left:5px}
-#wifiView table.ledger.ledger-7 td:last-child,#wifiView table.ledger.ledger-7 th:last-child{padding-right:5px}
+#wifiView table.ledger.ledger-suivi th,#wifiView table.ledger.ledger-suivi td{font-size:calc(clamp(10.5px,3vw,15px) * var(--wfs,1));padding-left:2px;padding-right:2px}
+#wifiView table.ledger.ledger-suivi td:first-child,#wifiView table.ledger.ledger-suivi th:first-child{padding-left:5px}
+#wifiView table.ledger.ledger-suivi td:last-child,#wifiView table.ledger.ledger-suivi th:last-child{padding-right:5px}
 #wifiView table.ledger.ledger-5 th,#wifiView table.ledger.ledger-5 td{font-size:calc(clamp(10.5px,3vw,15px) * var(--wfs,1));padding-left:2px;padding-right:2px}
 #wifiView table.ledger.ledger-5 td:first-child,#wifiView table.ledger.ledger-5 th:first-child{padding-left:5px}
 #wifiView table.ledger.ledger-5 td:last-child,#wifiView table.ledger.ledger-5 th:last-child{padding-right:5px}
@@ -446,6 +446,9 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #wifiView #view-accueil .card,#wifiView #settings-people,#wifiView #settings-prices,#wifiView #settings-types,#wifiView #hist-list,#wifiView #people-list,#wifiView #stock-breakdown{border:2px solid var(--w-line)}
 #wifiView #settings-people .settings-row,#wifiView #settings-prices .settings-row,#wifiView #settings-types .settings-row,#wifiView #view-accueil .money-row,#wifiView #people-list .person-row,#wifiView #hist-list .hist-row{border-bottom-color:var(--w-line)}
 #wifiView #stock-breakdown .money-row{border-bottom-color:var(--w-line)}
+/* Montants GNF de la carte « Où sont mes tickets ? » : valeur des tickets reçus (en haut) et montant vendu (en bas, vert) */
+#wifiView #stock-breakdown .gnf-note{display:inline-block;margin-left:6px;white-space:nowrap;font-size:calc(clamp(12px,3.4vw,15px) * var(--wfs,1));font-weight:600;color:var(--w-ink-soft);font-variant-numeric:tabular-nums}
+#wifiView #stock-breakdown .sold-note{margin-top:6px;padding:8px 2px 2px;border-top:1px solid var(--w-line);text-align:right;white-space:nowrap;font-size:calc(clamp(13px,3.8vw,17px) * var(--wfs,1));font-weight:800;color:var(--w-green);font-variant-numeric:tabular-nums}
 /* Infos ouvert : bloc encadré */
 #wifiView .info-panel:not([hidden]){border:2px solid var(--w-line);border-radius:12px;padding:0 10px 4px;margin:4px 0 8px}
 #wifiView .info-panel .money-row:last-of-type{border-bottom:none}
@@ -814,7 +817,6 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 
   <h2 class="section-title">Argent</h2>
   <div class="card">
-    <div class="money-row"><span class="label">Total des ventes</span><span class="amount" id="dash-sales">0</span></div>
     <div class="money-row"><span class="label">Total encaissé</span><span class="amount pos" id="dash-paid">0</span></div>
   </div>
 
@@ -1229,7 +1231,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.60';
+const APP_VERSION = '6.62';
 const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2835,11 +2837,11 @@ en: {
   "Disponible":"On hand (me)","Reçus du fournisseur":"Received from supplier","Vendus (total)":"Sold (total)",
   "Stock disponible":"Available stock","Tickets attribués":"Assigned tickets","Tickets vendus":"Sold tickets","Tickets restants":"Remaining tickets",
   "page":"page","pages":"pages",
-  "Argent attendu":"Money expected","Argent rendu (payé)":"Money returned (paid)","Dernière attribution":"Last assignment","Aucune":"None",
+  "Argent rendu (payé)":"Money returned (paid)","Dernière attribution":"Last assignment","Aucune":"None",
   "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"At-a-glance overview: assigned, sold, remaining, money expected/returned and last assignment.",
-  "Type":"Type","Pris":"Taken","Vendu":"Sold","vendu":"sold","Restant":"Remaining","Ventes":"Sales","Payé":"Paid","Montant":"Amount","Montant et Payé : en GNF":"Amount and Paid: in GNF","TOTAL":"TOTAL",
+  "Type":"Type","Pris":"Taken","Vendu":"Sold","vendu":"sold","payé":"paid","Restant":"Remaining","Payé":"Paid","Payé : en GNF":"Paid: in GNF","Payé : montant en GNF":"Paid: amount in GNF","TOTAL":"TOTAL",
   "Argent":"Money","Types de tickets":"Ticket types","Aucun type de ticket actif.":"No active ticket type.",
   "Aucun mouvement d'argent.":"No money movement.","Aucune donnée pour cette personne.":"No data for this person.",
   "Journal des suppressions & clôtures":"Deletion & closure log","Journal (suppressions & clôtures)":"Log (deletions & closures)",
@@ -2915,11 +2917,11 @@ ff: {
   "Disponible":"𞤁𞤮 𞤥𞤭𞥅𞤲","Reçus du fournisseur":"𞤄𞤢𞤢𞤯𞤢𞥄𞤯𞤭 𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Vendus (total)":"𞤛𞤢𞤥𞤢𞥄𞤯𞤭 (𞤫𞥅𞤪𞤫)",
   "Stock disponible":"𞤔𞤢𞤺𞤢𞤪𞤢𞥄𞤶𞤭 𞤲𞤮𞥅𞤯𞤭","Tickets attribués":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤼𞤮𞤼𞤢𞥄𞤯𞤫","Tickets vendus":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤛𞤢𞤥𞤢𞥄𞤯𞤫","Tickets restants":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤳𞤢𞤥𞤯𞤭𞤯𞤫",
   "page":"𞤨𞤢𞤶","pages":"𞤨𞤢𞤶𞤭𞤯𞤫",
-  "Argent attendu":"𞤖𞤢𞤦𞤣𞤭 𞤺𞤭𞤯𞤮 𞤲𞤢𞤲𞤺𞤭𞥅𞤯𞤮","Argent rendu (payé)":"𞤖𞤢𞤦𞤣𞤭 𞤢𞤪𞤼𞤢𞥄𞤯𞤭 (𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭)","Dernière attribution":"𞤚𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤮","Aucune":"𞤁𞤮𞥅",
+  "Argent rendu (payé)":"𞤖𞤢𞤦𞤣𞤭 𞤢𞤪𞤼𞤢𞥄𞤯𞤭 (𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭)","Dernière attribution":"𞤚𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤮","Aucune":"𞤁𞤮𞥅",
   "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ 𞤒𞤢𞤤𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"𞤒𞤭𞤴𞤭𞥅𞤪𞤫: 𞤼𞤮𞤼𞤢𞥄𞤯𞤮, 𞤛𞤢𞤥𞤢𞥄𞤯𞤮, 𞤳𞤢𞤥𞤯𞤭𞤯𞤮, 𞤢𞤪𞤼𞤢𞥄𞤯𞤭/𞤺𞤭𞤯𞤮 𞤫 𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤢𞤲𞤯𞤫.",
-  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Ventes":"𞤙𞤢𞤥𞤢𞤪𞤫","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Montant":"𞤖𞤢𞤦𞤣𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
+  "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
   "Argent":"𞤖𞤢𞤦𞤣𞤭","Types de tickets":"𞤙𞤮𞥅𞤬𞤮𞥅𞤶𞤭 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫","Aucun type de ticket actif.":"𞤁𞤮𞥅 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭 𞤺𞤮𞤤𞤣𞤮.",
   "Aucun mouvement d'argent.":"𞤁𞤮𞥅 𞤣𞤭𞤯𞤯𞤭 𞤢𞤪𞤣𞤭𞤪.","Aucune donnée pour cette personne.":"𞤁𞤮𞥅 𞤢𞤯𞤲𞤣𞤢𞤣𞤫 𞤲𞤫𞤯𞤯𞤮 𞤯𞤭.",
   "Journal des suppressions & clôtures":"𞤎𞤭𞥅𞤪𞤣𞤫 𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭𞥅𞤶𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭𞥅𞤶𞤭","Journal (suppressions & clôtures)":"𞤎𞤭𞥅𞤪𞤣𞤫 (𞤥𞤮𞥅𞤥𞤼𞤢𞥄𞤯𞤭 𞤫 𞤯𞤫𞤳𞤢𞥄𞤯𞤭)",
@@ -3328,8 +3330,9 @@ function initialReceived(typeId){
 
 // Per-person, per-type situation.
 // Important : une clôture de type de ticket ne remet à 0 QUE la quantité "en cours" (pris/vendu/
-// restant). L'argent dû (montantVentes) continue toujours de cumuler TOUTES les ventes,
-// clôturées ou non, pour ne jamais effacer une dette réelle.
+// restant). Le montant des ventes (montantVentes) continue toujours de cumuler TOUTES les ventes,
+// clôturées ou non. Il n'est plus affiché (les versements sont au comptant : Payé = Ventes) ; il sert
+// uniquement au contrôle d'intégrité « vente = paiement » (moneyGap) et au contrôle du report d'historique.
 function personTypeStats(personId, typeId){
   let pris=0, vendu=0, montantVentes=0;
   ledgerOps().forEach(op=>{
@@ -3356,7 +3359,7 @@ function personTypeStats(personId, typeId){
   return {pris, vendu, restant, montantVentes};
 }
 // Quantité de tickets vendus, sur le MÊME périmètre que montantVentes (toutes les ventes, clôturées ou non),
-// pour que « Vendu » et « Montant » du tableau Argent restent cohérents.
+// pour que « Vendu » et « Payé » du tableau Argent restent cohérents.
 function personTypeSoldQty(personId, typeId){
   let q=0;
   ledgerOps().forEach(op=>{
@@ -3370,8 +3373,7 @@ function personTypeSoldQty(personId, typeId){
   return q;
 }
 function personMoney(personId){
-  let du=0, paye=0;
-  DB.ticketTypes.forEach(tt=>{ du += personTypeStats(personId, tt.id).montantVentes; });
+  let paye=0;
   ledgerOps().forEach(op=>{
     if(op.opType==='PAIEMENT' && op.personId===personId) paye += (op.amount||0);
     if(op.opType==='CORRECTION'){
@@ -3379,14 +3381,13 @@ function personMoney(personId){
       if(target && target.opType==='PAIEMENT' && target.personId===personId) paye += (op.amount||0);
     }
   });
-  return {du, paye};
+  return {paye};
 }
 // Même logique que personMoney(), mais limitée à UN type de ticket — nécessaire depuis que chaque
 // versement est obligatoirement rattaché à un type (voir submitPayment). Un ancien paiement sans
 // type (typeId=null, enregistré avant ce correctif) n'est compté dans AUCUN sous-total par type
 // (mais reste compté dans le total global via personMoney) pour ne pas fausser un type au hasard.
 function personTypeMoney(personId, typeId){
-  const du = personTypeStats(personId, typeId).montantVentes;
   let paye = 0;
   ledgerOps().forEach(op=>{
     if(op.opType==='PAIEMENT' && op.personId===personId && op.typeId===typeId) paye += (op.amount||0);
@@ -3395,7 +3396,7 @@ function personTypeMoney(personId, typeId){
       if(target && target.opType==='PAIEMENT' && target.personId===personId && target.typeId===typeId) paye += (op.amount||0);
     }
   });
-  return {du, paye};
+  return {paye};
 }
 // ---- Règle vente = paiement lié : aide au rapprochement, contrôle d'écart, annulation d'un groupe ----
 // Une vente et son paiement sont créés ensemble (même personne, même type, même montant, horodatage quasi
@@ -3414,7 +3415,7 @@ function linkedCounterpart(op){
   });
   return best;
 }
-function moneyGap(personId, typeId){ const m = personTypeMoney(personId, typeId); return m.du - m.paye; }
+function moneyGap(personId, typeId){ return personTypeStats(personId, typeId).montantVentes - personTypeMoney(personId, typeId).paye; }
 // Annule localement un groupe d'opérations mises en file ensemble (jamais d'opération seule).
 function wifiRollbackGroup(grp){
   const ids = wifiQ.filter(x=>x.grp===grp).map(x=>x.payload.id);
@@ -3427,9 +3428,9 @@ function personTotalRestant(personId){
   let sum=0; DB.ticketTypes.forEach(tt=>{ sum += personTypeStats(personId, tt.id).restant; }); return sum;
 }
 function moneyTotals(){
-  let ventes=0, paye=0;
-  DB.people.forEach(p=>{ const m=personMoney(p.id); ventes+=m.du; paye+=m.paye; });
-  return {ventes, paye};
+  let paye=0;
+  DB.people.forEach(p=>{ paye += personMoney(p.id).paye; });
+  return {paye};
 }
 function fmt(n){ return (n||0).toLocaleString('fr-FR'); }
 function fmtGNF(n){ return fmt(n) + ' GNF'; }
@@ -3628,7 +3629,6 @@ const UI = {
     document.getElementById('dash-holders').textContent = holders;
 
     const mt = moneyTotals();
-    document.getElementById('dash-sales').textContent = fmtGNF(mt.ventes);
     document.getElementById('dash-paid').textContent = fmtGNF(mt.paye);
 
     // Alerts
@@ -3677,12 +3677,15 @@ const UI = {
     const s = stockSummary().find(x=>x.type.id===this.stockPillType);
     if(!s){ el.innerHTML = `<div class="empty">Aucun type de ticket.</div>`; return; }
     const price = s.type.price||0;
+    const valeurRecus = s.initial * price;                          // reçus × prix unitaire
+    const montantVendu = (s.venduDirect + s.venduPersonnes) * price; // vendus (directs + via associés) × prix unitaire
     const perPerson = DB.people.filter(p=>!p.deletedAt).map(p=>({p, restant: personTypeStats(p.id, s.type.id).restant}))
       .filter(x=>x.restant>0).sort((a,b)=>a.p.name.localeCompare(b.p.name,'fr',{sensitivity:'base'}));
     el.innerHTML = `
-      <div class="money-row total" style="border-bottom:1px solid var(--ink);margin-bottom:4px;padding-bottom:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})</span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
+      <div class="money-row total" style="border-bottom:1px solid var(--ink);margin-bottom:4px;padding-bottom:9px;"><span class="label" style="font-weight:700;color:var(--ink);">Total (reçus : ${fmt(s.initial)})<span class="gnf-note">(${fmtGNF(valeurRecus)})</span></span><span class="amount">${fmt(s.disponible+perPerson.reduce((a,x)=>a+x.restant,0)+s.venduDirect+s.venduPersonnes)}</span></div>
       <div class="money-row row-fill-b"><span class="label wname">Disponible</span><span class="amount">${fmt(s.disponible)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(s.disponible*price)})</span></span></div>
       ${perPerson.length ? `<div class="frame-rows">${perPerson.map(x=>`<div class="money-row"><span class="label wname">${x.p.name}</span><span class="amount">${fmt(x.restant)} <span style="color:var(--w-ink-soft);font-weight:400;">(${fmtGNF(x.restant*price)})</span></span></div>`).join('')}</div>` : ''}
+      <div class="sold-note">(<span>vendu</span> = ${fmtGNF(montantVendu)})</div>
     `;
   },
 
@@ -3716,7 +3719,7 @@ const UI = {
               <div class="person-name">${p.name} ${p.active===false?'<span class="chip inactive">inactif</span>':''}</div>
               <div class="person-total">${fmtGNF(totalMontant)}</div>
             </div>
-            <div class="person-sub person-sub-row"><span class="ps-main">${fmt(restant)} tickets en main</span><span class="ps-sold"><span>vendu</span> = ${fmtGNF(m.du)}</span></div>
+            <div class="person-sub person-sub-row"><span class="ps-main">${fmt(restant)} tickets en main</span><span class="ps-sold"><span>payé</span> = ${fmtGNF(m.paye)}</span></div>
           </div>
           <div class="person-body">
             <div class="person-lines">
@@ -3840,16 +3843,16 @@ const UI = {
       <h2 class="section-title">Argent</h2>
       <div class="card fill-b">
         <table class="ledger ledger-5">
-          <colgroup><col style="width:25%"><col style="width:15%"><col style="width:30%"><col style="width:30%"></colgroup>
-          <tr><th>Type</th><th>Vendu</th><th>Montant</th><th>Payé</th></tr>
+          <colgroup><col style="width:30%"><col style="width:20%"><col style="width:50%"></colgroup>
+          <tr><th>Type</th><th>Vendu</th><th>Payé</th></tr>
           ${liveTypes().map(tt=>{
             const tm = personTypeMoney(p.id, tt.id);
-            if(tm.du===0 && tm.paye===0) return '';
-            return `<tr><td class="tname">${tt.name}</td><td>${fmt(personTypeSoldQty(p.id, tt.id))}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td></tr>`;
-          }).join('') || `<tr><td colspan="4" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
-          <tr class="total"><td>TOTAL</td><td>${fmt(DB.ticketTypes.reduce((a,tt)=>a+personTypeSoldQty(p.id, tt.id),0))}</td><td>${fmt(m.du)}</td><td>${fmt(m.paye)}</td></tr>
+            if(tm.paye===0 && personTypeSoldQty(p.id, tt.id)===0) return '';
+            return `<tr><td class="tname">${tt.name}</td><td>${fmt(personTypeSoldQty(p.id, tt.id))}</td><td>${fmt(tm.paye)}</td></tr>`;
+          }).join('') || `<tr><td colspan="3" style="color:var(--w-ink-soft);">Aucun mouvement d'argent.</td></tr>`}
+          <tr class="total"><td>TOTAL</td><td>${fmt(DB.ticketTypes.reduce((a,tt)=>a+personTypeSoldQty(p.id, tt.id),0))}</td><td>${fmt(m.paye)}</td></tr>
         </table>
-        <div class="ledger-note">Montant et Payé : en GNF</div>
+        <div class="ledger-note">Payé : en GNF</div>
       </div>
 
       <h2 class="section-title">Dernières opérations</h2>
@@ -4076,9 +4079,9 @@ const UI = {
     });
     DB.people.forEach(p=>{
       const m = personMoney(p.id);
-      snap.people[p.id] = [r(m.du), r(m.paye), r(personTotalRestant(p.id)), DB.ticketTypes.map(tt=>{
+      snap.people[p.id] = [r(m.paye), r(personTotalRestant(p.id)), DB.ticketTypes.map(tt=>{
         const st = personTypeStats(p.id, tt.id), tm = personTypeMoney(p.id, tt.id);
-        return [r(st.pris), r(st.vendu), r(st.restant), r(st.montantVentes), r(tm.du), r(tm.paye)];
+        return [r(st.pris), r(st.vendu), r(st.restant), r(st.montantVentes), r(tm.paye)];
       })];
     });
     return JSON.stringify(snap);
@@ -4237,7 +4240,7 @@ const UI = {
   /* ---------- RAPPORTS ---------- */
   // Vue de suivi consolidée : pour chaque associé actif, tout ce qui doit être "immédiatement
   // lisible" — stock disponible chez lui (restant), tickets attribués/vendus/restants (cumul tous
-  // types), argent attendu/rendu, et la dernière attribution reçue (date + type + quantité).
+  // types), argent rendu (payé), et la dernière attribution reçue (date + type + quantité).
   // N'efface jamais rien : lit uniquement les données déjà enregistrées.
   fitOneLine(){
     if(!this._fitBound){ this._fitBound=true; window.addEventListener('resize',()=>this.fitOneLine()); }
@@ -4300,8 +4303,8 @@ const UI = {
       const typeRows = liveTypes().map(tt=>{
         const s = personTypeStats(p.id, tt.id);
         const tm = personTypeMoney(p.id, tt.id);
-        if(s.pris===0 && s.vendu===0 && s.restant===0 && tm.du===0 && tm.paye===0) return '';
-        return `<tr><td class="tname">${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmt(tm.du)}</td><td>${fmt(tm.paye)}</td></tr>`;
+        if(s.pris===0 && s.vendu===0 && s.restant===0 && tm.paye===0) return '';
+        return `<tr><td class="tname">${tt.name}</td><td>${fmt(s.pris)}</td><td>${fmt(s.vendu)}</td><td>${fmt(s.restant)}</td><td>${fmt(tm.paye)}</td></tr>`;
       }).join('');
       return `
         <div class="card" style="margin-bottom:10px;">
@@ -4313,19 +4316,18 @@ const UI = {
             <div class="money-row"><span class="label">Tickets attribués</span><span class="amount">${fmt(attribues)}</span></div>
             <div class="money-row"><span class="label">Tickets vendus</span><span class="amount">${fmt(vendus)}</span></div>
             <div class="money-row"><span class="label">Tickets restants</span><span class="amount">${fmt(restant)}</span></div>
-            <div class="money-row"><span class="label">Argent attendu</span><span class="amount">${fmtGNF(m.du)}</span></div>
             <div class="money-row"><span class="label">Argent rendu (payé)</span><span class="amount pos">${fmtGNF(m.paye)}</span></div>
             ${lastByType}
           </div>
           <div class="money-row last-row"><span class="label">Dernière attribution</span><span class="amount small">${lastStr}</span></div>
           ${typeRows ? `
           <div class="ledger-wrap">
-            <table class="ledger ledger-7">
-              <colgroup><col style="width:15%"><col style="width:10%"><col style="width:13%"><col style="width:16%"><col style="width:23%"><col style="width:23%"></colgroup>
-              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Ventes</th><th>Payé</th></tr>
+            <table class="ledger ledger-suivi">
+              <colgroup><col style="width:20%"><col style="width:12%"><col style="width:15%"><col style="width:21%"><col style="width:32%"></colgroup>
+              <tr><th>Type</th><th>Pris</th><th>Vendu</th><th>Restant</th><th>Payé</th></tr>
               ${typeRows}
             </table>
-            <div class="ledger-note">Ventes et Payé : montants en GNF</div>
+            <div class="ledger-note">Payé : montant en GNF</div>
           </div>` : ''}
         </div>`;
     }).join('');
