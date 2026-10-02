@@ -731,6 +731,11 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 /* Bouton Enregistrer / valider : collé en bas de la fenêtre, jamais masqué */
 #wifiView .sheet > .btn-primary:not(:has(~ .btn-primary)),#wifiView .sheet > .btn-row:not(:has(~ .btn-row)){position:sticky;bottom:calc(4px + env(safe-area-inset-bottom));z-index:5;margin-top:.5em;box-shadow:0 0 0 8px var(--w-paper),0 2px 6px rgba(20,30,50,.22)}
 @media (orientation:landscape){#wifiView .sheet{max-height:calc(100% - 4px);padding-top:6px}#wifiView .sheet .field{margin-bottom:.3em}}
+/* Rapport « À ma disposition » (BAH) */
+#rapport-seg{flex-wrap:wrap}
+#rapport-seg button{flex:1 1 auto}
+#rapport-seg button[hidden]{display:none}
+#wifiView .bah-card .bah-total{color:var(--w-green,#1a8a3c);font-size:calc(30px * var(--wfs,1));font-weight:800;line-height:1.15;margin:4px 0 12px;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -871,11 +876,23 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 
 <!-- RAPPORTS -->
 <div class="view" id="view-rapports">
-  <h2 class="section-title">Suivi par associé</h2>
-  <div id="suivi-associes"></div>
+  <div class="seg" id="rapport-seg" role="tablist">
+    <button type="button" id="rapport-btn-assoc" class="active" role="tab" aria-selected="true" onclick="UI.showRapportPane('assoc')">Suivi par associé</button>
+    <button type="button" id="rapport-btn-fourn" role="tab" aria-selected="false" onclick="UI.showRapportPane('fourn')">Rapports fournisseur</button>
+    <button type="button" id="rapport-btn-bah" role="tab" aria-selected="false" hidden onclick="UI.showRapportPane('bah')">À ma disposition</button>
+  </div>
 
-  <h2 class="section-title" style="margin-top:24px;">Rapport fournisseur</h2>
-  <div id="rapport-content"></div>
+  <div id="rapport-pane-assoc">
+    <div id="suivi-associes"></div>
+  </div>
+
+  <div id="rapport-pane-fourn" hidden>
+    <div id="rapport-content"></div>
+  </div>
+
+  <div id="rapport-pane-bah" hidden>
+    <div id="rapport-bah"></div>
+  </div>
 </div>
 
 <!-- PARAMETRES -->
@@ -1233,8 +1250,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.68';
-const APP_UPDATED = '01/10/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.73';
+const APP_UPDATED = '02/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -2840,7 +2857,7 @@ en: {
   "Stock disponible":"Available stock","Tickets attribués":"Assigned tickets","Tickets vendus":"Sold tickets","Tickets restants":"Remaining tickets",
   "page":"page","pages":"pages",
   "Argent rendu (payé)":"Money returned (paid)","Dernière attribution":"Last assignment","Aucune":"None",
-  "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
+  "Suivi par associé":"Partner tracking","Rapport fournisseur":"Supplier report","Rapports fournisseur":"Supplier reports","Aucun mouvement enregistré.":"No movement recorded.","Montant payé : en GNF":"Amount paid: in GNF","Montant payé":"Amount paid","Quantité vendue / quantité totale":"Quantity sold / total quantity","Type de ticket":"Ticket type","MONTANT À MA DISPOSITION":"AMOUNT AT MY DISPOSAL","À ma disposition":"Available to me","Justification complète des tickets reçus, type par type.":"Full breakdown of tickets received, type by type.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ Export a backup (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"At-a-glance overview: assigned, sold, remaining, money expected/returned and last assignment.",
   "Type":"Type","Pris":"Taken","Vendu":"Sold","vendu":"sold","payé":"paid","Restant":"Remaining","Payé":"Paid","Payé : en GNF":"Paid: in GNF","Payé : montant en GNF":"Paid: amount in GNF","TOTAL":"TOTAL",
@@ -2920,7 +2937,7 @@ ff: {
   "Stock disponible":"𞤔𞤢𞤺𞤢𞤪𞤢𞥄𞤶𞤭 𞤲𞤮𞥅𞤯𞤭","Tickets attribués":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤼𞤮𞤼𞤢𞥄𞤯𞤫","Tickets vendus":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤛𞤢𞤥𞤢𞥄𞤯𞤫","Tickets restants":"𞤚𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤳𞤢𞤥𞤯𞤭𞤯𞤫",
   "page":"𞤨𞤢𞤶","pages":"𞤨𞤢𞤶𞤭𞤯𞤫",
   "Argent rendu (payé)":"𞤖𞤢𞤦𞤣𞤭 𞤢𞤪𞤼𞤢𞥄𞤯𞤭 (𞤴𞤭𞥅𞤴𞤢𞥄𞤯𞤭)","Dernière attribution":"𞤚𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤮","Aucune":"𞤁𞤮𞥅",
-  "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
+  "Suivi par associé":"𞤘𞤢𞤣𞤢 𞤺𞤮 𞤢𞤧𞤮𞥅𞤶𞤭","Rapport fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Rapports fournisseur":"𞤖𞤢𞤦𞤢𞤪𞤫 𞤶𞤫𞤴𞤣𞤭𞤯𞤮","Justification complète des tickets reçus, type par type.":"𞤖𞤢𞤦𞤢𞤪𞤭𞥅𞤪𞤫 𞤼𞤭𞤳𞤫𞤼𞤭𞤯𞤫 𞤦𞤢𞥄𞤯𞤢𞥄𞤯𞤫, 𞤲𞤮𞥅𞤬𞤢𞤪𞤫 𞤺𞤮 𞤲𞤮𞥅𞤬𞤢𞤪𞤫.",
   "⇩ Exporter une sauvegarde (JSON)":"⇩ 𞤒𞤢𞤤𞤼𞤭𞤲 𞤣𞤢𞤪𞤫 (JSON)",
   "Vue d'ensemble immédiate : attribué, vendu, restant, argent attendu/rendu et dernière attribution.":"𞤒𞤭𞤴𞤭𞥅𞤪𞤫: 𞤼𞤮𞤼𞤢𞥄𞤯𞤮, 𞤛𞤢𞤥𞤢𞥄𞤯𞤮, 𞤳𞤢𞤥𞤯𞤭𞤯𞤮, 𞤢𞤪𞤼𞤢𞥄𞤯𞤭/𞤺𞤭𞤯𞤮 𞤫 𞤼𞤮𞤼𞤢𞤪𞤫 𞤺𞤢𞥄𞤲𞤴𞤢𞤲𞤯𞤫.",
   "Type":"𞤙𞤮𞥅𞤬𞤢𞤪𞤫","Pris":"𞤙𞤢𞥄𞤯𞤭","Vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","vendu":"𞤗𞤢𞤥𞤢𞥄𞤯𞤭","payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","Restant":"𞤖𞤢𞤥𞤯𞤭𞤯𞤮","Payé":"𞤒𞤭𞥅𞤴𞤢𞥄𞤯𞤭","TOTAL":"𞤈𞤢𞤪𞤪𞤢",
@@ -3111,18 +3128,16 @@ function mapCorrection(c){ return {id:c.id, ts:c.corrected_at, personId:null, ty
 function mapBaseline(b){ return {id:'base-'+b.id, baseId:b.id, base:true, ts:b.anchor_at, personId:b.person_id||null, typeId:b.ticket_type_id||null, opType:b.op_type, qty:(b.quantity==null?null:Number(b.quantity)), unitPrice:null, amount:(b.amount==null?null:Number(b.amount)), comment:null, correctsOpId:null, reason:null}; }
 function ledgerOps(){ return (DB.baseline && DB.baseline.length) ? DB.operations.concat(DB.baseline) : DB.operations; }
 
-// Personne par défaut "BAH" : créée automatiquement une seule fois (si aucune personne de ce nom
-// n'existe déjà, active ou supprimée), pour que le carnet WiFi ne parte jamais vide. Le nom reste
-// entièrement modifiable ensuite via Personnes → Modifier, comme pour n'importe quelle personne.
-async function ensureDefaultPerson(){
-  if(!DB || !DB.people) return;
-  const exists = DB.people.some(p => (p.name||'').trim().toLowerCase()==='bah');
-  if(exists) return;
-  try{
-    const { data, error } = await sb.from('people').insert({name:'BAH', active:true}).select();
-    if(error) throw error;
-    DB.people.push({id:data[0].id, name:data[0].name, active:data[0].active, createdAt:data[0].created_at, deletedAt:null});
-  }catch(e){ console.warn('ensureDefaultPerson:', e); }
+// Personne BAH : désignée UNIQUEMENT par une référence unique et stable, enregistrée côté serveur (colonne
+// people.is_bah, vraie pour une seule personne) — donc identique sur tous les appareils et conservée même si
+// le nom est modifié. Aucun repli : jamais de choix selon le nom, l'ancienneté, la date de création ou le rang.
+// Si aucune personne (ou plusieurs, ou une personne supprimée) n'est désignée, le rapport « À ma disposition »
+// reste masqué. Aucune personne n'est jamais créée automatiquement.
+function bahPerson(){
+  if(!DB || !DB.people) return null;
+  const ref = DB.people.filter(p => p.isBah === true);
+  if(ref.length !== 1) return null;
+  return ref[0].deletedAt ? null : ref[0];
 }
 
 // Lecture du report (ledger_baseline), paginée : jamais tronquée à 1000 lignes (une lecture tronquée fausserait le stock).
@@ -3188,7 +3203,7 @@ async function loadData(){
 
   DB = {
     ticketTypes: (tt.data||[]).map(t => ({id:t.id, name:t.name, price:Number(t.price), active:t.active})),
-    people: (pe.data||[]).map(p => ({id:p.id, name:p.name, active:p.active, createdAt:p.created_at, deletedAt:p.deleted_at||null})),
+    people: (pe.data||[]).map(p => ({id:p.id, name:p.name, active:p.active, createdAt:p.created_at, deletedAt:p.deleted_at||null, isBah:p.is_bah===true})),
     operations: finalOps,
     baseline: bl.rows.map(mapBaseline),
     closures: (cl.data||[]).map(c => ({id:c.id, ticketTypeId:c.ticket_type_id, closedAt:c.closed_at, restoredAt:c.restored_at||null})),
@@ -3466,7 +3481,6 @@ const UI = {
   async init(){
     try{
       await loadData();
-      await ensureDefaultPerson();
     }catch(e){
       if(!loadWifiCache()){ document.body.innerHTML = `<div class="empty" style="padding:60px 20px;">⚠ Impossible de charger les données Supabase.<br><br>${e.message||e}<br><br>Vérifie ta connexion et réessaie.</div>`;
       return; }
@@ -4268,6 +4282,73 @@ const UI = {
     btn.setAttribute('aria-expanded', String(o));
     const a = btn.querySelector('.info-arrow'); if(a) a.textContent = o ? '▴' : '▾';
   },
+  showRapportPane(which){
+    const panes = {assoc:'rapport-pane-assoc', fourn:'rapport-pane-fourn', bah:'rapport-pane-bah'};
+    const btns = {assoc:'rapport-btn-assoc', fourn:'rapport-btn-fourn', bah:'rapport-btn-bah'};
+    if(!panes[which]) which = 'assoc';
+    if(!document.getElementById(panes[which])) return;
+    Object.keys(panes).forEach(k=>{
+      const pn = document.getElementById(panes[k]), bt = document.getElementById(btns[k]);
+      const on = (k===which);
+      if(pn) pn.hidden = !on;
+      if(bt){ bt.classList.toggle('active', on); bt.setAttribute('aria-selected', String(on)); }
+    });
+    this._rapportPane = which;
+    this.fitOneLine();
+  },
+  // Rapport « À ma disposition » : uniquement pour la personne BAH, désignée par sa référence unique enregistrée côté serveur (jamais par son nom, son ancienneté ou son rang). Tout est calculé à partir des
+  // opérations réellement enregistrées (ventes, attributions, paiements + corrections), sur le même
+  // périmètre que le tableau « Argent » de la fiche personne. Ne modifie aucune donnée.
+  renderMontantBah(){
+    const btn = document.getElementById('rapport-btn-bah');
+    const el = document.getElementById('rapport-bah');
+    if(!btn || !el) return;
+    const b = bahPerson();
+    const bah = b ? [b] : [];
+    if(bah.length===0){
+      btn.hidden = true; el.innerHTML = '';
+      if(this._rapportPane==='bah') this.showRapportPane('assoc');
+      return;
+    }
+    btn.hidden = false;
+    const qtyTotal = (pid, tid)=>{
+      let q = 0;
+      ledgerOps().forEach(op=>{
+        if(op.opType==='CORRECTION'){
+          const t = DB.operations.find(o=>o.id===op.correctsOpId);
+          if(t && t.personId===pid && t.typeId===tid && t.opType==='REMISE') q += (op.qty||0);
+          return;
+        }
+        if(op.personId===pid && op.typeId===tid && op.opType==='REMISE') q += (op.qty||0);
+      });
+      return q;
+    };
+    el.innerHTML = bah.map(p=>{
+      let sommeTypes = 0;
+      const rows = DB.ticketTypes.map(tt=>{
+        const vendu = personTypeSoldQty(p.id, tt.id);
+        const total = qtyTotal(p.id, tt.id);
+        const paye = personTypeMoney(p.id, tt.id).paye;
+        sommeTypes += paye;
+        if(vendu===0 && total===0 && paye===0) return '';
+        return `<tr><td class="tname">${tt.name}</td><td>${fmt(vendu)} / ${fmt(total)}</td><td>${fmt(paye)}</td></tr>`;
+      }).join('');
+      const totalPaye = personMoney(p.id).paye;
+      const autres = totalPaye - sommeTypes;
+      const autresRow = autres!==0 ? `<tr><td class="tname">Autres</td><td>—</td><td>${fmt(autres)}</td></tr>` : '';
+      return `
+        <div class="card bah-card">
+          <h2 class="section-title" style="margin-top:0;">MONTANT À MA DISPOSITION</h2>
+          <div class="bah-total">${fmtGNF(totalPaye)}</div>
+          <table class="ledger ledger-5">
+            <colgroup><col style="width:28%"><col style="width:38%"><col style="width:34%"></colgroup>
+            <tr><th>Type de ticket</th><th>Quantité vendue / quantité totale</th><th>Montant payé</th></tr>
+            ${(rows + autresRow) || `<tr><td colspan="3" style="color:var(--w-ink-soft);">Aucun mouvement enregistré.</td></tr>`}
+          </table>
+          <div class="ledger-note">Montant payé : en GNF</div>
+        </div>`;
+    }).join('');
+  },
   renderSuiviAssocies(){
     const el = document.getElementById('suivi-associes');
     if(!el) return;
@@ -4337,6 +4418,7 @@ const UI = {
   },
   renderRapports(){
     this.renderSuiviAssocies();
+    this.renderMontantBah();
     const summary = stockSummary();
     const el = document.getElementById('rapport-content');
     el.innerHTML = summary.map(s=>{
