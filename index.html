@@ -737,6 +737,97 @@ html[data-app-font] :is(button,input,select,textarea){font-family:inherit}
 #rapport-seg button[hidden]{display:none}
 #wifiView .bah-card .bah-total{color:var(--w-green,#1a8a3c);font-size:calc(30px * var(--wfs,1));font-weight:800;line-height:1.15;margin:4px 0 12px;font-variant-numeric:tabular-nums}
 </style>
+<style id="fix-v674">
+/* ===== v6.74 : lignes plus basses, en-têtes/quantités centrés, affichage ordinateur ===== */
+
+/* --- 2. Hauteur des lignes (surtout Suivi par associé / Rapports fournisseur) --- */
+#wifiView .money-row{padding:.2em 0;line-height:1.15;gap:.6em}
+#suivi-associes .money-row,#rapport-content .money-row{padding:.12em 0;line-height:1.1}
+#wifiView .money-row.row-fill-a,#wifiView .money-row.row-fill-b{padding:.16em 10px;margin:1px 0}
+#suivi-associes .card,#rapport-content .card{padding:.38em .7em;margin-bottom:5px}
+#suivi-associes .card>div:first-child,#rapport-content .card>div:first-child{margin-bottom:1px !important;line-height:1.1}
+#wifiView .card + .card{margin-top:.35em}
+#wifiView .frame-rows{margin:2px 0}
+#wifiView .frame-rows>.money-row{padding-left:10px;padding-right:10px}
+#wifiView #settings-people .chip.inactive{background:var(--w-fill-head);color:var(--w-ink-soft);white-space:nowrap}
+#wifiView .info-btn.info-inline{padding-top:0;padding-bottom:0}
+#wifiView .info-panel:not([hidden]){margin:2px 0 3px;padding:0 10px 1px}
+#wifiView .type-last{margin-top:3px;padding:.25em .6em}
+#wifiView .ledger-wrap{margin-top:2px}
+#wifiView .ledger-note{margin-top:1px}
+/* Tableaux */
+#wifiView table.ledger th{padding:.32em 4px;line-height:1.15}
+#wifiView table.ledger td{padding:.26em 4px;line-height:1.15}
+#wifiView table.ledger tr.total td{padding-top:.3em}
+@media (orientation:landscape){#wifiView table.ledger td,#wifiView table.ledger th{padding-top:.26em;padding-bottom:.26em}}
+/* Autres listes : un peu plus serrées, sans nuire au toucher */
+#wifiView .hist-row{padding:.4em 2px}
+#wifiView .person-row{padding:.4em 2px}
+#wifiView .settings-row{padding:.24em 2px}
+
+/* --- 3. En-têtes centrés partout, quantités centrées, montants alignés à droite --- */
+th{text-align:center !important;vertical-align:middle}
+#wifiView table.ledger td{text-align:center;vertical-align:middle}
+#wifiView table.ledger td:first-child{text-align:left}
+#wifiView table.ledger td[colspan]{text-align:center}
+#wifiView table.ledger.ledger-suivi td:nth-child(5),
+#wifiView table.ledger.ledger-5 td:nth-child(3){text-align:right;padding-right:10px;white-space:nowrap}
+#wifiView table.ledger.ledger-suivi tr.total td:first-child,
+#wifiView table.ledger.ledger-5 tr.total td:first-child{text-align:left}
+/* Rapports fournisseur : colonne des quantités centrée et alignée d'une ligne à l'autre */
+#rapport-content .money-row{display:grid;grid-template-columns:minmax(0,1fr) 5em;align-items:center}
+#rapport-content .money-row .amount{text-align:center;justify-self:stretch}
+/* Réception : en-têtes centrés, quantités centrées, total à droite */
+#receptionView th{text-align:center !important}
+#receptionView tbody tr:not(.rec-head) td:nth-child(5) input{text-align:center}
+#receptionView tbody tr:not(.rec-head) td:nth-child(1),#receptionView tbody tr:not(.rec-head) td:nth-child(2){text-align:center}
+
+/* --- 4. Affichage ordinateur / grand écran --- */
+@media (min-width:960px){
+  /* Contenu centré, largeur utile limitée (pas d'étirement) */
+  #wifiView .view{max-width:1180px;margin-left:auto;margin-right:auto;padding-left:24px;padding-right:24px}
+  #wifiView #view-stock,#wifiView #view-historique,#wifiView #view-situation,#wifiView #view-parametres{max-width:920px}
+  #wifiView .topbar{padding-left:max(24px,calc((100% - 1180px)/2 + 24px));padding-right:max(60px,calc((100% - 1180px)/2 + 24px))}
+  #wifiView .sheet{max-width:720px}
+  /* Navigation du bas : centrée, largeur raisonnable */
+  #wifiView .bottomnav{left:0;right:0;margin:0 auto;width:auto;max-width:680px;border:1px solid var(--w-line);border-bottom:none;border-radius:16px 16px 0 0}
+  /* Accueil : 3 colonnes (Associés / Argent / Alertes) sous le stock */
+  #wifiView #view-accueil.active{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:20px;align-items:start;align-content:start}
+  #view-accueil>h2:nth-child(1),#view-accueil>#dash-stock{grid-column:1/-1}
+  #view-accueil>h2:nth-child(3){grid-column:1;grid-row:3}
+  #view-accueil>.card:nth-child(4){grid-column:1;grid-row:4}
+  #view-accueil>h2:nth-child(5){grid-column:2;grid-row:3}
+  #view-accueil>.card:nth-child(6){grid-column:2;grid-row:4}
+  #view-accueil>h2:nth-child(7){grid-column:3;grid-row:3}
+  #view-accueil>#dash-alerts{grid-column:3;grid-row:4}
+  /* Rapports : cartes en grille */
+  #suivi-associes,#rapport-content{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px;align-items:start}
+  #suivi-associes .card,#rapport-content .card,#suivi-associes .card + .card,#rapport-content .card + .card{margin:0}
+  #suivi-associes>.empty,#rapport-content>.empty{grid-column:1/-1}
+  /* Personnes : deux colonnes */
+  #wifiView #people-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;align-items:start}
+  #wifiView #people-list>.empty{grid-column:1/-1}
+  /* Survol (souris uniquement) */
+  #wifiView .person-row:hover,#wifiView .hist-row:hover{background:var(--w-paper-line)}
+  #wifiView .btn:hover,#wifiView .plus-item:hover,#wifiView .op-tile:hover,#wifiView .filter-pill:hover{filter:brightness(1.06)}
+  /* Compte Réception */
+  #receptionView .app{max-width:1180px}
+  #receptionView .tbl-scroll{max-height:min(560px,70vh)}
+  #receptionView .db-wrap{max-height:min(520px,70vh)}
+  /* Compte Stock */
+  body{max-width:1100px}
+  #list{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));column-gap:12px}
+  #list .item{margin-bottom:6px}
+}
+@media (min-width:1500px){
+  #wifiView .view{max-width:1320px}
+  #wifiView .topbar{padding-left:max(24px,calc((100% - 1320px)/2 + 24px));padding-right:max(60px,calc((100% - 1320px)/2 + 24px))}
+  #suivi-associes,#rapport-content{grid-template-columns:repeat(auto-fill,minmax(420px,1fr))}
+}
+@media (hover:hover){
+  #wifiView .person-row:hover{background:var(--w-paper-line)}
+}
+</style>
 </head>
 <body>
 
@@ -1250,7 +1341,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.73';
+const APP_VERSION = '6.74';
 const APP_UPDATED = '02/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3133,6 +3224,8 @@ function ledgerOps(){ return (DB.baseline && DB.baseline.length) ? DB.operations
 // le nom est modifié. Aucun repli : jamais de choix selon le nom, l'ancienneté, la date de création ou le rang.
 // Si aucune personne (ou plusieurs, ou une personne supprimée) n'est désignée, le rapport « À ma disposition »
 // reste masqué. Aucune personne n'est jamais créée automatiquement.
+// Protection : la personne BAH (référence is_bah) ne peut JAMAIS être supprimée (ni logiquement, ni définitivement).
+function isProtectedPerson(p){ return !!p && p.isBah === true; }
 function bahPerson(){
   if(!DB || !DB.people) return null;
   const ref = DB.people.filter(p => p.isBah === true);
@@ -3754,7 +3847,9 @@ const UI = {
     el.innerHTML = active.length ? active.map(p=>`
       <div class="settings-row">
         <div><div class="st-label wname">${p.name}</div></div>
-        <button type="button" class="btn btn-outline btn-sm danger" onclick="UI.deletePerson('${p.id}')">Supprimer</button>
+        ${isProtectedPerson(p)
+          ? `<span class="chip inactive" title="Personne par défaut : suppression impossible">🔒 Défaut</span>`
+          : `<button type="button" class="btn btn-outline btn-sm danger" onclick="UI.deletePerson('${p.id}')">Supprimer</button>`}
       </div>`).join('') : `<div class="empty">Aucune personne.</div>`;
     const dw = document.getElementById('settings-people-deleted');
     if(!dw) return;
@@ -3770,7 +3865,7 @@ const UI = {
             <div><div class="st-label wname">${p.name}</div><div class="st-sub">Supprimée le ${dateStr}</div></div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;">
               <button type="button" class="btn btn-outline btn-sm" onclick="UI.restorePerson('${p.id}')">Restaurer</button>
-              <button type="button" class="btn btn-outline btn-sm danger" onclick="UI.deletePersonForever('${p.id}')">Effacer</button>
+              ${isProtectedPerson(p) ? '' : `<button type="button" class="btn btn-outline btn-sm danger" onclick="UI.deletePersonForever('${p.id}')">Effacer</button>`}
             </div>
           </div>`;
         }).join('')}
@@ -3919,6 +4014,7 @@ const UI = {
   async deletePerson(id){
     const p = person(id);
     if(!p) return;
+    if(isProtectedPerson(p)){ toast('🔒 BAH est la personne par défaut : suppression impossible'); return; }
     const restant = personTotalRestant(p.id);
     let msg = tf('Supprimer "{name}" ?', {name: p.name});
     if(restant>0) msg += '\n\n' + tf('⚠ Cette personne a encore {qty} ticket(s) en main. Ces données restent conservées dans l\'historique après suppression.', {qty: fmt(restant)});
@@ -3959,6 +4055,7 @@ const UI = {
   async hardDeletePerson(personId, {skipRefresh=false}={}){
     const p = DB.people.find(x=>x.id===personId);
     if(!p) return {ok:false};
+    if(isProtectedPerson(p)) return {ok:false, error:new Error('BAH est la personne par défaut : suppression impossible')};
     const opIds = DB.operations.filter(o=>o.personId===personId && ['VENTE','PAIEMENT','REMISE'].includes(o.opType)).map(o=>o.id);
     try{
       if(opIds.length>0){
@@ -3994,6 +4091,7 @@ const UI = {
   async deletePersonForever(personId){
     const p = DB.people.find(x=>x.id===personId);
     if(!p) return;
+    if(isProtectedPerson(p)){ toast('🔒 BAH est la personne par défaut : suppression impossible'); return; }
     const restant = personTotalRestant(p.id);
     let warn = '';
     if(restant>0) warn = '\n\n' + tf('⚠ {qty} ticket(s) en main. Tout sera effacé avec elle.', {qty: fmt(restant)});
@@ -4004,7 +4102,7 @@ const UI = {
   // "Vider" les personnes supprimées : suppression DÉFINITIVE et RÉELLE de TOUTES les personnes déjà
   // supprimées (jamais des personnes actives), avec toutes leurs données liées, sans laisser d'orphelins.
   async emptyDeletedPeople(){
-    const deleted = DB.people.filter(p=>p.deletedAt);
+    const deleted = DB.people.filter(p=>p.deletedAt && !isProtectedPerson(p));
     if(deleted.length===0){ toast('Aucune personne supprimée à vider'); return; }
     if(!confirm(tf('Vider définitivement {count} personne(s) supprimée(s) ?\n\nCette action est IRRÉVERSIBLE : toutes leurs ventes, paiements et mouvements de tickets seront également effacés.', {count: deleted.length}))) return;
     let removed=0, failed=0, lastErr=null;
