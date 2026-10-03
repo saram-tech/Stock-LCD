@@ -1342,7 +1342,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.75';
+const APP_VERSION = '6.76';
 const APP_UPDATED = '02/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -3255,6 +3255,30 @@ async function fetchBaselineRows(){
 }
 const baselineSignature = rows => rows.map(r=>r.id).join(',');
 
+// Lecture COMPLÈTE d'une table (jamais tronquée par la limite de lignes de Supabase, 1000 par défaut — ou moins si le
+// projet l'a réduite). Pagination par clé (id > dernier id lu) : fiable même si des lignes sont ajoutées ou supprimées
+// pendant la lecture (contrairement à un décalage par numéro de ligne). On s'arrête quand le total annoncé par le
+// serveur est atteint ou qu'une page revient vide — jamais sur « page plus courte que prévu », qui serait faux si la
+// limite du serveur est inférieure à la taille de page. Même forme de retour qu'une requête simple ({data, error}),
+// donc le reste de loadData() est inchangé. Toute erreur sur une page = erreur globale (jamais de lecture partielle).
+async function fetchAllRows(table){
+  const PAGE = 1000, out = [], seen = new Set();
+  let lastId = null, total = null;
+  for(let guard = 0; guard < 10000; guard++){
+    let q = sb.from(table).select('*', guard === 0 ? {count:'exact'} : undefined).order('id', {ascending:true}).limit(PAGE);
+    if(lastId !== null) q = q.gt('id', lastId);
+    const r = await q;
+    if(r.error) return {data:null, error:r.error};
+    const rows = r.data || [];
+    if(guard === 0 && typeof r.count === 'number') total = r.count;
+    if(!rows.length) break;
+    rows.forEach(x => { if(!seen.has(x.id)){ seen.add(x.id); out.push(x); } });
+    lastId = rows[rows.length-1].id;
+    if(total !== null && out.length >= total) break;
+  }
+  return {data:out, error:null};
+}
+
 async function loadData(){
   for(let i=0; wifiPurging && i<100; i++) await new Promise(r=>setTimeout(r,100));
   // Une suppression d'historique (opérations supprimées + report ajouté) est atomique côté serveur. Pour ne jamais
@@ -3267,11 +3291,11 @@ async function loadData(){
     res = await Promise.all([
       sb.from('ticket_types').select('*').order('created_at', {ascending:true}),
       sb.from('people').select('*').order('created_at', {ascending:true}),
-      sb.from('stock_receipts').select('*'),
-      sb.from('stock_movements').select('*'),
-      sb.from('sales').select('*'),
-      sb.from('payments').select('*'),
-      sb.from('corrections').select('*'),
+      fetchAllRows('stock_receipts'),
+      fetchAllRows('stock_movements'),
+      fetchAllRows('sales'),
+      fetchAllRows('payments'),
+      fetchAllRows('corrections'),
       sb.from('ticket_type_closures').select('*'),
     ]);
     const firstError = res.find(r => r.error);
