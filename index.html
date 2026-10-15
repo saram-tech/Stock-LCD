@@ -89,6 +89,7 @@
   }
   .btn.minus{background:#3a1f22; color:var(--red);}
   .btn.plus{background:#1a3a24; color:var(--green);}
+  .btn.minus,.btn.plus{touch-action:manipulation; -webkit-tap-highlight-color:transparent;}
   .btn.edit{background:#1f2a3a; color:var(--blue); font-size:13px;}
   .btn.del{background:#2a1a1a; color:var(--muted); font-size:13px;}
   .toolbar{display:flex; gap:8px; margin-bottom:4px;}
@@ -1342,8 +1343,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.76';
-const APP_UPDATED = '02/10/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.81';
+const APP_UPDATED = '15/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -1434,8 +1435,13 @@ function setCategoryDescription(cat, text){
 }
 
 let items = JSON.parse(localStorage.getItem(KEY) || '[]');
-// pending = { inserts:{tempId:{...}}, updates:{id:{...}}, deletes:[ids] }
+// pending = { inserts:{tempId:{...}}, updates:{id:{...champs}}, deletes:[ids],
+//             qty:{id:[{op, d, sent}]}      v6.80 : variations de stock = écarts (+/−) à identifiant d'opération unique, jamais des valeurs absolues
+//             attempted:{tempId:true}       v6.80 : création dont l'envoi a été tenté (issue peut-être inconnue)
+//             cancelled:{tempId:true} }     v6.80 : création supprimée par l'utilisateur après un envoi tenté
 let pending = JSON.parse(localStorage.getItem(PKEY) || 'null') || {inserts:{}, updates:{}, deletes:[]};
+pending.inserts = pending.inserts || {}; pending.updates = pending.updates || {}; pending.deletes = pending.deletes || [];
+pending.qty = pending.qty || {}; pending.attempted = pending.attempted || {}; pending.cancelled = pending.cancelled || {};
 let syncing = false;
 let syncTimer = null;
 let defaultThreshold = parseInt(localStorage.getItem('stock_lcd_default_threshold')) || 2;
@@ -1476,7 +1482,7 @@ function syncBadgeHtml(state, n, err){
   const [c, label] = SYNC_UI[state] || SYNC_UI.offline;
   return {color:c, text: label + (n && state!=='synced' && state!=='pending' ? ' · '+n+' en attente' : (state==='pending' ? ' · '+n : '')) + (state==='error' && err ? ' — '+String(err).slice(0,60) : '')};
 }
-function pendingCount(){ return Object.keys(pending.inserts).length + Object.keys(pending.updates).length + pending.deletes.length; }
+function pendingCount(){ return Object.keys(pending.inserts).length + Object.keys(pending.updates).length + Object.keys(pending.qty).length + pending.deletes.length; }
 function setStatus(state){
   if(state==='online') state = hasPending() ? 'pending' : 'synced';
   currentConnState = state;
@@ -1775,7 +1781,7 @@ async function applyUpdate(){
 function cacheLocal(){ localStorage.setItem(KEY, JSON.stringify(items)); }
 function cachePending(){ localStorage.setItem(PKEY, JSON.stringify(pending)); }
 function hasPending(){
-  return Object.keys(pending.inserts).length > 0 || Object.keys(pending.updates).length > 0 || pending.deletes.length > 0;
+  return Object.keys(pending.inserts).length > 0 || Object.keys(pending.updates).length > 0 || Object.keys(pending.qty).length > 0 || pending.deletes.length > 0;
 }
 
 // --- Catégories / onglets ---
@@ -1865,6 +1871,7 @@ function findDuplicate(name, category, excludeId){
 }
 
 function addItemLocal(name, ref, qty, category, threshold, price){
+  _qtyEpoch++; // v6.80 : une lecture serveur démarrée avant cet ajout est abandonnée
   const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
   const payload = {name, ref, qty, category, threshold, price};
   items.push({id: tempId, ...payload, created_at: new Date().toISOString()});
@@ -1873,42 +1880,132 @@ function addItemLocal(name, ref, qty, category, threshold, price){
   scheduleSync();
 }
 
+// v6.78 : après l'insertion serveur, l'id temporaire devient l'id réel ; le bouton affiché garde l'ancien id
+// jusqu'au prochain affichage. On résout donc l'ancien id vers le nouveau pour ne perdre aucun appui.
+const _idAlias = {};
+let _useClientId = true; // v6.80 : colonne items.client_id (identité d'une création) ; désactivée si absente côté Supabase
+// v6.79 : compteur d'appuis +/−. Une lecture serveur démarrée avant un appui, même si la file d'attente est déjà
+// vidée quand sa réponse arrive, est abandonnée (sinon elle remettait l'ancienne quantité à l'écran et un appui suivant repartait de cette valeur périmée).
+let _qtyEpoch = 0;
+// v6.80 : une variation de stock est enregistrée comme un ÉCART à identifiant d'opération unique (jamais comme une valeur absolue).
+// Les appuis non encore envoyés s'additionnent dans la même opération ; dès qu'une opération a été envoyée (même sans réponse
+// connue) elle est figée (sent) : un renvoi réutilise le même identifiant, que le serveur n'applique qu'une seule fois.
+function newOpId(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'op-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10) + Math.random().toString(36).slice(2,8);
+}
+function addQtyOp(id, d){
+  if(!d) return;
+  const list = (pending.qty[id] = pending.qty[id] || []);
+  const last = list[list.length - 1];
+  if(last && !last.sent){ last.d += d; if(!last.d) list.pop(); }
+  else list.push({op: newOpId(), d});
+  if(!list.length) delete pending.qty[id];
+}
+function resolveId(id){ return _idAlias[id] || id; }
 function changeQty(id, delta){
+  _qtyEpoch++;
+  id = resolveId(id);
   const it = items.find(x => x.id === id);
   if(!it) return;
+  const before = it.qty;
   it.qty = Math.max(0, it.qty + delta);
-  cacheLocal(); render();
+  const applied = it.qty - before; // écart réellement appliqué (plancher à 0 respecté)
+  cacheLocal();
   if(String(id).startsWith('temp-')){
     if(pending.inserts[id]) pending.inserts[id].qty = it.qty;
   } else {
-    pending.updates[id] = {...(pending.updates[id]||{}), qty: it.qty};
+    addQtyOp(id, applied);
   }
   cachePending();
+  render();
   scheduleSync();
 }
 
+// Boutons − / + : UN SEUL gestionnaire pour toute la liste (plus d'onclick en ligne).
+// Un appui = une seule modification. v6.81 : le même bouton (+ ou −) d'un même produit ne peut pas être compté deux fois en
+// moins de 300 ms (double appui involontaire). Le délai se mesure depuis le dernier appui COMPTÉ : un appui ignoré ne le prolonge
+// pas. Les deux boutons d'un produit, et le même bouton de deux produits différents, restent indépendants.
+// event.timeStamp = instant réel de l'appui : un appui mis en file d'attente pendant un affichage lent garde son vrai espacement.
+// v6.79 : tant qu'un doigt/curseur est posé sur un bouton −/+, render() est différé (puis rejoué au relâchement) :
+// remplacer le bouton pendant l'appui faisait perdre le clic à la souris.
+let _qtyHeld = false, _renderDeferred = false, _qtyHeldTimer = null;
+function qtyHoldStart(e){
+  if(e.target && e.target.closest && e.target.closest('#list button[data-qty]')){
+    _qtyHeld = true; clearTimeout(_qtyHeldTimer); _qtyHeldTimer = setTimeout(qtyHoldEnd, 2000); // garde-fou
+  }
+}
+function qtyHoldEnd(){
+  clearTimeout(_qtyHeldTimer);
+  if(!_qtyHeld) return;
+  setTimeout(() => { // après le clic qui suit le relâchement
+    _qtyHeld = false;
+    if(_renderDeferred){ _renderDeferred = false; render(); }
+  }, 0);
+}
+const QTY_TAP_MIN_GAP = 300; // ms entre deux appuis comptés sur le même bouton du même produit
+const _qtyLastTaps = new Map(); // « produit:bouton » → instant du dernier appui compté
+function onQtyButtonClick(e){
+  const btn = e.target && e.target.closest ? e.target.closest('#list button[data-qty]') : null;
+  if(!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const id = btn.getAttribute('data-id');
+  const delta = Number(btn.getAttribute('data-qty'));
+  if(!id || !(delta === 1 || delta === -1)) return;
+  const t = (typeof e.timeStamp === 'number' && e.timeStamp > 0) ? e.timeStamp : performance.now();
+  // un produit créé à l'instant a un id temporaire puis un id réel : les deux désignent le même produit
+  const rid = resolveId(id);
+  let last;
+  for(const x of [rid, ...Object.keys(_idAlias).filter(k => _idAlias[k] === rid)]){
+    const v = _qtyLastTaps.get(x + ':' + delta);
+    if(v !== undefined && (last === undefined || v > last)) last = v;
+  }
+  if(last !== undefined && (t - last) >= 0 && (t - last) < QTY_TAP_MIN_GAP) return; // double appui : ignoré
+  _qtyLastTaps.set(rid + ':' + delta, t);
+  _qtyHeld = false; _renderDeferred = false; // l'appui est traité : l'affichage doit se mettre à jour tout de suite
+  changeQty(id, delta);
+}
+if(!window._qtyClickBound){
+  window._qtyClickBound = true;
+  document.addEventListener('click', onQtyButtonClick);
+  document.addEventListener('pointerdown', qtyHoldStart, true);
+  document.addEventListener('pointerup', qtyHoldEnd, true);
+  document.addEventListener('pointercancel', qtyHoldEnd, true);
+}
+
 function updateItemLocal(id, name, ref, qty, category, threshold, price){
+  _qtyEpoch++;
+  id = resolveId(id);
   const it = items.find(x => x.id === id);
   if(!it) return;
+  const oldQty = it.qty;
   Object.assign(it, {name, ref, qty, category, threshold, price});
   cacheLocal(); renderTabs(); render();
-  const payload = {name, ref, qty, category, threshold, price};
+  const fields = {name, ref, category, threshold, price};
   if(String(id).startsWith('temp-')){
-    if(pending.inserts[id]) pending.inserts[id] = payload;
+    if(pending.inserts[id]) pending.inserts[id] = {...fields, qty};
   } else {
-    pending.updates[id] = {...(pending.updates[id]||{}), ...payload};
+    pending.updates[id] = {...(pending.updates[id]||{}), ...fields};
+    addQtyOp(id, (Number(qty) || 0) - oldQty); // v6.80 : une quantité modifiée à la main est un écart, pas une valeur imposée au serveur
   }
   cachePending();
   scheduleSync();
 }
 
 function removeItemLocal(id){
+  _qtyEpoch++; // v6.80 : une lecture serveur démarrée avant cette suppression ne doit jamais refaire apparaître la fiche
+  id = resolveId(id);
   items = items.filter(x => x.id !== id);
   cacheLocal(); renderTabs(); render();
   if(String(id).startsWith('temp-')){
-    delete pending.inserts[id];
+    // v6.80 : si l'envoi de la création a déjà été tenté (issue peut-être inconnue), on garde la ligne pour la résoudre :
+    // dès que le serveur a répondu, la fiche créée est supprimée définitivement.
+    if(pending.attempted[id]) pending.cancelled[id] = true;
+    else delete pending.inserts[id];
   } else {
     delete pending.updates[id];
+    delete pending.qty[id];
     if(!pending.deletes.includes(id)) pending.deletes.push(id);
   }
   cachePending();
@@ -1918,6 +2015,7 @@ function removeItemLocal(id){
 // Suppression = déplacement réversible vers la Corbeille (pas de perte immédiate).
 // L'origine est encodée dans le champ category existant, aucune colonne Supabase nécessaire.
 function delItem(id){
+  id = resolveId(id);
   const it = items.find(x => x.id === id);
   if(!it) return;
   if(isTrashCategory(it.category || DEFAULT_CATEGORY)) return; // déjà en corbeille, rien à faire ici
@@ -1927,6 +2025,7 @@ function delItem(id){
 }
 
 function restoreFromTrash(id){
+  id = resolveId(id);
   const it = items.find(x => x.id === id);
   if(!it) return;
   const origin = trashOriginCategory(it.category);
@@ -1939,6 +2038,7 @@ function restoreFromTrash(id){
 // La VRAIE suppression, irréversible — avertissement + double confirmation + PIN, conformément
 // à notre règle permanente sur les actions destructives. Uniquement accessible depuis la Corbeille.
 async function permanentlyDeleteItem(id){
+  id = resolveId(id);
   const it = items.find(x => x.id === id);
   if(!it) return;
   const step1 = confirm(`⚠️ Supprimer définitivement "${it.name}" ?\n\nAction IRRÉVERSIBLE : il ne pourra plus être restauré.`);
@@ -1965,41 +2065,71 @@ async function trySync(){
       setStatus('syncing','Synchronisation...');
 
       for(const tempId of Object.keys(pending.inserts)){
-        const payload = pending.inserts[tempId];
-        let { data, error } = await sb.from('items').insert(payload).select();
+        if(!pending.inserts[tempId]) continue; // v6.80 : supprimée entre-temps, jamais d'envoi d'une fiche vide
+        const payload = {...pending.inserts[tempId]}; // copie figée (changeQty modifie l'original pendant l'attente réseau)
+        const initQty = Number(payload.qty) || 0;
+        pending.attempted[tempId] = true; cachePending(); // v6.80 : « envoi tenté » enregistré AVANT la requête
+        // v6.80 : la fiche est créée à 0 ; sa quantité initiale part en opération idempotente 'ins:<id>' (une reprise après
+        // réponse perdue ne la double plus, contrairement à l'ancienne fusion « quantité existante + quantité saisie »).
+        const insertBody = {...payload, qty: 0};
+        if(_useClientId) insertBody.client_id = tempId; // v6.80 : identité de cette création, pour reconnaître SA fiche après une réponse perdue
+        let { data, error } = await sb.from('items').insert(insertBody).select();
+        if(error && (error.code === 'PGRST204' || error.code === '42703') && _useClientId){
+          _useClientId = false; // colonne client_id absente : mode dégradé (voir cas limite documenté)
+          ({ data, error } = await sb.from('items').insert({...payload, qty: 0}).select());
+        }
+        let row, existed = false;
 
         if(error && error.code === '23505'){
-          // Doublon détecté au niveau serveur : un autre appareil a créé la même fiche
-          // (même Nom + Catégorie) pendant que celui-ci était hors-ligne.
-          // On fusionne au lieu de perdre la quantité saisie ici.
-          const { data: existing, error: findErr } = await sb.from('items')
-            .select('*').ilike('name', payload.name).eq('category', payload.category).limit(1);
-          if(findErr) throw findErr;
-          if(!existing || !existing[0]) throw error; // cas anormal, on remonte l'erreur d'origine
-          const merged = existing[0].qty + payload.qty;
-          const { data: updated, error: updErr } = await sb.from('items')
-            .update({ qty: merged }).eq('id', existing[0].id).select();
-          if(updErr) throw updErr;
-          data = updated;
-          error = null;
+          // Doublon détecté au niveau serveur. Soit c'est NOTRE fiche (envoi précédent dont la réponse s'est perdue), reconnue par
+          // client_id ; soit une fiche de même Nom + Catégorie d'un autre appareil : on fusionne alors au lieu de perdre la quantité.
+          let ours = null;
+          if(_useClientId){
+            const r = await sb.from('items').select('*').eq('client_id', tempId).limit(1);
+            if(r.error) throw r.error;
+            ours = r.data && r.data[0];
+          }
+          if(ours){ row = ours; }
+          else {
+            const { data: existing, error: findErr } = await sb.from('items')
+              .select('*').ilike('name', payload.name).eq('category', payload.category).limit(1);
+            if(findErr) throw findErr;
+            if(!existing || !existing[0]) throw error; // cas anormal, on remonte l'erreur d'origine
+            row = existing[0]; existed = true;
+          }
         } else if(error){
           throw error;
+        } else {
+          row = data[0];
+        }
+
+        if(pending.cancelled[tempId]){
+          // v6.80 : supprimée par l'utilisateur pendant l'envoi. Fiche créée par cet envoi → suppression définitive.
+          // Doublon d'une fiche existante (impossible à prouver comme la nôtre) → on n'y touche pas.
+          if(!existed && !pending.deletes.includes(row.id)) pending.deletes.push(row.id);
+          delete pending.inserts[tempId]; delete pending.attempted[tempId]; delete pending.cancelled[tempId];
+          cacheLocal(); cachePending();
+          continue;
         }
 
         const it = items.find(x => x.id === tempId);
-        if(it){ it.id = data[0].id; it.created_at = data[0].created_at; it.qty = data[0].qty; }
-        if(JSON.stringify(pending.inserts[tempId]) === JSON.stringify(payload)){
-          delete pending.inserts[tempId];
-        } else {
-          const latest = pending.inserts[tempId];
-          delete pending.inserts[tempId];
-          pending.updates[data[0].id] = {...(pending.updates[data[0].id]||{}), ...latest};
-        }
+        const latest = pending.inserts[tempId];
+        const noQty = (o) => { const c = {...o}; delete c.qty; return JSON.stringify(c); };
+        const fieldsChanged = noQty(latest) !== noQty(payload);
+        // appuis +/− ou édition faits pendant l'envoi = écart par rapport à la quantité envoyée
+        const qtyDelta = (Number(latest.qty) || 0) - initQty;
+        if(it){ it.id = row.id; it.created_at = row.created_at; it.qty = (Number(row.qty) || 0) + initQty + qtyDelta; }
+        _idAlias[tempId] = row.id;
+        delete pending.inserts[tempId]; delete pending.attempted[tempId];
+        if(initQty) (pending.qty[row.id] = pending.qty[row.id] || []).unshift({op: 'ins:' + tempId, d: initQty, sent: true});
+        if(qtyDelta) addQtyOp(row.id, qtyDelta);
+        if(fieldsChanged){ const f = {...latest}; delete f.qty; pending.updates[row.id] = {...(pending.updates[row.id]||{}), ...f}; }
         cacheLocal(); cachePending();
       }
 
       for(const id of Object.keys(pending.updates)){
         const payload = pending.updates[id];
+        if(!payload) continue; // v6.80 : supprimée entre-temps
         const { error } = await sb.from('items').update(payload).eq('id', id);
         if(error) throw error;
         if(JSON.stringify(pending.updates[id]) === JSON.stringify(payload)){
@@ -2008,11 +2138,38 @@ async function trySync(){
         cachePending();
       }
 
+      // v6.80 : variations de stock, une opération à la fois, dans l'ordre. Une opération n'est retirée de la file qu'après la
+      // réponse du serveur ; le serveur ignore tout identifiant déjà appliqué (renvoi sûr) et renvoie la quantité réelle, qui
+      // inclut les variations des autres appareils. Elle remplace l'affichage local + les appuis encore en attente.
+      for(const id of Object.keys(pending.qty)){
+        while(pending.qty[id] && pending.qty[id].length){
+          const op = pending.qty[id][0];
+          op.sent = true; cachePending(); // figée AVANT l'envoi (persistée)
+          const { data, error } = await sb.rpc('apply_qty_delta', {p_op: op.op, p_item: String(id), p_delta: op.d});
+          if(error){
+            if(error.code === 'PGRST202' || error.code === '42883') throw new Error('Supabase : fonction apply_qty_delta absente (SQL à appliquer)');
+            throw error;
+          }
+          const list = pending.qty[id];
+          if(list && list[0] && list[0].op === op.op) list.shift();
+          if(list && !list.length) delete pending.qty[id];
+          const it = items.find(x => x.id === id);
+          if(data === null || data === undefined){
+            delete pending.qty[id]; // fiche supprimée ailleurs : plus rien à appliquer, aucune recréation
+          } else if(it){
+            const rest = (pending.qty[id] || []).reduce((sum, o) => sum + o.d, 0);
+            it.qty = Math.max(0, Number(data) + rest);
+          }
+          cacheLocal(); cachePending();
+        }
+      }
+
       for(const id of [...pending.deletes]){
         const { error } = await sb.from('items').delete().eq('id', id);
         if(error) throw error;
         pending.deletes = pending.deletes.filter(x => x !== id);
         delete pending.updates[id];
+        delete pending.qty[id];
         cachePending();
       }
     } while(hasPending() && pass < 5);
@@ -2036,9 +2193,10 @@ async function trySync(){
 
 async function refreshFromServer(){
   if(hasPending()) return;
+  const epoch = _qtyEpoch;
   const { data, error } = await sb.from('items').select('*').order('created_at', {ascending:true});
   if(error) throw error;
-  if(hasPending()) return; // une modif locale est arrivée pendant la requête : ne jamais l'écraser
+  if(hasPending() || epoch !== _qtyEpoch) return; // une modif locale (même déjà synchronisée) est arrivée pendant la requête : ne jamais l'écraser par une lecture périmée
   items = data.map(it => ({...it, category: it.category || DEFAULT_CATEGORY, threshold: (it.threshold ?? defaultThreshold)}));
   cacheLocal();
   renderTabs(); render();
@@ -2070,6 +2228,7 @@ function toggleSort(){
 // --- Affichage ---
 
 function render(){
+  if(_qtyHeld){ _renderDeferred = true; return; } // appui en cours sur −/+ : on reconstruit juste après
   const q = document.getElementById('search').value.toLowerCase();
   const list = document.getElementById('list');
   list.innerHTML = '';
@@ -2168,8 +2327,8 @@ function render(){
         <div class="controls">
           <button class="btn del" onclick="delItem('${it.id}')">✕</button>
           <button class="btn edit" onclick="openEdit('${it.id}')">✎</button>
-          <button class="btn minus" onclick="changeQty('${it.id}',-1)">−</button>
-          <button class="btn plus" onclick="changeQty('${it.id}',1)">+</button>
+          <button class="btn minus" data-qty="-1" data-id="${it.id}">−</button>
+          <button class="btn plus" data-qty="1" data-id="${it.id}">+</button>
         </div>
       `;
     }
