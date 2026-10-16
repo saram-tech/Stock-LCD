@@ -1343,7 +1343,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.83';
+const APP_VERSION = '6.84';
 const APP_UPDATED = '15/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1923,8 +1923,8 @@ function changeQty(id, delta){
 }
 
 // Boutons − / + : UN SEUL gestionnaire pour toute la liste (plus d'onclick en ligne).
-// Un appui = une seule modification. v6.83 : après un appui accepté sur le bouton + (ou −) d'un produit, ce même bouton du même
-// produit ignore tout nouvel appui pendant 5 secondes. Les deux boutons d'un produit, et le même bouton de deux produits
+// Un appui = une seule modification. v6.84 : après un appui accepté sur le bouton + (ou −) d'un produit, ce même bouton du même
+// produit ignore tout nouvel appui pendant 10 secondes. Les deux boutons d'un produit, et le même bouton de deux produits
 // différents, restent indépendants.
 // v6.79 : tant qu'un doigt/curseur est posé sur un bouton −/+, render() est différé (puis rejoué au relâchement) :
 // remplacer le bouton pendant l'appui faisait perdre le clic à la souris.
@@ -1942,7 +1942,7 @@ function qtyHoldEnd(){
     if(_renderDeferred){ _renderDeferred = false; render(); }
   }, 0);
 }
-const QTY_TAP_MIN_GAP = 5000; // ms : délai minimal entre deux appuis ACCEPTÉS sur le même bouton (+ ou −) du même produit
+const QTY_TAP_MIN_GAP = 10000; // ms : délai minimal entre deux appuis ACCEPTÉS sur le même bouton (+ ou −) du même produit
 const _qtyLastTaps = new Map(); // « produit:bouton » → instant du dernier appui accepté
 function onQtyButtonClick(e){
   const btn = e.target && e.target.closest ? e.target.closest('#list button[data-qty]') : null;
@@ -1960,7 +1960,7 @@ function onQtyButtonClick(e){
     const v = _qtyLastTaps.get(x + ':' + delta);
     if(v !== undefined && (last === undefined || v > last)) last = v;
   }
-  // v6.83 : pendant 5 s après un appui accepté, tout nouvel appui sur ce bouton de ce produit est ignoré TOTALEMENT :
+  // v6.84 : pendant 10 s après un appui accepté, tout nouvel appui sur ce bouton de ce produit est ignoré TOTALEMENT :
   // ni stock, ni file de synchronisation, ni écriture locale, ni réaffichage. Un appui ignoré ne prolonge pas le délai.
   // Ce même verrou élimine tout second déclenchement issu d'un seul toucher (clic fantôme, clic répété par le navigateur).
   if(last !== undefined && Math.abs(t - last) < QTY_TAP_MIN_GAP) return;
