@@ -1343,7 +1343,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.82';
+const APP_VERSION = '6.83';
 const APP_UPDATED = '15/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -1923,10 +1923,9 @@ function changeQty(id, delta){
 }
 
 // Boutons − / + : UN SEUL gestionnaire pour toute la liste (plus d'onclick en ligne).
-// Un appui = une seule modification. v6.81 : le même bouton (+ ou −) d'un même produit ne peut pas être compté deux fois en
-// moins de 300 ms (double appui involontaire). Le délai se mesure depuis le dernier appui COMPTÉ : un appui ignoré ne le prolonge
-// pas. Les deux boutons d'un produit, et le même bouton de deux produits différents, restent indépendants.
-// v6.82 : l'espacement se mesure sur l'horodatage du relâchement du doigt (pointerup), pas sur celui du clic (voir plus bas).
+// Un appui = une seule modification. v6.83 : après un appui accepté sur le bouton + (ou −) d'un produit, ce même bouton du même
+// produit ignore tout nouvel appui pendant 5 secondes. Les deux boutons d'un produit, et le même bouton de deux produits
+// différents, restent indépendants.
 // v6.79 : tant qu'un doigt/curseur est posé sur un bouton −/+, render() est différé (puis rejoué au relâchement) :
 // remplacer le bouton pendant l'appui faisait perdre le clic à la souris.
 let _qtyHeld = false, _renderDeferred = false, _qtyHeldTimer = null;
@@ -1943,24 +1942,17 @@ function qtyHoldEnd(){
     if(_renderDeferred){ _renderDeferred = false; render(); }
   }, 0);
 }
-const QTY_TAP_MIN_GAP = 300; // ms entre deux appuis comptés sur le même bouton du même produit
-const _qtyLastTaps = new Map(); // « produit:bouton » → instant du dernier appui compté
-// v6.82 : CAUSE du non-fonctionnement sur téléphone — l'événement « click » n'est pas horodaté à l'instant où le doigt touche
-// l'écran mais à l'instant où le navigateur le LIVRE à la page. Quand le premier appui occupe le téléphone (affichage,
-// sauvegarde locale), le second clic est livré en retard : l'écart mesuré dépasse 300 ms alors que les doigts étaient
-// à 100–200 ms. Seuls les événements du doigt (pointerup) portent l'instant réel. La décision (compté / ignoré) est donc
-// prise au relâchement du doigt, avec son horodatage réel, puis transmise au clic qui suit.
-const _qtyPendingUps = []; // relâchements réels pas encore appariés à leur clic : {key, ts, ok}
-function qtyButtonOf(e){
+const QTY_TAP_MIN_GAP = 5000; // ms : délai minimal entre deux appuis ACCEPTÉS sur le même bouton (+ ou −) du même produit
+const _qtyLastTaps = new Map(); // « produit:bouton » → instant du dernier appui accepté
+function onQtyButtonClick(e){
   const btn = e.target && e.target.closest ? e.target.closest('#list button[data-qty]') : null;
-  if(!btn) return null;
+  if(!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
   const id = btn.getAttribute('data-id');
   const delta = Number(btn.getAttribute('data-qty'));
-  if(!id || !(delta === 1 || delta === -1)) return null;
-  return {id, delta};
-}
-// Vrai si cet appui doit être compté (et l'enregistre comme dernier appui compté) ; faux s'il double un appui compté < 300 ms plus tôt.
-function qtyTapAllowed(id, delta, t){
+  if(!id || !(delta === 1 || delta === -1)) return;
+  const t = (typeof e.timeStamp === 'number' && e.timeStamp > 0) ? e.timeStamp : performance.now();
   // un produit créé à l'instant a un id temporaire puis un id réel : les deux désignent le même produit
   const rid = resolveId(id);
   let last;
@@ -1968,48 +1960,18 @@ function qtyTapAllowed(id, delta, t){
     const v = _qtyLastTaps.get(x + ':' + delta);
     if(v !== undefined && (last === undefined || v > last)) last = v;
   }
-  if(last !== undefined && (t - last) >= 0 && (t - last) < QTY_TAP_MIN_GAP) return false; // double appui : ignoré
+  // v6.83 : pendant 5 s après un appui accepté, tout nouvel appui sur ce bouton de ce produit est ignoré TOTALEMENT :
+  // ni stock, ni file de synchronisation, ni écriture locale, ni réaffichage. Un appui ignoré ne prolonge pas le délai.
+  // Ce même verrou élimine tout second déclenchement issu d'un seul toucher (clic fantôme, clic répété par le navigateur).
+  if(last !== undefined && Math.abs(t - last) < QTY_TAP_MIN_GAP) return;
   _qtyLastTaps.set(rid + ':' + delta, t);
-  return true;
-}
-function qtyRecordUp(e){
-  const b = qtyButtonOf(e);
-  if(!b) return;
-  const ts = (typeof e.timeStamp === 'number' && e.timeStamp > 0) ? e.timeStamp : performance.now();
-  const ok = qtyTapAllowed(b.id, b.delta, ts);
-  const now = performance.now();
-  for(let i = _qtyPendingUps.length - 1; i >= 0; i--) if(now - _qtyPendingUps[i].ts > 10000) _qtyPendingUps.splice(i, 1);
-  _qtyPendingUps.push({key: b.id + ':' + b.delta, ts, ok});
-  if(_qtyPendingUps.length > 30) _qtyPendingUps.shift();
-}
-function onQtyButtonClick(e){
-  const b = qtyButtonOf(e);
-  if(!b) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const clickTs = (typeof e.timeStamp === 'number' && e.timeStamp > 0) ? e.timeStamp : performance.now();
-  const key = b.id + ':' + b.delta;
-  // le relâchement du doigt qui a produit ce clic = le plus récent, pour ce bouton, qui ne lui est pas postérieur
-  let idx = -1;
-  for(let i = _qtyPendingUps.length - 1; i >= 0; i--){
-    if(_qtyPendingUps[i].key === key && _qtyPendingUps[i].ts <= clickTs + 5){ idx = i; break; }
-  }
-  let ok;
-  if(idx >= 0){
-    ok = _qtyPendingUps[idx].ok;
-    for(let i = idx; i >= 0; i--) if(_qtyPendingUps[i].key === key) _qtyPendingUps.splice(i, 1); // l'apparié + d'éventuels restes (appui long sans clic)
-  } else {
-    ok = qtyTapAllowed(b.id, b.delta, clickTs); // clic sans doigt (clavier, lecteur d'écran, programme) : seul l'horodatage du clic existe
-  }
-  if(!ok) return; // double appui : ignoré
   _qtyHeld = false; _renderDeferred = false; // l'appui est traité : l'affichage doit se mettre à jour tout de suite
-  changeQty(b.id, b.delta);
+  changeQty(id, delta);
 }
 if(!window._qtyClickBound){
   window._qtyClickBound = true;
   document.addEventListener('click', onQtyButtonClick);
   document.addEventListener('pointerdown', qtyHoldStart, true);
-  document.addEventListener('pointerup', qtyRecordUp, true); // v6.82 : avant qtyHoldEnd, instant réel du doigt
   document.addEventListener('pointerup', qtyHoldEnd, true);
   document.addEventListener('pointercancel', qtyHoldEnd, true);
 }
