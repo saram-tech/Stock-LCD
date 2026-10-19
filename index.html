@@ -133,8 +133,8 @@
   /* v6.86 : « Ajouter un article » = petit bouton flottant rond en bas à droite (remplace le grand bandeau bleu) */
   #fabAdd{
     left:auto; right:max(16px, calc(50% - 264px)); bottom:calc(20px + env(safe-area-inset-bottom, 0px));
-    width:52px; height:52px; max-width:none; margin:0; padding:0; border-radius:50%;
-    display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:500; line-height:1;
+    width:46px; height:46px; max-width:none; margin:0; padding:0; border-radius:50%; opacity:0.88;
+    display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:500; line-height:1;
     box-shadow:0 4px 14px rgba(0,0,0,0.5); touch-action:manipulation; -webkit-tap-highlight-color:transparent;
   }
   dialog{
@@ -154,14 +154,7 @@
   .save{background:var(--blue); color:#fff;}
   .fieldRow{display:flex; gap:10px;}
   .fieldRow > div{flex:1;}
-  /* v6.85 : bouton « + Écran » (en-tête de catégorie) et sa modale */
-  .catHeaderRow{display:flex; justify-content:flex-end; margin:0 0 6px;}
-  .addStockBtn{padding:9px 16px; font-weight:600; color:var(--green); border-color:var(--green);}
-  .asSuggest{max-height:220px; overflow-y:auto; margin:0 0 10px;}
-  .asSuggest button{display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; text-align:left; padding:11px 12px; margin:0 0 4px; border:1px solid var(--border); border-radius:8px; background:var(--inset); color:var(--text); font-size:15px; cursor:pointer;}
-  .asSuggest button small{color:var(--muted); white-space:nowrap;}
-  .asSuggest .asNote{color:var(--muted); font-size:12px; padding:2px 4px;}
-  .asChosen{color:var(--green); font-size:13px; margin:0 0 12px;}
+  /* v6.86 : message d'erreur des modales de saisie */
   .asError{color:var(--red); font-size:13px; min-height:18px; margin:-6px 0 8px;}
 
 /* ===== Styles Wifi (fusionnés, scopés sous #wifiView) ===== */
@@ -889,9 +882,6 @@ th{text-align:center !important;vertical-align:middle}
   <div class="globalTotals" id="globalTotals"></div>
 
   <div class="tabsBar" id="tabsBar" data-noi18n></div>
-  <div class="catHeaderRow" id="catHeaderRow">
-    <button class="sortBtn addStockBtn" id="addStockBtn" type="button" onclick="openAddStock()">+ Écran</button>
-  </div>
   <div class="toolbar">
     <input autocomplete="off" class="search" id="search" placeholder="Rechercher un article...">
     <button class="sortBtn" id="infosBtn" onclick="openInfos()">ℹ️ Infos</button>
@@ -1236,24 +1226,6 @@ th{text-align:center !important;vertical-align:middle}
   </div>
 </dialog>
 
-<dialog id="addStockDlg">
-  <label id="asTitle" style="display:block; font-weight:600; font-size:16px; margin-bottom:12px; color:var(--text);">+ Écran</label>
-
-  <label for="asSearch">Article</label>
-  <input id="asSearch" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Rechercher un article..." style="margin-bottom:6px;">
-  <div class="asSuggest" id="asSuggest" role="listbox"></div>
-  <div class="asChosen" id="asChosen" style="display:none;"></div>
-
-  <label for="asQty">Quantité à ajouter</label>
-  <input id="asQty" type="number" inputmode="numeric" min="1" step="1" autocomplete="off" placeholder="ex : 5">
-  <div class="asError" id="asError" role="alert"></div>
-
-  <div class="row">
-    <button class="cancel" id="asCancel" type="button">Annuler</button>
-    <button class="save" id="asOk" type="button">Valider</button>
-  </div>
-</dialog>
-
 <dialog id="orderDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:8px;">Commande fournisseur</label>
   <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Articles au seuil d'alerte ou épuisés, tous types confondus (hors onglet stock perso). Tu peux modifier le texte avant d'envoyer.</p>
@@ -1393,7 +1365,7 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.86';
+const APP_VERSION = '6.88';
 const APP_UPDATED = '19/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
@@ -2381,7 +2353,6 @@ function render(){
   document.getElementById('globalTotals').style.display = inTrash ? 'none' : '';
   document.getElementById('orderBtn').style.display = inTrash ? 'none' : '';
   document.getElementById('fabAdd').style.display = inTrash ? 'none' : '';
-  document.getElementById('catHeaderRow').style.display = inTrash ? 'none' : '';
 
   // Total 1 : stock "opérationnel" pur — hors Stock Perso STD, hors MON COMPTE, hors Corbeille.
   // Total 2 : toutes les catégories de stock (Stock Perso STD inclus) — MON COMPTE et Corbeille exclus.
@@ -2465,110 +2436,6 @@ function openAdd(){
   document.getElementById('fThreshold').value = defaultThreshold;
   document.getElementById('fPrice').value = '';
   dlg.showModal();
-}
-
-// --- v6.85 : bouton « + Écran » : ajoute une quantité au stock d'un article de la catégorie active ---
-// Réutilise changeQty() : même écart à identifiant d'opération unique, même cache local, même file hors ligne,
-// même synchronisation Supabase, même recalcul des totaux et de la valeur en GNF que les boutons + / −.
-const addStockDlg = document.getElementById('addStockDlg');
-const AS_MAX_QTY = 100000;
-let _asCategory = null, _asChosenId = null, _asBusy = false;
-function asNorm(x){ return String(x == null ? '' : x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
-function asCandidates(){ return items.filter(it => displayCategory(it) === _asCategory); }
-function asSetError(msg){ document.getElementById('asError').textContent = msg || ''; }
-function asRenderSuggestions(){
-  const box = document.getElementById('asSuggest');
-  box.textContent = '';
-  if(_asChosenId) return; // article choisi : liste repliée
-  const q = asNorm(document.getElementById('asSearch').value);
-  const list = asCandidates()
-    .filter(it => !q || asNorm(it.name).includes(q) || asNorm(it.ref).includes(q))
-    .sort((a, b) => ((asNorm(a.name).startsWith(q) ? 0 : 1) - (asNorm(b.name).startsWith(q) ? 0 : 1)) ||
-                    a.name.localeCompare(b.name, 'fr', {sensitivity: 'base'}));
-  if(!list.length){
-    const n = document.createElement('div'); n.className = 'asNote'; n.textContent = 'Aucun article trouvé dans cette catégorie.'; box.appendChild(n); return;
-  }
-  list.slice(0, 8).forEach(it => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('data-as-id', it.id);
-    const name = document.createElement('span'); name.textContent = it.name;
-    const st = document.createElement('small'); st.textContent = 'stock : ' + it.qty;
-    b.appendChild(name); b.appendChild(st); box.appendChild(b);
-  });
-  if(list.length > 8){
-    const n = document.createElement('div'); n.className = 'asNote';
-    n.textContent = (list.length - 8) + ' autre(s) : précise la recherche.'; box.appendChild(n);
-  }
-}
-function asChoose(id){
-  const it = items.find(x => x.id === resolveId(id));
-  if(!it) return;
-  _asChosenId = it.id;
-  document.getElementById('asSearch').value = it.name;
-  const c = document.getElementById('asChosen');
-  c.textContent = '✓ ' + it.name + ' — stock actuel : ' + it.qty;
-  c.style.display = '';
-  asSetError('');
-  asRenderSuggestions();
-  document.getElementById('asQty').focus();
-}
-function openAddStock(){
-  if(addStockDlg.open) return; // double appui sur le bouton : une seule ouverture
-  if(activeCategory === CORBEILLE_KEY) return;
-  _asCategory = activeCategory; _asChosenId = null; _asBusy = false;
-  document.getElementById('asTitle').textContent = '+ ' + categoryLabel(_asCategory);
-  document.getElementById('asSearch').value = '';
-  document.getElementById('asQty').value = '';
-  document.getElementById('asChosen').style.display = 'none';
-  document.getElementById('asOk').disabled = false;
-  document.getElementById('asCancel').disabled = false;
-  asSetError('');
-  asRenderSuggestions();
-  addStockDlg.showModal();
-}
-function submitAddStock(){
-  if(_asBusy) return; // une validation à la fois : jamais deux modifications
-  let it = _asChosenId ? items.find(x => x.id === resolveId(_asChosenId)) : null;
-  if(!it){ // nom saisi en entier sans toucher la suggestion : accepté s'il désigne un seul article
-    const q = asNorm(document.getElementById('asSearch').value);
-    const exact = q ? asCandidates().filter(x => asNorm(x.name) === q) : [];
-    if(exact.length === 1) it = exact[0];
-  }
-  if(!it || displayCategory(it) !== _asCategory){ asSetError('Choisis un article dans la liste.'); return; }
-  const raw = document.getElementById('asQty').value.trim();
-  const n = Number(raw);
-  if(!raw || !Number.isInteger(n) || n < 1 || n > AS_MAX_QTY){ asSetError('Saisis une quantité entière entre 1 et ' + AS_MAX_QTY.toLocaleString('fr-FR') + '.'); return; }
-  _asBusy = true;
-  document.getElementById('asOk').disabled = true;
-  document.getElementById('asCancel').disabled = true;
-  _qtyHeld = false; _renderDeferred = false; // l'affichage doit se mettre à jour tout de suite
-  // La modale se ferme APRÈS un court instant : un second toucher involontaire sur « Valider » est absorbé par la modale
-  // (boutons désactivés) au lieu de tomber sur un bouton de la liste situé dessous (+, −, ✕…).
-  try { changeQty(it.id, n); }
-  finally { setTimeout(() => { if(addStockDlg.open) addStockDlg.close(); }, 450); }
-  toast('+' + n + ' · ' + it.name + ' (stock ' + it.qty + ')');
-}
-if(!window._addStockBound){
-  window._addStockBound = true;
-  const asSearch = document.getElementById('asSearch');
-  asSearch.addEventListener('input', () => {
-    if(_asChosenId){ _asChosenId = null; document.getElementById('asChosen').style.display = 'none'; }
-    asSetError(''); asRenderSuggestions();
-  });
-  asSearch.addEventListener('keydown', e => {
-    if(e.key !== 'Enter') return;
-    e.preventDefault();
-    const opts = document.querySelectorAll('#asSuggest button[data-as-id]');
-    if(opts.length === 1) asChoose(opts[0].getAttribute('data-as-id'));
-  });
-  document.getElementById('asSuggest').addEventListener('click', e => {
-    const b = e.target.closest && e.target.closest('button[data-as-id]');
-    if(b) asChoose(b.getAttribute('data-as-id'));
-  });
-  document.getElementById('asQty').addEventListener('input', () => asSetError(''));
-  document.getElementById('asQty').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); submitAddStock(); } });
-  document.getElementById('asOk').addEventListener('click', submitAddStock);
-  document.getElementById('asCancel').addEventListener('click', () => { if(!_asBusy) addStockDlg.close(); });
 }
 
 function openEdit(id){
