@@ -66,6 +66,8 @@
     cursor:pointer; white-space:nowrap; flex-shrink:0;
   }
   .tabBtn.active{background:var(--blue); border-color:var(--blue); color:#fff;}
+  /* v6.86 : bouton compact « + » en fin de barre des catégories */
+  .tabBtn.tabAdd{padding:3px 11px; font-size:14px; line-height:1.1; color:var(--green); border-color:var(--green);}
   .item{
     background:var(--card); border:1px solid var(--border);
     border-radius:10px; padding:9px 11px; margin-bottom:6px;
@@ -128,6 +130,13 @@
     padding:14px; font-size:16px; font-weight:600; cursor:pointer;
   }
   .empty{color:var(--muted); text-align:center; padding:40px 0; font-size:14px;}
+  /* v6.86 : « Ajouter un article » = petit bouton flottant rond en bas à droite (remplace le grand bandeau bleu) */
+  #fabAdd{
+    left:auto; right:max(16px, calc(50% - 264px)); bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+    width:52px; height:52px; max-width:none; margin:0; padding:0; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:500; line-height:1;
+    box-shadow:0 4px 14px rgba(0,0,0,0.5); touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+  }
   dialog{
     background:var(--card); color:var(--text); border:1px solid var(--border);
     border-radius:14px; padding:20px; width:90%; max-width:400px; max-height:85vh; overflow-y:auto;
@@ -145,6 +154,15 @@
   .save{background:var(--blue); color:#fff;}
   .fieldRow{display:flex; gap:10px;}
   .fieldRow > div{flex:1;}
+  /* v6.85 : bouton « + Écran » (en-tête de catégorie) et sa modale */
+  .catHeaderRow{display:flex; justify-content:flex-end; margin:0 0 6px;}
+  .addStockBtn{padding:9px 16px; font-weight:600; color:var(--green); border-color:var(--green);}
+  .asSuggest{max-height:220px; overflow-y:auto; margin:0 0 10px;}
+  .asSuggest button{display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; text-align:left; padding:11px 12px; margin:0 0 4px; border:1px solid var(--border); border-radius:8px; background:var(--inset); color:var(--text); font-size:15px; cursor:pointer;}
+  .asSuggest button small{color:var(--muted); white-space:nowrap;}
+  .asSuggest .asNote{color:var(--muted); font-size:12px; padding:2px 4px;}
+  .asChosen{color:var(--green); font-size:13px; margin:0 0 12px;}
+  .asError{color:var(--red); font-size:13px; min-height:18px; margin:-6px 0 8px;}
 
 /* ===== Styles Wifi (fusionnés, scopés sous #wifiView) ===== */
 
@@ -871,6 +889,9 @@ th{text-align:center !important;vertical-align:middle}
   <div class="globalTotals" id="globalTotals"></div>
 
   <div class="tabsBar" id="tabsBar" data-noi18n></div>
+  <div class="catHeaderRow" id="catHeaderRow">
+    <button class="sortBtn addStockBtn" id="addStockBtn" type="button" onclick="openAddStock()">+ Écran</button>
+  </div>
   <div class="toolbar">
     <input autocomplete="off" class="search" id="search" placeholder="Rechercher un article...">
     <button class="sortBtn" id="infosBtn" onclick="openInfos()">ℹ️ Infos</button>
@@ -882,7 +903,7 @@ th{text-align:center !important;vertical-align:middle}
 <div id="list" data-noi18n></div>
 <div class="empty" id="emptyMsg" style="display:none;">Aucun article dans cette catégorie. Ajoutez-en un.</div>
 
-<button class="fab" id="fabAdd" onclick="openAdd()">+ Ajouter un article</button>
+<button class="fab" id="fabAdd" type="button" onclick="openAdd()" aria-label="Ajouter un article" title="Ajouter un article">+</button>
 
 </div>
 
@@ -1204,6 +1225,35 @@ th{text-align:center !important;vertical-align:middle}
   </div>
 </dialog>
 
+<dialog id="addCatDlg">
+  <label style="display:block; font-weight:600; font-size:16px; margin-bottom:12px; color:var(--text);">Nouvelle catégorie</label>
+  <label for="acName">Nom de la catégorie</label>
+  <input id="acName" type="text" maxlength="40" autocomplete="off" placeholder="ex : Batterie">
+  <div class="asError" id="acError" role="alert"></div>
+  <div class="row">
+    <button class="cancel" id="acCancel" type="button">Annuler</button>
+    <button class="save" id="acOk" type="button">Créer</button>
+  </div>
+</dialog>
+
+<dialog id="addStockDlg">
+  <label id="asTitle" style="display:block; font-weight:600; font-size:16px; margin-bottom:12px; color:var(--text);">+ Écran</label>
+
+  <label for="asSearch">Article</label>
+  <input id="asSearch" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Rechercher un article..." style="margin-bottom:6px;">
+  <div class="asSuggest" id="asSuggest" role="listbox"></div>
+  <div class="asChosen" id="asChosen" style="display:none;"></div>
+
+  <label for="asQty">Quantité à ajouter</label>
+  <input id="asQty" type="number" inputmode="numeric" min="1" step="1" autocomplete="off" placeholder="ex : 5">
+  <div class="asError" id="asError" role="alert"></div>
+
+  <div class="row">
+    <button class="cancel" id="asCancel" type="button">Annuler</button>
+    <button class="save" id="asOk" type="button">Valider</button>
+  </div>
+</dialog>
+
 <dialog id="orderDlg">
   <label style="display:block; font-weight:600; font-size:16px; margin-bottom:8px;">Commande fournisseur</label>
   <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Articles au seuil d'alerte ou épuisés, tous types confondus (hors onglet stock perso). Tu peux modifier le texte avant d'envoyer.</p>
@@ -1343,8 +1393,8 @@ const SUPABASE_URL = 'https://qlytgiebahxlxaggaocq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFseXRnaWViYWh4bHhhZ2dhb2NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjE3NDksImV4cCI6MjEwMDM5Nzc0OX0.Xt_URkya_Ednf1ZoZd5FEyJ9vTQX62WRRukKjEUUUhk';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const APP_VERSION = '6.84';
-const APP_UPDATED = '15/10/2026'; // mis à jour à chaque nouvelle version livrée
+const APP_VERSION = '6.86';
+const APP_UPDATED = '19/10/2026'; // mis à jour à chaque nouvelle version livrée
 
 const KEY = 'stock_lcd_items';       // cache local (source de vérité affichée)
 const PKEY = 'stock_lcd_pending';    // file d'attente des changements non confirmés
@@ -1786,8 +1836,20 @@ function hasPending(){
 
 // --- Catégories / onglets ---
 
+// v6.86 : une catégorie n'existe que par ses articles (aucune table de catégories, SQL inchangé). Les catégories créées avec le
+// bouton « + » restent visibles tant qu'elles sont vides grâce à cette courte liste locale ; dès le premier article, la catégorie
+// existe aussi côté Supabase (champ « category » de l'article, mécanisme existant).
+const EXTRA_CATS_KEY = 'stock_lcd_extra_categories';
+function loadExtraCategories(){
+  try{
+    const a = JSON.parse(localStorage.getItem(EXTRA_CATS_KEY) || '[]');
+    return Array.isArray(a) ? a.filter(c => typeof c === 'string' && c && !c.startsWith('__')) : [];
+  }catch(e){ return []; }
+}
+function saveExtraCategories(list){ try{ localStorage.setItem(EXTRA_CATS_KEY, JSON.stringify(list)); }catch(e){} }
 function getCategories(){
   const set = new Set([DEFAULT_CATEGORY, PERSONAL_CATEGORY_KEY, MON_COMPTE_KEY, CORBEILLE_KEY]);
+  loadExtraCategories().forEach(c => set.add(c));
   items.forEach(it => set.add(displayCategory(it)));
   const sorted = [...set]
     .filter(c => c !== PERSONAL_CATEGORY_KEY && c !== MON_COMPTE_KEY && c !== CORBEILLE_KEY)
@@ -1811,6 +1873,55 @@ function renderTabs(){
     };
     bar.appendChild(btn);
   });
+  const add = document.createElement('button');
+  add.type = 'button'; add.className = 'tabBtn tabAdd'; add.textContent = '+';
+  add.setAttribute('aria-label', 'Ajouter une catégorie'); add.title = 'Ajouter une catégorie';
+  add.onclick = openAddCategory;
+  bar.appendChild(add);
+}
+
+// --- v6.86 : bouton « + » des catégories : saisie du nom puis création (même mise en forme du nom que « Nouvelle catégorie... ») ---
+const addCatDlg = document.getElementById('addCatDlg');
+let _acBusy = false;
+function acNorm(x){ return String(x == null ? '' : x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+function acSetError(msg){ document.getElementById('acError').textContent = msg || ''; }
+function openAddCategory(){
+  if(addCatDlg.open) return; // double appui : une seule ouverture
+  _acBusy = false;
+  document.getElementById('acName').value = '';
+  document.getElementById('acOk').disabled = false;
+  document.getElementById('acCancel').disabled = false;
+  acSetError('');
+  addCatDlg.showModal();
+}
+function submitAddCategory(){
+  if(_acBusy) return; // une création à la fois
+  const name = cap(document.getElementById('acName').value.replace(/\s+/g, ' ').trim());
+  if(!name){ acSetError('Entre un nom de catégorie.'); return; }
+  if(name.startsWith('__')){ acSetError('Ce nom n\'est pas autorisé.'); return; }
+  const n = acNorm(name);
+  const taken = getCategories().some(c => acNorm(categoryLabel(c)) === n || acNorm(c) === n);
+  if(taken){ acSetError('Cette catégorie existe déjà.'); return; }
+  _acBusy = true;
+  document.getElementById('acOk').disabled = true;
+  document.getElementById('acCancel').disabled = true;
+  const extra = loadExtraCategories(); extra.push(name); saveExtraCategories(extra);
+  activeCategory = name;
+  localStorage.setItem('stock_lcd_active_tab', name);
+  renderTabs(); render();
+  const act = document.querySelector('#tabsBar .tabBtn.active');
+  if(act && act.scrollIntoView) act.scrollIntoView({inline: 'nearest', block: 'nearest'});
+  // fermeture après un court instant : un second toucher involontaire sur « Créer » est absorbé par la modale
+  setTimeout(() => { if(addCatDlg.open) addCatDlg.close(); }, 450);
+  toast('Catégorie « ' + name + ' » créée');
+}
+if(!window._addCatBound){
+  window._addCatBound = true;
+  attachAutoCap(document.getElementById('acName'));
+  document.getElementById('acName').addEventListener('input', () => acSetError(''));
+  document.getElementById('acName').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); submitAddCategory(); } });
+  document.getElementById('acOk').addEventListener('click', submitAddCategory);
+  document.getElementById('acCancel').addEventListener('click', () => { if(!_acBusy) addCatDlg.close(); });
 }
 
 function populateCategorySelect(preselect){
@@ -2270,6 +2381,7 @@ function render(){
   document.getElementById('globalTotals').style.display = inTrash ? 'none' : '';
   document.getElementById('orderBtn').style.display = inTrash ? 'none' : '';
   document.getElementById('fabAdd').style.display = inTrash ? 'none' : '';
+  document.getElementById('catHeaderRow').style.display = inTrash ? 'none' : '';
 
   // Total 1 : stock "opérationnel" pur — hors Stock Perso STD, hors MON COMPTE, hors Corbeille.
   // Total 2 : toutes les catégories de stock (Stock Perso STD inclus) — MON COMPTE et Corbeille exclus.
@@ -2353,6 +2465,110 @@ function openAdd(){
   document.getElementById('fThreshold').value = defaultThreshold;
   document.getElementById('fPrice').value = '';
   dlg.showModal();
+}
+
+// --- v6.85 : bouton « + Écran » : ajoute une quantité au stock d'un article de la catégorie active ---
+// Réutilise changeQty() : même écart à identifiant d'opération unique, même cache local, même file hors ligne,
+// même synchronisation Supabase, même recalcul des totaux et de la valeur en GNF que les boutons + / −.
+const addStockDlg = document.getElementById('addStockDlg');
+const AS_MAX_QTY = 100000;
+let _asCategory = null, _asChosenId = null, _asBusy = false;
+function asNorm(x){ return String(x == null ? '' : x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+function asCandidates(){ return items.filter(it => displayCategory(it) === _asCategory); }
+function asSetError(msg){ document.getElementById('asError').textContent = msg || ''; }
+function asRenderSuggestions(){
+  const box = document.getElementById('asSuggest');
+  box.textContent = '';
+  if(_asChosenId) return; // article choisi : liste repliée
+  const q = asNorm(document.getElementById('asSearch').value);
+  const list = asCandidates()
+    .filter(it => !q || asNorm(it.name).includes(q) || asNorm(it.ref).includes(q))
+    .sort((a, b) => ((asNorm(a.name).startsWith(q) ? 0 : 1) - (asNorm(b.name).startsWith(q) ? 0 : 1)) ||
+                    a.name.localeCompare(b.name, 'fr', {sensitivity: 'base'}));
+  if(!list.length){
+    const n = document.createElement('div'); n.className = 'asNote'; n.textContent = 'Aucun article trouvé dans cette catégorie.'; box.appendChild(n); return;
+  }
+  list.slice(0, 8).forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('data-as-id', it.id);
+    const name = document.createElement('span'); name.textContent = it.name;
+    const st = document.createElement('small'); st.textContent = 'stock : ' + it.qty;
+    b.appendChild(name); b.appendChild(st); box.appendChild(b);
+  });
+  if(list.length > 8){
+    const n = document.createElement('div'); n.className = 'asNote';
+    n.textContent = (list.length - 8) + ' autre(s) : précise la recherche.'; box.appendChild(n);
+  }
+}
+function asChoose(id){
+  const it = items.find(x => x.id === resolveId(id));
+  if(!it) return;
+  _asChosenId = it.id;
+  document.getElementById('asSearch').value = it.name;
+  const c = document.getElementById('asChosen');
+  c.textContent = '✓ ' + it.name + ' — stock actuel : ' + it.qty;
+  c.style.display = '';
+  asSetError('');
+  asRenderSuggestions();
+  document.getElementById('asQty').focus();
+}
+function openAddStock(){
+  if(addStockDlg.open) return; // double appui sur le bouton : une seule ouverture
+  if(activeCategory === CORBEILLE_KEY) return;
+  _asCategory = activeCategory; _asChosenId = null; _asBusy = false;
+  document.getElementById('asTitle').textContent = '+ ' + categoryLabel(_asCategory);
+  document.getElementById('asSearch').value = '';
+  document.getElementById('asQty').value = '';
+  document.getElementById('asChosen').style.display = 'none';
+  document.getElementById('asOk').disabled = false;
+  document.getElementById('asCancel').disabled = false;
+  asSetError('');
+  asRenderSuggestions();
+  addStockDlg.showModal();
+}
+function submitAddStock(){
+  if(_asBusy) return; // une validation à la fois : jamais deux modifications
+  let it = _asChosenId ? items.find(x => x.id === resolveId(_asChosenId)) : null;
+  if(!it){ // nom saisi en entier sans toucher la suggestion : accepté s'il désigne un seul article
+    const q = asNorm(document.getElementById('asSearch').value);
+    const exact = q ? asCandidates().filter(x => asNorm(x.name) === q) : [];
+    if(exact.length === 1) it = exact[0];
+  }
+  if(!it || displayCategory(it) !== _asCategory){ asSetError('Choisis un article dans la liste.'); return; }
+  const raw = document.getElementById('asQty').value.trim();
+  const n = Number(raw);
+  if(!raw || !Number.isInteger(n) || n < 1 || n > AS_MAX_QTY){ asSetError('Saisis une quantité entière entre 1 et ' + AS_MAX_QTY.toLocaleString('fr-FR') + '.'); return; }
+  _asBusy = true;
+  document.getElementById('asOk').disabled = true;
+  document.getElementById('asCancel').disabled = true;
+  _qtyHeld = false; _renderDeferred = false; // l'affichage doit se mettre à jour tout de suite
+  // La modale se ferme APRÈS un court instant : un second toucher involontaire sur « Valider » est absorbé par la modale
+  // (boutons désactivés) au lieu de tomber sur un bouton de la liste situé dessous (+, −, ✕…).
+  try { changeQty(it.id, n); }
+  finally { setTimeout(() => { if(addStockDlg.open) addStockDlg.close(); }, 450); }
+  toast('+' + n + ' · ' + it.name + ' (stock ' + it.qty + ')');
+}
+if(!window._addStockBound){
+  window._addStockBound = true;
+  const asSearch = document.getElementById('asSearch');
+  asSearch.addEventListener('input', () => {
+    if(_asChosenId){ _asChosenId = null; document.getElementById('asChosen').style.display = 'none'; }
+    asSetError(''); asRenderSuggestions();
+  });
+  asSearch.addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return;
+    e.preventDefault();
+    const opts = document.querySelectorAll('#asSuggest button[data-as-id]');
+    if(opts.length === 1) asChoose(opts[0].getAttribute('data-as-id'));
+  });
+  document.getElementById('asSuggest').addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('button[data-as-id]');
+    if(b) asChoose(b.getAttribute('data-as-id'));
+  });
+  document.getElementById('asQty').addEventListener('input', () => asSetError(''));
+  document.getElementById('asQty').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); submitAddStock(); } });
+  document.getElementById('asOk').addEventListener('click', submitAddStock);
+  document.getElementById('asCancel').addEventListener('click', () => { if(!_asBusy) addStockDlg.close(); });
 }
 
 function openEdit(id){
@@ -2831,6 +3047,7 @@ async function confirmDeleteCategory(){
   toDelete.forEach(it => {
     updateItemLocal(it.id, it.name, it.ref || '', it.qty, CORBEILLE_KEY + CORBEILLE_SEP + cat, it.threshold, it.price);
   });
+  saveExtraCategories(loadExtraCategories().filter(c => c !== cat)); // v6.86 : une catégorie supprimée ne doit pas rester dans la barre
   catDelDlg.close();
   if(activeCategory === cat){
     activeCategory = DEFAULT_CATEGORY;
